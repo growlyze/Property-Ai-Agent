@@ -1,0 +1,65 @@
+import express from 'express';
+import passport from 'passport';
+import { loginRateLimiter, registerRateLimiter } from '../middleware/rateLimiter';
+import { RequestHandler } from 'express';
+import * as authController from '../controllers/authController';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { validateRegistration, validateLogin } from '../middleware/validation';
+
+const router = express.Router();
+
+// Registration is throttled *after* validation so malformed/cheap-to-reject
+// requests never consume the (expensive) allowance, mirroring `/login` below.
+router.post('/register', validateRegistration, registerRateLimiter, authController.register);
+router.post('/login', loginRateLimiter as unknown as RequestHandler, validateLogin, authController.login);
+router.post('/refresh-token', authController.refreshToken);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  }
+);
+
+router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+
+router.get(
+  '/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  }
+);
+
+router.get('/me', authMiddleware.protect, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    res.json({
+      data: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive,
+        phone: user.phone,
+        mfaEnabled: user.mfaEnabled,
+        lastLogin: user.lastLogin,
+        name: `${user.firstName} ${user.lastName}`
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/settings', authMiddleware.protect, authController.updateSettings);
+
+export default router;

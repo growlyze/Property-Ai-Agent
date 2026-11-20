@@ -1,0 +1,209 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+
+# Redis snapshot written into the repo root by a locally running redis-server.
+# The backend test suite needs Redis up, so this appears for anyone who runs it.
+dump.rdb
+
+# Dependency directories
+node_modules/
+
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+backend/src/predictive-analytics/venv/
+backend/src/predictive-analytics/.venv/
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.backup
+
+# API Keys and Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+api-keys.json
+secrets.json
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Security and authentication
+auth-config.json
+jwt-keys/
+certificates/
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Docker secrets
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Test results
+test-results/
+playwright-report/
+test-output/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS specific
+.DS_Store
+
+# Task files
+tasks.json
+tasks/
+
+# Expo
+.expo/
+
+# Serena
+.serena/
+
+# AI assistant working state (local only)
+.workbuddy/
+.workbuddy-ai/
+
+# Build output
+dist/
+build/
+
+# iOS project
+propertyapp/ios/
+
+# IDE and AI tool configurations
+.cursor/
+.roo/
+.taskmaster/
+.kiro/
+.claude/
+.trae/
+.windsurf/
+.gemini/
+.qwen/
+
+# BMAD framework (local only)
+
+# GitHub workflows
+.github/workflows/
+
+# Infrastructure
+infrastructure/monitoring/dashboards/
+infrastructure/rollback/
+infrastructure/deploy-epic21.sh
+
+# Scripts
+scripts/monitoring/
+scripts/collect-epic21-feedback.js
+scripts/feedback-analysis.js
+
+# Documentation
+docs/uat/
+docs/qa/assessments/
+docs/qa/gates/
+docs/epic21-production-deployment-report-20250916.md
+docs/epic22-*.md
+docs/prd-epic21-5.md
+docs/prd-epic22.md
+docs/prd-epic23.md
+docs/architecture-epic22.md
+docs/architecture-epic23.md
+docs/front-end-spec.md
+docs/development-phase-transition-summary.md
+docs/epic-21-*.md
+docs/epic-22-*.md
+docs/epic22-*.md
+docs/epic21-*.md
+docs/stories/2[1-3].*.story.md
+docs/qa/assessments/2[1-3].*.md
+docs/qa/gates/2[1-3].*.md
+
+# Legacy files
+backend/MIGRATION_COMPLETED.md
+backend/MIGRATION_README.md
+backend/test-*.js
+backend/check-*.js
+backend/create-*.js
+backend/benchmark-*.js
+backend/test-*.ts
+backend/check-*.ts
+backend/test-*.js
+backend/check-*.js
+backend/create-*.js
+backend/benchmark-*.js
+backend/test-*.ts
+backend/check-*.ts
+
+# Package backups
+*.package.json.backup
+*package-lock.json.backup
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# IDE specific
+*.swp
+*.swo
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*.swo
+*~
+
+# Linux
+*~
+.directory
+.Trash-*

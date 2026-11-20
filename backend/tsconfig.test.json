@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "types": ["jest", "node", "@types/supertest"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "strict": false,
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*",
+    "src/__tests__/**/*",
+    "src/__mocks__/**/*",
+    "src/types/**/*"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

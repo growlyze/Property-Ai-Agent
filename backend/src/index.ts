@@ -21,13 +21,19 @@ let globalServer: http.Server | null = null;
 // Connect to database and start server
 const startServer = async () => {
   try {
-    // Connect to MongoDB
-    await connectMongoDB();
-    console.log('Connected to MongoDB');
-    
-    // Set up MongoDB with security and performance settings
-    await setupMongoDB();
-    console.log('MongoDB setup and configuration completed');
+    // Connect to MongoDB. MONGODB_OPTIONAL=true (local development only) lets
+    // the API start without MongoDB; only call transcriptions and AI-content
+    // history, the two features stored there, are unavailable.
+    if (process.env.MONGODB_OPTIONAL === 'true') {
+      console.warn('MONGODB_OPTIONAL=true: starting without MongoDB (transcriptions and AI-content history disabled)');
+    } else {
+      await connectMongoDB();
+      console.log('Connected to MongoDB');
+
+      // Set up MongoDB with security and performance settings
+      await setupMongoDB();
+      console.log('MongoDB setup and configuration completed');
+    }
     
     // Connect to PostgreSQL via Prisma
     await prisma.$connect();

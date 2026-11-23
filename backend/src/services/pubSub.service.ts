@@ -20,17 +20,32 @@ class PubSubService {
     this.connect();
   }
 
+  // A missing or unreachable Redis must not crash the API process: without
+  // this catch the rejected connect() is an unhandled rejection, which
+  // terminates Node. Real-time dashboard updates are simply unavailable.
   private async connect() {
-    await this.publisher.connect();
-    await this.subscriber.connect();
+    try {
+      await this.publisher.connect();
+      await this.subscriber.connect();
+    } catch (err) {
+      console.warn('Redis pub/sub unavailable; real-time dashboard updates disabled:', (err as Error)?.message ?? err);
+    }
   }
 
   async publish(channel: string, message: string) {
-    await this.publisher.publish(channel, message);
+    try {
+      await this.publisher.publish(channel, message);
+    } catch (err) {
+      console.warn(`Redis publish to "${channel}" skipped:`, (err as Error)?.message ?? err);
+    }
   }
 
   async subscribe(channel: string, callback: (message: string) => void) {
-    await this.subscriber.subscribe(channel, callback);
+    try {
+      await this.subscriber.subscribe(channel, callback);
+    } catch (err) {
+      console.warn(`Redis subscribe to "${channel}" skipped:`, (err as Error)?.message ?? err);
+    }
   }
 }
 

@@ -50,18 +50,81 @@ export interface PrimitiveColors {
     800: string;
     900: string;
   };
-  // Growlyze warm neutrals: cream -> ink
   gray: {
-    50: '#fbf8f2',
-    100: '#f5f0e6',
-    200: '#ece4d4',
-    300: '#d8cdb9',
-    400: '#a89fae',
-    500: '#8e8597',
-    600: '#5b5066',
-    700: '#463a55',
-    800: '#2a1a45',
-    900: '#140827',
+    50: string;
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+    900: string;
+  };
+}
+
+export interface SemanticColors {
+  primary: {
+    light: string;
+    main: string;
+    dark: string;
+    contrast: string;
+  };
+  secondary: {
+    light: string;
+    main: string;
+    dark: string;
+    contrast: string;
+  };
+  success: {
+    light: string;
+    main: string;
+    dark: string;
+    contrast: string;
+  };
+  warning: {
+    light: string;
+    main: string;
+    dark: string;
+    contrast: string;
+  };
+  error: {
+    light: string;
+    main: string;
+    dark: string;
+    contrast: string;
+  };
+  text: {
+    primary: string;
+    secondary: string;
+    disabled: string;
+  };
+  background: {
+    default: string;
+    paper: string;
+    elevated: string;
+  };
+  surface: {
+    default: string;
+    hover: string;
+    selected: string;
+    disabled: string;
+  };
+}
+
+export const primitiveColors: PrimitiveColors = {
+  blue: {
+    50: '#e3f2fd',
+    100: '#bbdefb',
+    200: '#90caf9',
+    300: '#64b5f6',
+    400: '#42a5f5',
+    500: '#397ae7', // Growlyze blue (accent)
+    600: '#1565c0',
+    700: '#0d47a1',
+    800: '#0a3d91',
+    900: '#073282',
   },
   green: {
     50: '#e8f5e8',
@@ -99,17 +162,18 @@ export interface PrimitiveColors {
     800: '#c62828',
     900: '#b71c1c',
   },
+  // Growlyze warm neutrals: cream -> ink
   gray: {
-    50: '#fafafa',
-    100: '#f5f5f5',
-    200: '#eeeeee',
-    300: '#e0e0e0',
-    400: '#bdbdbd',
-    500: '#9e9e9e',
-    600: '#757575',
-    700: '#616161',
-    800: '#424242',
-    900: '#212121',
+    50: '#fbf8f2',
+    100: '#f5f0e6',
+    200: '#ece4d4',
+    300: '#d8cdb9',
+    400: '#a89fae',
+    500: '#8e8597',
+    600: '#5b5066',
+    700: '#463a55',
+    800: '#2a1a45',
+    900: '#140827',
   },
 };
 

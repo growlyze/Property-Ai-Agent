@@ -99,8 +99,8 @@ export const MobileBottomTabs: React.FC<MobileBottomTabsProps> = ({ className })
 
   // Get primary navigation items for bottom tabs (max 5 items for optimal UX)
   const primaryItems = items
-    .filter(item => 
-      ['dashboard', 'properties', 'maintenance', 'communications', 'analytics'].includes(item.id)
+    .filter(item =>
+      item.mobileTab ?? ['dashboard', 'properties', 'maintenance', 'communications', 'analytics'].includes(item.id)
     )
     .slice(0, 5); // Ensure maximum 5 tabs
 

@@ -25,6 +25,11 @@ export const authMiddleware = {
           return res.status(401).json({ message: 'User not found' });
         }
 
+        // A deactivated account keeps no access, even with an unexpired token.
+        if (user.isActive === false) {
+          return res.status(403).json({ message: 'Account is deactivated' });
+        }
+
         req.user = user;
         next();
       } catch (error) {

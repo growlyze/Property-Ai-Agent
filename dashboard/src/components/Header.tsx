@@ -23,6 +23,9 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation, useNavigationBreakpoint } from '../design-system/navigation';
 import ThemeSwitcher from './ThemeSwitcher';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
+import { canAccess, isAdmin, isStaff, notificationsPathFor, roleLabel } from '../auth/roles';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -33,6 +36,24 @@ const Header: React.FC = () => {
   // Navigation system integration
   const { toggleDrawer } = useNavigation();
   const { shouldShowDrawer } = useNavigationBreakpoint();
+
+  const role = user?.role;
+  const staff = isStaff(role);
+  const displayName = user?.name || [(user as any)?.firstName, (user as any)?.lastName].filter(Boolean).join(' ') || user?.email || '';
+  const roleName = roleLabel(role);
+
+  // Unread count for the bell. GET /notifications is scoped to the caller.
+  const { data: unread } = useQuery({
+    queryKey: ['header-unread-notifications', user?.id],
+    queryFn: async () => {
+      const res = await api.get('/notifications', { params: { page: 1, limit: 1 } });
+      const n = Number(res.data?.unread);
+      return Number.isFinite(n) ? n : 0;
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+    retry: false,
+  });
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -84,30 +105,41 @@ const Header: React.FC = () => {
             display: { xs: 'none', sm: 'block' }
           }}
         >
-          Growlyze Property AI Agent Dashboard
+          {staff ? 'Growlyze Property AI Agent Dashboard' : `Growlyze ${roleName} Portal`}
         </Typography>
+        {/* Keep the right-hand controls right-aligned when the title is hidden on phones */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'block', sm: 'none' } }} />
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {/* Search Icon */}
-          <Tooltip title="Search">
-            <IconButton color="inherit" size="large">
-              <SearchIcon />
-            </IconButton>
-          </Tooltip>
+          {/* Search Icon (staff only) */}
+          {staff && (
+            <Tooltip title="Search">
+              <IconButton color="inherit" size="large">
+                <SearchIcon />
+              </IconButton>
+            </Tooltip>
+          )}
           
           {/* Theme Switcher */}
           <ThemeSwitcher />
           
           {/* Notifications */}
           <Tooltip title="Notifications">
-            <IconButton color="inherit" size="large">
-              <Badge badgeContent={4} color="error">
+            <IconButton
+              color="inherit"
+              size="large"
+              component={RouterLink}
+              to={notificationsPathFor(role)}
+              aria-label={`Notifications${unread ? ` (${unread} unread)` : ''}`}
+            >
+              <Badge badgeContent={unread || 0} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
           </Tooltip>
           
           {/* Quick Access Links */}
+          {staff && canAccess(role, '/rentals') && (
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, ml: 2 }}>
             <Tooltip title="Rental Listings">
               <IconButton 
@@ -131,12 +163,26 @@ const Header: React.FC = () => {
               </IconButton>
             </Tooltip>
           </Box>
+          )}
+
+          {/* Who is signed in */}
+          {user && (
+            <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right', ml: 1, lineHeight: 1.1 }} data-testid="header-user">
+              <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }} noWrap>
+                {displayName}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.85, lineHeight: 1.2 }} data-testid="header-role">
+                {roleName}
+              </Typography>
+            </Box>
+          )}
           
           {/* User Menu */}
           <IconButton
             onClick={handleClick}
             size="small"
-            sx={{ ml: 2 }}
+            sx={{ ml: 1 }}
+            aria-label="Account menu"
             aria-controls={open ? 'account-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
@@ -186,12 +232,28 @@ const Header: React.FC = () => {
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          <MenuItem onClick={handleProfile}>
-            <Avatar /> Profile
-          </MenuItem>
-          <MenuItem component={RouterLink} to="/settings" onClick={handleClose}>
-            Settings
-          </MenuItem>
+          {user && (
+            <Box sx={{ px: 2, py: 1, minWidth: 200 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>{displayName}</Typography>
+              {user.email && (
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>{user.email}</Typography>
+              )}
+              <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }} data-testid="menu-role">
+                {roleName}
+              </Typography>
+            </Box>
+          )}
+          <Divider />
+          {staff && (
+            <MenuItem onClick={handleProfile}>
+              <Avatar /> Profile
+            </MenuItem>
+          )}
+          {isAdmin(role) && (
+            <MenuItem component={RouterLink} to="/security-settings" onClick={handleClose}>
+              Settings
+            </MenuItem>
+          )}
           <Divider />
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>

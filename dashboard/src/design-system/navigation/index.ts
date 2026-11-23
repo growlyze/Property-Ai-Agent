@@ -39,6 +39,8 @@ export const createNavigationItem = (config: {
   children?: any[];
   description?: string;
   isExternal?: boolean;
+  section?: 'main' | 'management' | 'admin';
+  mobileTab?: boolean;
 }): NavigationItem => {
   return {
     id: config.id,
@@ -50,6 +52,8 @@ export const createNavigationItem = (config: {
     children: config.children,
     description: config.description,
     isExternal: config.isExternal || false,
+    section: config.section,
+    mobileTab: config.mobileTab,
   };
 };
 

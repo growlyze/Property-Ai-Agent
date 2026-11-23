@@ -23,7 +23,7 @@ import offlineManager from './utils/offlineManager';
 const queryClient = new QueryClient();
 
 // Import components - temporarily non-lazy for debugging
-import Dashboard from './pages/Dashboard';
+import RoleHome from './pages/RoleHome';
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
 const TenantScreening = lazy(() => import('./pages/TenantScreening'));
@@ -79,6 +79,13 @@ const NotificationList = lazy(() => import('./pages/NotificationList'));
 const AnnouncementCompose = lazy(() => import('./components/AnnouncementCompose'));
 const NotificationTemplates = lazy(() => import('./components/NotificationTemplates'));
 const MobileAuditDashboard = lazy(() => import('./components/MobileAuditDashboard'));
+// Tenant and vendor portals
+const TenantPayments = lazy(() => import('./pages/tenant/TenantPayments'));
+const TenantMaintenance = lazy(() => import('./pages/tenant/TenantMaintenance'));
+const TenantDocuments = lazy(() => import('./pages/tenant/TenantDocuments'));
+const PortalNotifications = lazy(() => import('./pages/tenant/PortalNotifications'));
+const VendorJobs = lazy(() => import('./pages/vendor/VendorJobs'));
+const VendorPayments = lazy(() => import('./pages/vendor/VendorPayments'));
 
 // Component to track page views
 function PageTracker() {
@@ -132,13 +139,26 @@ function App() {
                       <Route path="/login" element={<LoginScreen />} />
                       <Route path="/register" element={<RegisterScreen />} />
                       
-                      {/* Protected routes */}
+                      {/* Protected routes. ProtectedRoute checks login AND the role policy in
+                          auth/roles.ts for every nested path below; disallowed paths redirect
+                          to the user's home with an "access denied" notice. */}
                       <Route path="/" element={
                         <ProtectedRoute>
                           <Layout />
                         </ProtectedRoute>
                       }>
-                        <Route index element={<Dashboard />} />
+                        {/* Role home: staff dashboard, tenant home or vendor home */}
+                        <Route index element={<RoleHome />} />
+
+                        {/* Tenant portal */}
+                        <Route path="my/payments" element={<LazyRoute><TenantPayments /></LazyRoute>} />
+                        <Route path="my/maintenance" element={<LazyRoute><TenantMaintenance /></LazyRoute>} />
+                        <Route path="my/documents" element={<LazyRoute><TenantDocuments /></LazyRoute>} />
+                        <Route path="my/notifications" element={<LazyRoute><PortalNotifications /></LazyRoute>} />
+
+                        {/* Vendor portal */}
+                        <Route path="vendor/jobs" element={<LazyRoute><VendorJobs /></LazyRoute>} />
+                        <Route path="vendor/payments" element={<LazyRoute><VendorPayments /></LazyRoute>} />
                         
                         {/* Rental Management Routes */}
                         <Route path="properties" element={

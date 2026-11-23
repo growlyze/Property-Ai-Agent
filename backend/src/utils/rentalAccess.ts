@@ -75,13 +75,18 @@ export function isOperator(req: Request): boolean {
   return !!role && OPERATOR_ROLES.includes(role);
 }
 
+/** True for a VENDOR login (linked to its `Vendor` row via `contactPersonId`). */
+export function isVendor(req: Request): boolean {
+  return currentUserRole(req) === UserRole.VENDOR;
+}
+
 /** True when the user may WRITE rentals at all. Residents and vendors cannot. */
 export function canWriteRentals(req: Request): boolean {
   return isOperator(req);
 }
 
 /** True when the user may READ rentals through a Lease/Application link. */
-function isResident(req: Request): boolean {
+export function isResident(req: Request): boolean {
   const role = currentUserRole(req) as UserRole | undefined;
   return !!role && RESIDENT_ROLES.includes(role);
 }
@@ -512,4 +517,83 @@ export function canAccessMessage(req: Request, message: unknown): boolean {
   }
 
   return false;
+}
+
+/* ------------------------------------------------------------------------- *
+ * WorkOrder + VendorPayment
+ *
+ * Both are TWO hops from `Rental`:
+ *
+ *   WorkOrder     -> MaintenanceRequest -> Rental
+ *   VendorPayment -> WorkOrder -> MaintenanceRequest -> Rental
+ *
+ * This is where the VENDOR role finally gets rows. A vendor login is linked to
+ * its `Vendor` row through `Vendor.contactPersonId = User.id`, and a vendor
+ * sees exactly the work orders it has a `WorkOrderAssignment` on (and the
+ * payments made to it). The hop through `contactPersonId` is expressed as a
+ * relation filter, so no extra lookup is needed to build the scope.
+ *
+ *   operators  -> work orders / payments under rentals they own
+ *   residents  -> work orders on maintenance requests they filed (read-only);
+ *                 never vendor payments (landlord-vendor finances)
+ *   vendors    -> work orders assigned to them; payments made to them
+ * ------------------------------------------------------------------------- */
+
+/** Relation filter matching a `Vendor` row owned by the given user. */
+function vendorOwnedBy(userId: string) {
+  return { contactPersonId: userId };
+}
+
+/** Prisma `where` limiting `WorkOrder` rows to the caller's own. */
+export function workOrderScopeFilter(req: Request): Record<string, unknown> | undefined {
+  if (isAdmin(req)) return undefined;
+
+  const userId = currentUserId(req);
+  if (!userId) return { id: '__no_user__' };
+
+  if (canWriteRentals(req)) {
+    return {
+      MaintenanceRequest: {
+        Rental: {
+          OR: [{ managerId: userId }, { ownerId: userId }, { createdById: userId }],
+        },
+      },
+    };
+  }
+
+  if (isVendor(req)) {
+    return { WorkOrderAssignment: { some: { Vendor: vendorOwnedBy(userId) } } };
+  }
+
+  if (isResident(req)) {
+    return { MaintenanceRequest: { requestedById: userId } };
+  }
+
+  return { id: '__no_access__' };
+}
+
+/** Prisma `where` limiting `VendorPayment` rows to the caller's own. */
+export function vendorPaymentScopeFilter(req: Request): Record<string, unknown> | undefined {
+  if (isAdmin(req)) return undefined;
+
+  const userId = currentUserId(req);
+  if (!userId) return { id: '__no_user__' };
+
+  if (canWriteRentals(req)) {
+    return {
+      WorkOrder: {
+        MaintenanceRequest: {
+          Rental: {
+            OR: [{ managerId: userId }, { ownerId: userId }, { createdById: userId }],
+          },
+        },
+      },
+    };
+  }
+
+  if (isVendor(req)) {
+    return { Vendor: vendorOwnedBy(userId) };
+  }
+
+  return { id: '__no_access__' };
 }

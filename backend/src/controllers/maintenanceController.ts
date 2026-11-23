@@ -129,11 +129,63 @@ class MaintenanceController {
       }
 
       const body = req.body ?? {};
-      const { title, description, rentalId } = body;
+      const { title, description } = body;
+      let rentalId: string | undefined =
+        typeof body.rentalId === 'string' && body.rentalId.trim() ? body.rentalId.trim() : undefined;
 
       if (!title || !description) {
         return res.status(400).json({ error: 'title and description are required' });
       }
+
+      // Priority is accepted case-insensitively (LOW|MEDIUM|HIGH|EMERGENCY).
+      let priority: Priority | undefined;
+      if (body.priority !== undefined && body.priority !== null && body.priority !== '') {
+        const p = String(body.priority).trim().toUpperCase();
+        if (!(Object.values(Priority) as string[]).includes(p)) {
+          return res
+            .status(400)
+            .json({ error: `priority must be one of ${Object.values(Priority).join(', ')}` });
+        }
+        priority = p as Priority;
+      }
+
+      const operator = canWriteRentals(req);
+
+      if (!operator) {
+        // Residents (and anyone else who is not an operator) may only report a
+        // fault in a home they LEASE. With no rentalId, default to their ACTIVE
+        // lease. An application is not a tenancy, so it no longer qualifies.
+        const leases = await prisma.lease.findMany({
+          where: { tenantId: userId, status: { in: ['ACTIVE', 'PENDING'] } },
+          select: { rentalId: true, status: true },
+          orderBy: { startDate: 'desc' },
+        });
+        if (!rentalId) {
+          const active = leases.find((l) => l.status === 'ACTIVE');
+          if (!active) {
+            return res
+              .status(400)
+              .json({ error: 'rentalId is required (no active lease found for this account)' });
+          }
+          rentalId = active.rentalId;
+        } else if (!leases.some((l) => l.rentalId === rentalId)) {
+          return res.status(403).json({ error: 'You can only report maintenance for a home you lease' });
+        }
+
+        // Self-service create: only the fault description is the resident's to
+        // set. Status, costs, scheduling and attribution are the landlord's.
+        const maintenanceRequest = await prisma.maintenanceRequest.create({
+          data: {
+            title: String(title),
+            description: String(description),
+            ...(priority ? { priority } : {}),
+            rentalId,
+            requestedById: userId,
+          },
+        });
+        return res.status(201).json({ data: maintenanceRequest });
+      }
+
       if (!rentalId) {
         return res.status(400).json({ error: 'rentalId is required' });
       }
@@ -146,34 +198,14 @@ class MaintenanceController {
         return res.status(404).json({ error: 'Rental not found' });
       }
 
-      const operator = canWriteRentals(req);
-
-      // Operators must control the rental. A resident may report a fault in the
-      // home they lease — checked below via the lease relationship.
-      if (operator) {
-        if (!canAccessRental(req, { ...rental, Leases: [], Applications: [] })) {
-          return res.status(403).json({ error: 'You do not have access to this rental' });
-        }
-      } else {
-        const lease = await prisma.lease.findFirst({
-          where: { rentalId, tenantId: userId },
-          select: { id: true },
-        });
-        const application = await prisma.application.findFirst({
-          where: { rentalId, applicantId: userId },
-          select: { id: true },
-        });
-        if (!lease && !application) {
-          return res.status(403).json({
-            error: 'You do not have access to this rental',
-          });
-        }
+      // Operators must control the rental.
+      if (!canAccessRental(req, { ...rental, Leases: [], Applications: [] })) {
+        return res.status(403).json({ error: 'You do not have access to this rental' });
       }
 
-      // Attribution: residents are always the requester. An operator may file on
-      // a resident's behalf, but the value must be a real user.
-      const requestedById =
-        operator && body.requestedById ? body.requestedById : userId;
+      // Attribution: an operator may file on a resident's behalf, but the value
+      // must be a real user.
+      const requestedById = body.requestedById ? body.requestedById : userId;
       if (requestedById !== userId) {
         const requester = await prisma.user.findUnique({
           where: { id: requestedById },
@@ -187,6 +219,7 @@ class MaintenanceController {
       const maintenanceRequest = await prisma.maintenanceRequest.create({
         data: {
           ...pickWritable(body),
+          ...(priority ? { priority } : {}),
           title,
           description,
           rentalId,

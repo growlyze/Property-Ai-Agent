@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { vendorPaymentService } from '../services/vendorPayment.service';
 import { prisma } from '../config/database';
 import logger from '../utils/logger';
+import { isVendor, vendorPaymentScopeFilter } from '../utils/rentalAccess';
 
 /** Outcome of an authorization check: either allowed, or a specific HTTP failure. */
 type AuthResult = { allowed: true } | { allowed: false; status: number; message: string };
@@ -84,6 +85,57 @@ class VendorPaymentController {
     } catch (error) {
       logger.error(`Error initiating payment: ${error}`);
       return res.status(500).json({ error: 'Failed to initiate payment.' });
+    }
+  }
+
+  /**
+   * GET /api/vendor-payments/mine — the signed-in VENDOR's own payments, paged
+   * `{ data, total, page, limit }`. Scoped with `vendorPaymentScopeFilter`.
+   */
+  async listMine(req: Request, res: Response) {
+    if (!isVendor(req)) {
+      return res.status(403).json({ error: 'Only vendor accounts have vendor payments' });
+    }
+    try {
+      const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? '20'), 10) || 20));
+      const where = (vendorPaymentScopeFilter(req) ?? {}) as Prisma.VendorPaymentWhereInput;
+
+      const [total, rows] = await Promise.all([
+        prisma.vendorPayment.count({ where }),
+        prisma.vendorPayment.findMany({
+          where,
+          select: {
+            id: true,
+            amount: true,
+            status: true,
+            paymentDate: true,
+            WorkOrder: {
+              select: {
+                id: true,
+                title: true,
+                MaintenanceRequest: { select: { Rental: { select: { title: true } } } },
+              },
+            },
+          },
+          orderBy: { paymentDate: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+
+      const data = rows.map((p) => ({
+        id: p.id,
+        amount: p.amount,
+        status: p.status,
+        paymentDate: p.paymentDate.toISOString(),
+        workOrder: { id: p.WorkOrder.id, title: p.WorkOrder.title },
+        rental: { title: p.WorkOrder.MaintenanceRequest?.Rental?.title ?? null },
+      }));
+      return res.status(200).json({ data, total, page, limit });
+    } catch (error) {
+      logger.error(`Error listing vendor payments: ${error}`);
+      return res.status(500).json({ error: 'Failed to list vendor payments.' });
     }
   }
 

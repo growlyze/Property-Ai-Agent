@@ -11,6 +11,8 @@ router.post(
   vendorPaymentController.initiatePayment
 );
 
+router.get('/mine', authMiddleware.protect, vendorPaymentController.listMine);
+
 router.get(
   '/history/:vendorId',
   authMiddleware.protect,

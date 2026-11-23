@@ -54,6 +54,13 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
+// Behind Traefik + nginx (production) or the Vite dev proxy, the socket peer
+// is always a proxy, so without this every visitor shares one IP and one
+// rate-limit bucket. Trusting only loopback/private-network hops makes
+// `req.ip` the real client address while ignoring X-Forwarded-For values a
+// public client could spoof. Override with TRUST_PROXY if the topology changes.
+app.set('trust proxy', process.env.TRUST_PROXY || 'loopback, linklocal, uniquelocal');
+
 // Middleware - Order is important!
 app.use(helmet()); // Security headers
 

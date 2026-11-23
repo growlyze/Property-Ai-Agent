@@ -254,6 +254,23 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     if (await bcrypt.compare(password, user.password)) {
+      // Deactivated accounts may not sign in. Checked only after the password
+      // matches so the response does not reveal account state to a guesser.
+      if (user.isActive === false) {
+        await writeAuthAudit(req, {
+          action: 'LOGIN_FAILED',
+          entityId: user.id,
+          userId: user.id,
+          details: {
+            reason: 'ACCOUNT_DEACTIVATED',
+            email,
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'],
+          },
+        });
+        return next(new AppError('Account is deactivated', 403));
+      }
+
       const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: { failedLoginAttempts: 0, isLocked: false, lockedUntil: null, lastLogin: new Date() },
@@ -401,6 +418,10 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     
     if (!user) {
       return next(new AppError('Invalid refresh token', 401));
+    }
+
+    if (user.isActive === false) {
+      return next(new AppError('Account is deactivated', 403));
     }
     
     const newAccessToken = generateToken(user);

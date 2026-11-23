@@ -180,10 +180,12 @@ export const NavigationItemComponent: React.FC<NavigationItemProps> = ({
   const location = useLocation();
   
   // Determine if this item should be active
-  const itemIsActive = isActive || location.pathname === item.href || 
-    (item.href !== '/' && location.pathname.startsWith(item.href));
+  const itemIsActive = item.href !== '#' && (isActive || location.pathname === item.href ||
+    (item.href !== '/' && location.pathname.startsWith(item.href)));
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent) => {
+    // '#' items are in-place toggles (e.g. expand a section), not links.
+    if (item.href === '#') event.preventDefault();
     onClick?.();
   };
 

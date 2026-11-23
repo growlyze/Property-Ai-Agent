@@ -16,6 +16,7 @@ import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import { handleOAuthLogin } from '../services/oauthService';
 import authService from '../services/authService';
+import { canAccess, homePathFor } from '../auth/roles';
 
 interface LocationState {
   from?: {
@@ -36,7 +37,10 @@ const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   // Get the page they were trying to access and any messages
-  const from = (location.state as LocationState)?.from?.pathname || '/';
+  const from = (location.state as LocationState)?.from?.pathname;
+  // Land on the page the user was heading to if their role may open it, otherwise on their role home.
+  const destinationFor = (role?: string) =>
+    from && from !== '/login' && canAccess(role, from) ? from : homePathFor(role);
   const message = (location.state as LocationState)?.message;
 
   useEffect(() => {
@@ -62,7 +66,7 @@ const LoginScreen: React.FC = () => {
     try {
       const result = await authService.login(email, password);
       login(result.data.user, result.data.token, result.data.refreshToken);
-      navigate(from, { replace: true });
+      navigate(destinationFor(result.data.user?.role), { replace: true });
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid email or password. Please try again.');
@@ -81,7 +85,7 @@ const LoginScreen: React.FC = () => {
       
       if (authResult && authResult.user && authResult.token) {
         login(authResult.user, authResult.token);
-        navigate(from, { replace: true });
+        navigate(destinationFor(authResult.user?.role), { replace: true });
       } else {
         setError('Google login failed. Please try again or use email login.');
       }

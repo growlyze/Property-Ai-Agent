@@ -17,6 +17,8 @@ import dashboardOverviewRoutes from './dashboardOverview.routes';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { getFinancialReports } from '../controllers/financialReport.controller';
 import tenantAnalyticsRoutes from './tenantAnalyticsRoutes';
+import tenantPortalRoutes from './tenantPortal.routes';
+import workOrderRoutes from './workOrder.routes';
 import leaseRoutes from './leaseRoutes';
 import maintenanceRoutes from './maintenanceRoutes';
 import transactionRoutes from './transactionRoutes';
@@ -102,6 +104,7 @@ router.use(`${API_PREFIX}/users`, usersRoutes); // User management routes with i
 router.use(`${API_PREFIX}/tenants`, tenantRoutes);
 router.use(`${API_PREFIX}/dashboard`, dashboardOverviewRoutes); // home dashboard overview
 router.get(`${API_PREFIX}/financial-reports`, authMiddleware.protect, getFinancialReports);
+router.use(`${API_PREFIX}/tenant/me`, tenantPortalRoutes); // tenant portal (own lease/summary); before /tenant analytics
 router.use(`${API_PREFIX}/tenant`, tenantAnalyticsRoutes); // NEW: Tenant sentiment analytics routes
 router.use(`${API_PREFIX}/leases`, leaseRoutes);
 router.use(`${API_PREFIX}/maintenance`, maintenanceRoutes);
@@ -119,6 +122,7 @@ router.use(`${API_PREFIX}/vendor-performance`, vendorPerformanceRoutes);
 router.use(`${API_PREFIX}/background-checks`, backgroundCheckRoutes);
 router.use(`${API_PREFIX}/audit`, auditRoutes);
 router.use(`${API_PREFIX}/vendor-payments`, vendorPaymentRoutes);
+router.use(`${API_PREFIX}/work-orders`, workOrderRoutes); // role-scoped work orders + quotes
 // Stripe billing router (customers / payment-intents / subscriptions / refunds /
 // invoices / webhooks …). Previously imported (line 31) but never mounted, so TS
 // elided the import and the whole router never loaded. Mounting it here both

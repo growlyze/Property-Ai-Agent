@@ -19,6 +19,10 @@ export interface NavigationItem {
   children?: NavigationItem[];
   description?: string;
   isExternal?: boolean;
+  /** Sidebar group. Items without one fall back to the legacy id-based grouping. */
+  section?: 'main' | 'management' | 'admin';
+  /** Show in the mobile bottom tab bar. Falls back to the legacy id list when unset. */
+  mobileTab?: boolean;
 }
 
 export interface NavigationState {

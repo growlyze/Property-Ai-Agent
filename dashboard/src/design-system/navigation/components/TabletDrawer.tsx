@@ -105,16 +105,20 @@ export const TabletDrawer: React.FC<TabletDrawerProps> = ({ className }) => {
   });
 
   // Group navigation items by category
-  const primaryItems = items.filter(item => 
-    ['dashboard', 'properties', 'maintenance', 'communications', 'analytics'].includes(item.id)
+  const primaryItems = items.filter(item =>
+    item.section
+      ? item.section === 'main'
+      : ['dashboard', 'properties', 'maintenance', 'communications', 'analytics'].includes(item.id)
   );
-  
-  const secondaryItems = items.filter(item => 
-    ['tenant-management', 'financial', 'reports', 'settings'].includes(item.id)
+
+  const secondaryItems = items.filter(item =>
+    item.section
+      ? item.section === 'management'
+      : ['tenant-management', 'financial', 'reports', 'settings'].includes(item.id)
   );
-  
-  const adminItems = items.filter(item => 
-    item.role === 'admin'
+
+  const adminItems = items.filter(item =>
+    item.section ? item.section === 'admin' : item.role === 'admin'
   );
 
   const handleItemClick = () => {

@@ -22,8 +22,17 @@ class AuthService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'API endpoint not found');
+      // Show the server's message (e.g. 401 bad credentials, 403 deactivated account).
+      const errorData = await response.json().catch(() => ({} as any));
+      const message =
+        errorData?.message ||
+        errorData?.error ||
+        (response.status === 403
+          ? 'Your account is not allowed to sign in. Please contact your property manager.'
+          : response.status === 401
+            ? 'Invalid email or password. Please try again.'
+            : `Sign-in failed (HTTP ${response.status}). Please try again.`);
+      throw new Error(message);
     }
 
     return response.json();

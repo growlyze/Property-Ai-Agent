@@ -46,6 +46,7 @@ import {
  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
+import { asArray } from '../utils/safeData';
 
 interface TabPanelProps {
  children?: React.ReactNode;
@@ -173,17 +174,19 @@ const CommunityEngagementPortal: React.FC = () => {
  const loadData = async () => {
   try {
    const [announcementsData, eventsData, forumData, servicesData, reservationsData] = await Promise.all([
-    apiService.get('/api/community/announcements'),
-    apiService.get('/api/community/events'),
-    apiService.get('/api/community/forum'),
-    apiService.get('/api/community/services'),
-    apiService.get('/api/community/reservations'),
+    apiService.get('/community/announcements'),
+    apiService.get('/community/events'),
+    apiService.get('/community/forum'),
+    apiService.get('/community/services'),
+    apiService.get('/community/reservations'),
    ]);
-   setAnnouncements(announcementsData.data);
-   setEvents(eventsData.data);
-   setForumPosts(forumData.data);
-   setServices(servicesData.data);
-   setReservations(reservationsData.data);
+   // apiService never throws: failed calls resolve to { error }. The community
+   // module has no backend routes yet, so fall back to empty lists.
+   setAnnouncements(asArray<Announcement>(announcementsData?.data));
+   setEvents(asArray<CommunityEvent>(eventsData?.data));
+   setForumPosts(asArray<ForumPost>(forumData?.data));
+   setServices(asArray<ServiceRecommendation>(servicesData?.data));
+   setReservations(asArray<AmenityReservation>(reservationsData?.data));
   } catch (error) {
    console.error('Error loading community data:', error);
   }
@@ -191,7 +194,7 @@ const CommunityEngagementPortal: React.FC = () => {
 
  const handleCreateAnnouncement = async () => {
   try {
-   await apiService.post('/api/community/announcements', newAnnouncement);
+   await apiService.post('/community/announcements', newAnnouncement);
    setShowAnnouncementForm(false);
    setNewAnnouncement({ title: '', content: '', priority: 'medium', expiresAt: '' });
    loadData();
@@ -202,7 +205,7 @@ const CommunityEngagementPortal: React.FC = () => {
 
  const handleCreateEvent = async () => {
   try {
-   await apiService.post('/api/community/events', newEvent);
+   await apiService.post('/community/events', newEvent);
    setShowEventForm(false);
    setNewEvent({
     title: '',
@@ -221,7 +224,7 @@ const CommunityEngagementPortal: React.FC = () => {
 
  const handleCreateForumPost = async () => {
   try {
-   await apiService.post('/api/community/forum', newForumPost);
+   await apiService.post('/community/forum', newForumPost);
    setShowForumForm(false);
    setNewForumPost({ title: '', content: '', category: '' });
    loadData();
@@ -232,7 +235,7 @@ const CommunityEngagementPortal: React.FC = () => {
 
  const handleCreateReservation = async () => {
   try {
-   await apiService.post('/api/community/reservations', newReservation);
+   await apiService.post('/community/reservations', newReservation);
    setShowReservationForm(false);
    setNewReservation({ amenityName: '', date: '', time: '', duration: 1 });
    loadData();
@@ -322,6 +325,9 @@ const CommunityEngagementPortal: React.FC = () => {
     </Box>
 
     <Grid container spacing={2}>
+     {announcements.length === 0 && (
+      <Typography color="text.secondary" sx={{ p: 2 }}>No announcements yet.</Typography>
+     )}
      {announcements.map((announcement) => (
       <Grid xs={12} md={6} key={announcement.id}>
        <Card>
@@ -362,6 +368,9 @@ const CommunityEngagementPortal: React.FC = () => {
     </Box>
 
     <Grid container spacing={2}>
+     {events.length === 0 && (
+      <Typography color="text.secondary" sx={{ p: 2 }}>No events yet.</Typography>
+     )}
      {events.map((event) => (
       <Grid xs={12} md={4} key={event.id}>
        <Card>
@@ -413,6 +422,9 @@ const CommunityEngagementPortal: React.FC = () => {
     </Box>
 
     <List>
+     {forumPosts.length === 0 && (
+      <Typography color="text.secondary" sx={{ p: 2 }}>No forum posts yet.</Typography>
+     )}
      {forumPosts.map((post) => (
       <ListItem key={post.id} divider>
        <ListItemAvatar>
@@ -441,6 +453,9 @@ const CommunityEngagementPortal: React.FC = () => {
      Service Recommendations
     </Typography>
     <Grid container spacing={2}>
+     {services.length === 0 && (
+      <Typography color="text.secondary" sx={{ p: 2 }}>No service recommendations yet.</Typography>
+     )}
      {services.map((service) => (
       <Grid xs={12} md={6} key={service.id}>
        <Card>
@@ -494,6 +509,11 @@ const CommunityEngagementPortal: React.FC = () => {
        </TableRow>
       </TableHead>
       <TableBody>
+       {reservations.length === 0 && (
+        <TableRow>
+         <TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No reservations yet.</TableCell>
+        </TableRow>
+       )}
        {reservations.map((reservation) => (
         <TableRow key={reservation.id}>
          <TableCell>{reservation.amenityName}</TableCell>

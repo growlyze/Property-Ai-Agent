@@ -51,12 +51,21 @@ const PaymentApproval: React.FC = () => {
     const fetchPendingPayments = async () => {
       try {
         setLoading(true);
-        const [transactionsRes, vendorPaymentsRes] = await Promise.all([
-          api.get('/api/payments/transactions/pending'),
-          api.get('/api/payments/vendor-payments/pending'),
+        // The api client already has the '/api' base URL. Load both lists independently so
+        // one failing endpoint does not hide the other, and only accept arrays.
+        const [transactionsRes, vendorPaymentsRes] = await Promise.allSettled([
+          api.get('/payments/transactions/pending'),
+          api.get('/payments/vendor-payments/pending'),
         ]);
-        setTransactions(transactionsRes.data);
-        setVendorPayments(vendorPaymentsRes.data);
+        const asArray = <T,>(r: PromiseSettledResult<{ data: unknown }>): T[] | null =>
+          r.status === 'fulfilled' && Array.isArray(r.value.data) ? (r.value.data as T[]) : null;
+        const txs = asArray<Transaction>(transactionsRes);
+        const vps = asArray<VendorPayment>(vendorPaymentsRes);
+        setTransactions(txs ?? []);
+        setVendorPayments(vps ?? []);
+        if (!txs || !vps) {
+          setError(!txs && !vps ? 'Failed to load pending payments' : !txs ? 'Failed to load pending transactions' : 'Failed to load pending vendor payments');
+        }
       } catch (error) {
         console.error('Error fetching pending payments:', error);
         setError('Failed to load pending payments');
@@ -70,7 +79,7 @@ const PaymentApproval: React.FC = () => {
 
   const handleApproveTransaction = async (id: string) => {
     try {
-      await api.post(`/api/payments/transactions/${id}/approve`);
+      await api.post(`/payments/transactions/${id}/approve`);
       setTransactions(transactions.filter((t) => t.id !== id));
     } catch (error) {
       console.error('Error approving transaction:', error);
@@ -80,7 +89,7 @@ const PaymentApproval: React.FC = () => {
 
   const handleRejectTransaction = async (id: string) => {
     try {
-      await api.post(`/api/payments/transactions/${id}/reject`);
+      await api.post(`/payments/transactions/${id}/reject`);
       setTransactions(transactions.filter((t) => t.id !== id));
     } catch (error) {
       console.error('Error rejecting transaction:', error);
@@ -90,7 +99,7 @@ const PaymentApproval: React.FC = () => {
 
   const handleApproveVendorPayment = async (id: string) => {
     try {
-      await api.post(`/api/payments/vendor-payments/${id}/approve`);
+      await api.post(`/payments/vendor-payments/${id}/approve`);
       setVendorPayments(vendorPayments.filter((p) => p.id !== id));
     } catch (error) {
       console.error('Error approving vendor payment:', error);
@@ -100,7 +109,7 @@ const PaymentApproval: React.FC = () => {
 
   const handleRejectVendorPayment = async (id: string) => {
     try {
-      await api.post(`/api/payments/vendor-payments/${id}/reject`);
+      await api.post(`/payments/vendor-payments/${id}/reject`);
       setVendorPayments(vendorPayments.filter((p) => p.id !== id));
     } catch (error) {
       console.error('Error rejecting vendor payment:', error);

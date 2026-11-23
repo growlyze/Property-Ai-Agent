@@ -13,10 +13,35 @@ class MaintenanceService {
    *   dump, which is exactly what this endpoint used to do.
    */
   public async getAllMaintenanceRequests(
-    scope?: Record<string, unknown>
+    scope?: Record<string, unknown>,
+    options: {
+      /** Extra filters, ANDed with `scope` (never replaces it). */
+      filter?: Prisma.MaintenanceRequestWhereInput;
+      skip?: number;
+      take?: number;
+    } = {}
+  ): Promise<{ rows: MaintenanceRequest[]; total: number }> {
+    const and: Prisma.MaintenanceRequestWhereInput[] = [];
+    if (scope) and.push(scope as Prisma.MaintenanceRequestWhereInput);
+    if (options.filter) and.push(options.filter);
+    const where: Prisma.MaintenanceRequestWhereInput = and.length ? { AND: and } : {};
+
+    const [total, rows] = await Promise.all([
+      prisma.maintenanceRequest.count({ where }),
+      this.findMaintenanceRequests(where, options.skip, options.take),
+    ]);
+    return { rows, total };
+  }
+
+  private findMaintenanceRequests(
+    where: Prisma.MaintenanceRequestWhereInput,
+    skip?: number,
+    take?: number
   ): Promise<MaintenanceRequest[]> {
     return prisma.maintenanceRequest.findMany({
-      where: (scope ?? {}) as Prisma.MaintenanceRequestWhereInput,
+      where,
+      orderBy: { createdAt: 'desc' },
+      ...(take !== undefined ? { skip, take } : {}),
       select: {
         id: true,
         title: true,
@@ -40,8 +65,10 @@ class MaintenanceService {
             state: true,
           },
         },
+        // Requester display name only — never select the whole User row.
+        User: { select: { id: true, firstName: true, lastName: true } },
       },
-    }) as unknown as MaintenanceRequest[];
+    }) as unknown as Promise<MaintenanceRequest[]>;
   }
 
   public async createWorkOrderFromRequest(maintenanceRequestId: string): Promise<WorkOrder | null> {

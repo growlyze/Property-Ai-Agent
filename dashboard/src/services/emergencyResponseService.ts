@@ -15,6 +15,53 @@ import {
 
 import api from './api';
 
+/**
+ * The backend serves alerts as EMERGENCY-priority MaintenanceRequest rows
+ * (`{ id, title, status: 'OPEN', priority: 'EMERGENCY', createdAt, Rental, User }`).
+ * Map them into the EmergencyAlert shape the UI expects, with safe defaults.
+ */
+const PRIORITY_MAP: Record<string, EmergencyAlert['priority']> = {
+  EMERGENCY: 'critical', CRITICAL: 'critical', URGENT: 'critical',
+  HIGH: 'high', MEDIUM: 'medium', LOW: 'low',
+};
+const STATUS_MAP: Record<string, EmergencyAlert['status']> = {
+  OPEN: 'active', ACTIVE: 'active', PENDING: 'active',
+  ACKNOWLEDGED: 'acknowledged', ON_HOLD: 'acknowledged', ASSIGNED: 'acknowledged',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'resolved', CANCELLED: 'resolved', RESOLVED: 'resolved', CLOSED: 'resolved',
+};
+
+export function normalizeAlert(raw: any): EmergencyAlert {
+  const r = raw && typeof raw === 'object' ? raw : {};
+  const rental = r.Rental || r.rental || {};
+  const user = r.User || r.user || r.reportedBy || {};
+  const loc = r.location && typeof r.location === 'object' ? r.location : {};
+  const userName = user.name || [user.firstName, user.lastName].filter(Boolean).join(' ');
+  return {
+    ...r,
+    id: String(r.id ?? ''),
+    type: r.type || 'maintenance',
+    title: r.title || 'Untitled alert',
+    description: r.description || '',
+    priority: PRIORITY_MAP[String(r.priority ?? '').toUpperCase()] || 'medium',
+    status: STATUS_MAP[String(r.status ?? '').toUpperCase()] || 'active',
+    timestamp: new Date(r.timestamp || r.createdAt || Date.now()),
+    location: {
+      propertyId: loc.propertyId || rental.id || r.rentalId || '',
+      propertyName: loc.propertyName || rental.title || 'Unknown property',
+      unitNumber: loc.unitNumber ?? rental.unitNumber ?? undefined,
+      address: loc.address || [rental.address, rental.city].filter(Boolean).join(', '),
+    },
+    reportedBy: {
+      id: user.id || r.requestedById || '',
+      name: userName || 'Unknown',
+      role: String(user.role || '').toUpperCase() === 'TENANT' ? 'tenant' : 'staff',
+    },
+    updates: Array.isArray(r.updates) ? r.updates : [],
+  } as EmergencyAlert;
+}
+
+
 export interface EmergencyAlert {
   id: string;
   type: 'fire' | 'medical' | 'security' | 'weather' | 'evacuation' | 'other';
@@ -448,12 +495,23 @@ class EmergencyResponseService {
     }
 
     const response = await api.get(`/emergency-response/alerts?${params.toString()}`);
-    return response.data;
+    const rows: any[] = Array.isArray(response.data)
+      ? response.data
+      : Array.isArray(response.data?.data) ? response.data.data : [];
+    let alerts = rows.map(normalizeAlert);
+    // The backend does not filter by status yet, so apply it client-side.
+    const statuses = filters?.status
+      ? (Array.isArray(filters.status) ? filters.status : String(filters.status).split(','))
+      : null;
+    if (statuses && statuses.length) {
+      alerts = alerts.filter(a => statuses.includes(a.status));
+    }
+    return alerts;
   }
 
   async getAlert(alertId: string): Promise<EmergencyAlert> {
     const response = await api.get(`/emergency-response/alerts/${alertId}`);
-    return response.data;
+    return normalizeAlert(response.data);
   }
 
   async updateAlertStatus(alertId: string, status: EmergencyAlert['status'], message?: string): Promise<EmergencyAlert> {

@@ -171,6 +171,8 @@ export interface Unit {
 export interface Tenant {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   leaseStart: string;
@@ -179,6 +181,8 @@ export interface Tenant {
   createdAt: string;
   updatedAt: string;
   unitId?: string;
+  rentAmount?: number | null;
+  property?: { title: string; address: string } | null;
 }
 
 export interface Lease {
@@ -826,7 +830,77 @@ export interface WidgetConfig {
   settings: Record<string, any>;
 }
 
+/**
+ * Read a list response defensively: accepts a bare array or a `{ data: [] }`
+ * envelope, and never hands a non-array (e.g. an HTML fallback page) to a
+ * component that calls `.map`/`.filter` on it.
+ */
+const toList = <T,>(body: unknown): T[] => {
+  if (Array.isArray(body)) return body as T[];
+  const inner = (body as { data?: unknown } | null)?.data;
+  return Array.isArray(inner) ? (inner as T[]) : [];
+};
+
+/** Paged list `{ data, total }` from any response body (see toList). */
+const toPage = <T,>(body: unknown): { data: T[]; total: number } => {
+  const data = toList<T>(body);
+  const total = Number((body as { total?: unknown } | null)?.total);
+  return { data, total: Number.isFinite(total) ? total : data.length };
+};
+
+/** True for "this endpoint is not implemented on the backend" (404). */
+const isMissingEndpoint = (err: unknown): boolean =>
+  (err as { response?: { status?: number } })?.response?.status === 404;
+
 // API Service functions
+// ---------------------------------------------------------------------------
+// Response normalisers for list endpoints. The backend is not uniform (bare
+// arrays, `{data}`, `{status, data, meta}`), so list functions coerce every
+// body into the declared `{data, total}` shape here, once, instead of pages
+// guarding each `.map`. Anything unrecognised becomes an empty list.
+// ---------------------------------------------------------------------------
+type ListBody<T> = T[] | { data?: unknown; total?: unknown; meta?: { total?: unknown }; [key: string]: unknown } | null | undefined;
+
+function toPagedList<T>(body: ListBody<T>, legacyKey?: string): { data: T[]; total: number } {
+  if (Array.isArray(body)) return { data: body, total: body.length };
+  if (!body || typeof body !== 'object') return { data: [], total: 0 };
+  const raw = Array.isArray(body.data)
+    ? body.data
+    : legacyKey && Array.isArray(body[legacyKey])
+      ? (body[legacyKey] as unknown[])
+      : [];
+  const total = Number(body.total ?? body.meta?.total);
+  return { data: raw as T[], total: Number.isFinite(total) ? total : raw.length };
+}
+
+/** True when the endpoint is simply not implemented on this backend. */
+function isNotFound(error: unknown): boolean {
+  return (error as { response?: { status?: number } })?.response?.status === 404;
+}
+
+const lower = (v: unknown) => (typeof v === 'string' ? v.toLowerCase() : v);
+
+/** Backend MaintenanceRequest row (Prisma enums, relations) → dashboard shape. */
+function toDashboardMaintenanceRequest(row: any): MaintenanceRequest {
+  const rental = row?.Rental;
+  const user = row?.User;
+  return {
+    ...row,
+    tenantId: row?.tenantId ?? row?.requestedById,
+    unitId: row?.unitId ?? row?.rentalId,
+    propertyId: row?.propertyId ?? row?.rentalId,
+    priority: lower(row?.priority),
+    status: lower(row?.status),
+    submittedAt: row?.submittedAt ?? row?.createdAt,
+    tenantName: row?.tenantName ?? (user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : undefined),
+    unitAddress:
+      row?.unitAddress ??
+      (rental
+        ? [rental.address, rental.unitNumber ? `Unit ${rental.unitNumber}` : null, rental.city].filter(Boolean).join(', ')
+        : undefined),
+  } as MaintenanceRequest;
+}
+
 export const dashboardService = {
   // Fetch vacant units summary (top 5 or all)
   getVacantUnits: async (): Promise<VacantUnit[]> => {
@@ -849,8 +923,14 @@ export const dashboardService = {
 
     const queryString = params.toString();
     const url = `/payments/overdue${queryString ? `?${queryString}` : ''}`;
-    const response = await api.get<OverduePayment[]>(url);
-    return response.data;
+    try {
+      const response = await api.get<unknown>(url);
+      return toList<OverduePayment>(response.data);
+    } catch (err) {
+      // The backend has no /payments/overdue endpoint yet: show "no overdue payments".
+      if (isMissingEndpoint(err)) return [];
+      throw err;
+    }
   },
 
   // Fetch financial reports
@@ -862,8 +942,22 @@ export const dashboardService = {
 
     const queryString = queryParams.toString();
     const url = `/financial-reports${queryString ? `?${queryString}` : ''}`;
-    const response = await api.get<FinancialReport[]>(url);
-    return response.data;
+    try {
+      const response = await api.get<FinancialReport[] | { data?: FinancialReport[] }>(url);
+      // Keep only well-formed reports so the page can index into them safely.
+      return toPagedList<FinancialReport>(response.data as ListBody<FinancialReport>).data
+        .filter((r) => r && typeof r === 'object')
+        .map((r) => ({
+          ...r,
+          paymentTrends: Array.isArray(r.paymentTrends) ? r.paymentTrends : [],
+          propertyBreakdown: Array.isArray(r.propertyBreakdown) ? r.propertyBreakdown : [],
+        }));
+    } catch (error) {
+      // No /api/financial-reports endpoint exists on the backend yet: show the
+      // page's empty state rather than an error.
+      if (isNotFound(error)) return [];
+      throw error;
+    }
   },
 
   // Export reports
@@ -889,8 +983,9 @@ export const dashboardService = {
     if (search) {
       params.append('search', search);
     }
-    const response = await api.get<{data: Property[], total: number, page: number}>(`/properties?${params.toString()}`);
-    return response.data;
+    // Backend answers `{status, data, meta: {total, page}}`.
+    const response = await api.get<ListBody<Property>>(`/properties?${params.toString()}`);
+    return { ...toPagedList<Property>(response.data), page };
   },
 
   getProperty: async (id: string): Promise<Property> => {
@@ -1004,8 +1099,8 @@ export const dashboardService = {
     if (search) {
       params.append('search', search);
     }
-    const response = await api.get<{data: Lease[], total: number}>(`/leases?${params.toString()}`);
-    return response.data;
+    const response = await api.get<ListBody<Lease>>(`/leases?${params.toString()}`);
+    return toPagedList<Lease>(response.data, 'leases');
   },
 
   createLease: async (lease: Omit<Lease, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lease> => {
@@ -1069,22 +1164,23 @@ export const dashboardService = {
     if (priority) {
       params.append('priority', priority);
     }
-    const response = await api.get<{data: MaintenanceRequest[], total: number}>(`/maintenance-requests?${params.toString()}`);
-    return response.data;
+    const response = await api.get<ListBody<MaintenanceRequest>>(`/maintenance?${params.toString()}`);
+    const list = toPagedList<MaintenanceRequest>(response.data, 'requests');
+    return { ...list, data: list.data.map(toDashboardMaintenanceRequest) };
   },
 
   createMaintenanceRequest: async (maintenanceRequest: Omit<MaintenanceRequest, 'id' | 'submittedAt' | 'updatedAt'>): Promise<MaintenanceRequest> => {
-    const response = await api.post<MaintenanceRequest>('/maintenance-requests', maintenanceRequest);
+    const response = await api.post<MaintenanceRequest>('/maintenance', maintenanceRequest);
     return response.data;
   },
 
   updateMaintenanceRequest: async (id: string, maintenanceRequest: Partial<Omit<MaintenanceRequest, 'id' | 'submittedAt' | 'updatedAt'>>): Promise<MaintenanceRequest> => {
-    const response = await api.put<MaintenanceRequest>(`/maintenance-requests/${id}`, maintenanceRequest);
+    const response = await api.put<MaintenanceRequest>(`/maintenance/${id}`, maintenanceRequest);
     return response.data;
   },
 
   deleteMaintenanceRequest: async (id: string): Promise<void> => {
-    await api.delete(`/maintenance-requests/${id}`);
+    await api.delete(`/maintenance/${id}`);
   },
 
   // Work Order CRUD operations
@@ -1201,8 +1297,25 @@ export const dashboardService = {
     if (filters?.sharedWith) {
       params.append('sharedWith', filters.sharedWith);
     }
-    const response = await api.get<{data: Document[], total: number}>(`/documents?${params.toString()}`);
-    return response.data;
+    try {
+      const response = await api.get<ListBody<Document>>(`/documents?${params.toString()}`);
+      const list = toPagedList<Document>(response.data, 'documents');
+      return {
+        ...list,
+        data: list.data.map((d) => ({
+          ...d,
+          tags: Array.isArray(d.tags) ? d.tags : [],
+          sharedWith: Array.isArray(d.sharedWith) ? d.sharedWith : [],
+          fileType: d.fileType ?? (d as any).mimeType ?? (d as any).type ?? '',
+          fileSize: d.fileSize ?? (d as any).size ?? 0,
+        })),
+      };
+    } catch (error) {
+      // The backend has no GET /api/documents list endpoint yet (only
+      // POST /documents/generate-lease): show an empty list, not an error.
+      if (isNotFound(error)) return { data: [], total: 0 };
+      throw error;
+    }
   },
 
   uploadDocument: async (data: DocumentUploadData): Promise<Document> => {
@@ -1493,8 +1606,14 @@ export const dashboardService = {
     if (filters?.scheduledTo) {
       params.append('scheduledTo', filters.scheduledTo);
     }
-    const response = await api.get<{data: Notification[], total: number}>(`/notifications?${params.toString()}`);
-    return response.data;
+    try {
+      const response = await api.get<unknown>(`/notifications?${params.toString()}`);
+      return toPage<Notification>(response.data);
+    } catch (err) {
+      // The backend has no GET /notifications list endpoint yet: show an empty list.
+      if (isMissingEndpoint(err)) return { data: [], total: 0 };
+      throw err;
+    }
   },
 
   getNotification: async (id: string): Promise<Notification> => {
@@ -1528,8 +1647,14 @@ export const dashboardService = {
     if (status) {
       params.append('status', status);
     }
-    const response = await api.get<{data: Announcement[], total: number}>(`/announcements?${params.toString()}`);
-    return response.data;
+    try {
+      const response = await api.get<unknown>(`/announcements?${params.toString()}`);
+      return toPage<Announcement>(response.data);
+    } catch (err) {
+      // The backend has no /announcements endpoint yet: show an empty list.
+      if (isMissingEndpoint(err)) return { data: [], total: 0 };
+      throw err;
+    }
   },
 
   getAnnouncement: async (id: string): Promise<Announcement> => {
@@ -1570,8 +1695,14 @@ export const dashboardService = {
     if (type) {
       params.append('type', type);
     }
-    const response = await api.get<{data: NotificationTemplate[], total: number}>(`/notification-templates?${params.toString()}`);
-    return response.data;
+    try {
+      const response = await api.get<unknown>(`/notification-templates?${params.toString()}`);
+      return toPage<NotificationTemplate>(response.data);
+    } catch (err) {
+      // The backend has no /notification-templates endpoint yet: show an empty list.
+      if (isMissingEndpoint(err)) return { data: [], total: 0 };
+      throw err;
+    }
   },
 
   getNotificationTemplate: async (id: string): Promise<NotificationTemplate> => {

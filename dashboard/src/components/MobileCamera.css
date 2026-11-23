@@ -214,7 +214,7 @@
 
 /* No Camera State */
 .no-camera {
-  background-color: #f5f5f5;
+  background-color: #f5f0e6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -708,7 +708,7 @@
 }
 
 .ai-analysis-content {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fbf8f2 100%);
   border-radius: 20px;
   padding: 24px;
   max-width: 90vw;
@@ -766,7 +766,7 @@
 }
 
 .ai-analysis-close:hover {
-  background-color: #f8f9fa;
+  background-color: #fbf8f2;
   color: #495057;
 }
 
@@ -831,7 +831,7 @@
 .ai-recommendations {
   margin-bottom: 20px;
   padding: 16px;
-  background: #f8f9fa;
+  background: #fbf8f2;
   border-radius: 12px;
   border: 1px solid #e9ecef;
 }
@@ -1075,7 +1075,7 @@
 }
 
 .ai-analysis-button.secondary {
-  background: #f8f9fa;
+  background: #fbf8f2;
   color: #6c757d;
   border: 1px solid #dee2e6;
   min-width: 120px;

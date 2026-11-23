@@ -154,7 +154,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
           sx={{
            height: 8,
            borderRadius: 1,
-           backgroundColor: '#f5f5f5',
+           backgroundColor: '#f5f0e6',
            '& .MuiLinearProgress-bar': {
             backgroundColor: getSeverityColor(stat.severity),
            },
@@ -187,7 +187,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
           sx={{
            height: 8,
            borderRadius: 1,
-           backgroundColor: '#f5f5f5',
+           backgroundColor: '#f5f0e6',
            '& .MuiLinearProgress-bar': {
             backgroundColor: getPriorityColor(stat.priority),
            },

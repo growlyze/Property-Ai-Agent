@@ -58,8 +58,8 @@ const LeaseList: React.FC = () => {
     queryKey: ['leases', page, searchTerm],
     queryFn: () => dashboardService.getLeases(page, limit, searchTerm),
     select: (response) => ({
-      leases: response.data,
-      total: response.total,
+      leases: Array.isArray(response?.data) ? response.data : [],
+      total: response?.total ?? 0,
     }),
   });
 
@@ -196,13 +196,13 @@ const LeaseList: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data?.leases.map((lease: Lease) => (
+            {(data?.leases ?? []).map((lease: Lease) => (
               <TableRow key={lease.id}>
                 <TableCell>{lease.tenantName || 'N/A'}</TableCell>
                 <TableCell>{lease.unitAddress || 'N/A'}</TableCell>
                 <TableCell>{new Date(lease.startDate).toLocaleDateString()}</TableCell>
                 <TableCell>{new Date(lease.endDate).toLocaleDateString()}</TableCell>
-                <TableCell>${lease.rentAmount.toLocaleString()}</TableCell>
+                <TableCell>${Number(lease.rentAmount ?? 0).toLocaleString()}</TableCell>
                 <TableCell>{lease.status}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpenForm(true, lease)} aria-label="Edit lease">
@@ -220,6 +220,14 @@ const LeaseList: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+
+            {(data?.leases ?? []).length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  {searchTerm ? 'No leases match your search.' : 'No leases yet.'}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

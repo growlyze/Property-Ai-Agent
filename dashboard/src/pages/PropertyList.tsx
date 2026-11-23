@@ -54,7 +54,7 @@ const PropertyList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const limit = 10;
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.max(1, Math.ceil((total || 0) / limit));
 
   const [openForm, setOpenForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -67,9 +67,11 @@ const PropertyList: React.FC = () => {
     setError(null);
     try {
       const response = await dashboardService.getProperties(page, limit, searchTerm);
-      setProperties(response.data);
-      setTotal(response.total);
+      setProperties(Array.isArray(response?.data) ? response.data : []);
+      setTotal(response?.total ?? 0);
     } catch (err) {
+      setProperties([]);
+      setTotal(0);
       setError('Failed to fetch properties');
     } finally {
       setLoading(false);
@@ -184,6 +186,13 @@ const PropertyList: React.FC = () => {
                 <TableCell>{new Date(property.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
+{properties.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  {loading ? 'Loading…' : searchTerm ? 'No properties match your search.' : 'No properties yet.'}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

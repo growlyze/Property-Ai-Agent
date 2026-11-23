@@ -12,23 +12,36 @@ import StatusDetailsPanel from '../components/document-verification/StatusDetail
 import RequiredActionsPanel from '../components/document-verification/RequiredActionsPanel';
 import VerificationStepper from '../components/document-verification/VerificationStepper';
 import LoadingStateIndicator from '../design-system/components/ai/LoadingStateIndicator';
+import { useAuth } from '../contexts/AuthContext';
 
 const DocumentVerificationStatusScreen: React.FC = () => {
+ // Verification records are per tenant: use the logged-in user's id.
+ const { user } = useAuth();
+ const tenantId = user?.id;
  const [verificationState, setVerificationState] = useState<VerificationState | null>(null);
  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
 
  useEffect(() => {
+  if (!tenantId) {
+   // No user id (yet): don't call the API with `undefined`.
+   setVerificationState(null);
+   setVerificationSteps([]);
+   setLoading(false);
+   return;
+  }
+
   const loadVerificationData = async () => {
    try {
     setLoading(true);
+    setError(null);
     const [state, steps] = await Promise.all([
-     getVerificationState(),
-     getVerificationSteps()
+     getVerificationState(tenantId),
+     getVerificationSteps(tenantId)
     ]);
     setVerificationState(state);
-    setVerificationSteps(steps);
+    setVerificationSteps(Array.isArray(steps) ? steps : []);
    } catch (err) {
     setError('Failed to load verification status. Please try again.');
     console.error('Error loading verification data:', err);
@@ -38,7 +51,7 @@ const DocumentVerificationStatusScreen: React.FC = () => {
   };
 
   loadVerificationData();
- }, []);
+ }, [tenantId]);
 
  const handleActionUpdate = (actionId: string, completed: boolean) => {
   if (!verificationState) return;
@@ -81,7 +94,7 @@ const DocumentVerificationStatusScreen: React.FC = () => {
   return (
    <Container maxWidth="lg" sx={{ py: 4 }}>
     <Alert severity="warning">
-     No verification data available.
+     No verification data yet.
     </Alert>
    </Container>
   );
@@ -117,6 +130,7 @@ const DocumentVerificationStatusScreen: React.FC = () => {
     <Grid xs={12}>
      <RequiredActionsPanel
       actions={verificationState.requiredActions}
+      tenantId={tenantId}
       onActionUpdate={handleActionUpdate}
      />
     </Grid>

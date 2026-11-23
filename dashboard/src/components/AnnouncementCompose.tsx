@@ -480,6 +480,13 @@ const AnnouncementCompose: React.FC<AnnouncementComposeProps> = ({
                   </Paper>
                 </Grid>
               ))}
+              {templates.length === 0 && (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    No announcement templates available.
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </DialogContent>
           <DialogActions>

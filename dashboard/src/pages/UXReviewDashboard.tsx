@@ -37,6 +37,8 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/apiService';
+import { useAuth } from '../contexts/AuthContext';
+import { asArray, num } from '../utils/safeData';
 import { UXReviewCard } from '../components/ux-review/UXReviewCard';
 import { UXReviewStats } from '../components/ux-review/UXReviewStats';
 import { UXReviewFilters } from '../components/ux-review/UXReviewFilters';
@@ -81,7 +83,77 @@ interface UXReviewStatsData {
  typeStats: Array<{ reviewType: string; _count: { _all: number } }>;
 }
 
+/** Backend enums (prisma UXReviewStatus / UXReviewPriority / UXComponentType). */
+const API_STATUSES = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'NEEDS_REVISION', 'APPROVED', 'REJECTED'];
+const API_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+const API_COMPONENT_TYPES = ['DASHBOARD', 'PROPERTY_PAGE', 'UNIT_PAGE', 'MAINTENANCE_FLOW', 'LEASING_FLOW', 'ONBOARDING', 'SETTINGS', 'OTHER'];
+
+/** `apiService` resolves to `{ data }` or `{ error }`; turn errors into thrown errors. */
+async function unwrap<T = any>(promise: Promise<{ data?: T; error?: any }>): Promise<T | undefined> {
+ const result = await promise;
+ if (result?.error) throw new Error(result.error.message || 'Request failed');
+ return result?.data;
+}
+
+/** Map a backend UXReview row (`User`, `UXReviewAssignment`, ...) into the UI shape. */
+function normalizeReview(raw: any): UXReview {
+ const r = raw && typeof raw === 'object' ? raw : {};
+ const reviewer = r.reviewer || r.User || {};
+ return {
+  ...r,
+  id: String(r.id ?? ''),
+  title: r.title || 'Untitled review',
+  componentType: r.componentType || 'OTHER',
+  reviewer: {
+   id: reviewer.id || r.reviewerId || '',
+   firstName: reviewer.firstName || '',
+   lastName: reviewer.lastName || '',
+   email: reviewer.email || '',
+  },
+  reviewType: r.reviewType || r.componentType || 'OTHER',
+  severity: r.severity || r.priority || 'MEDIUM',
+  status: r.status || 'PENDING',
+  priority: r.priority || 'MEDIUM',
+  screenshots: Array.isArray(r.screenshots) ? r.screenshots : [],
+  tags: Array.isArray(r.tags) ? r.tags : [],
+  assignments: asArray(r.assignments ?? r.UXReviewAssignment).map((a: any) => ({
+   ...a,
+   assignee: a?.assignee || a?.User || { firstName: '', lastName: '' },
+  })),
+  comments: asArray(r.comments ?? r.UXReviewComment).map((c: any) => ({
+   ...c,
+   author: c?.author || c?.User || { firstName: '', lastName: '' },
+  })),
+  metrics: Array.isArray(r.metrics) ? r.metrics.filter((m: any) => m && m.metricType) : [],
+ } as UXReview;
+}
+
+/** Map backend stats (`total`, `countsByStatus`, ...) into the UI stats shape. */
+function normalizeStats(raw: any): UXReviewStatsData {
+ const r = raw && typeof raw === 'object' ? raw : {};
+ const toStats = (counts: any, key: string) =>
+  Array.isArray(counts)
+   ? counts
+   : Object.entries(counts && typeof counts === 'object' ? counts : {}).map(([k, v]) => ({
+      [key]: k,
+      _count: { _all: num(v) },
+     }));
+ const byStatus = r.countsByStatus && typeof r.countsByStatus === 'object' ? r.countsByStatus : {};
+ const priorityStats = toStats(r.priorityStats ?? r.countsByPriority, 'priority');
+ return {
+  totalReviews: num(r.totalReviews ?? r.total),
+  openReviews: num(r.openReviews ?? num(byStatus.PENDING) + num(byStatus.NEEDS_REVISION)),
+  inProgressReviews: num(r.inProgressReviews ?? byStatus.IN_PROGRESS),
+  resolvedReviews: num(r.resolvedReviews ?? num(byStatus.COMPLETED) + num(byStatus.APPROVED)),
+  // The backend has no separate severity; priority doubles as severity.
+  severityStats: (r.severityStats ?? priorityStats.map((p: any) => ({ severity: p.priority, _count: p._count }))) as any,
+  priorityStats: priorityStats as any,
+  typeStats: toStats(r.typeStats ?? r.countsByComponentType, 'reviewType') as any,
+ };
+}
+
 const UXReviewDashboard: React.FC = () => {
+ const { user } = useAuth();
  const theme = useTheme();
  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
  
@@ -100,26 +172,33 @@ const UXReviewDashboard: React.FC = () => {
  // Fetch UX Review stats
  const { data: stats, isLoading: statsLoading } = useQuery<UXReviewStatsData>({
   queryKey: ['ux-review-stats'],
-  queryFn: () => apiService.get('/ux-review/stats'),
+  // Only ADMIN / PROPERTY_MANAGER may read stats; others get 403 -> no stats panel.
+  queryFn: async () => normalizeStats(await unwrap(apiService.get('/ux-review/stats'))),
+  retry: false,
  });
 
  // Fetch UX Reviews
  const { data: reviews, isLoading: reviewsLoading, refetch } = useQuery<UXReview[]>({
   queryKey: ['ux-reviews', filters],
-  queryFn: () => {
+  queryFn: async () => {
+   // Only forward values the backend enums accept; an unknown enum value
+   // makes Prisma reject the whole query.
    const params = new URLSearchParams();
-   Object.entries(filters).forEach(([key, value]) => {
-    if (value) params.append(key, value);
-   });
-   return apiService.get(`/ux-review?${params.toString()}`);
+   if (API_STATUSES.includes(filters.status)) params.append('status', filters.status);
+   if (API_PRIORITIES.includes(filters.priority)) params.append('priority', filters.priority);
+   if (API_COMPONENT_TYPES.includes(filters.reviewType)) params.append('componentType', filters.reviewType);
+   const qs = params.toString();
+   const body = await unwrap(apiService.get(`/ux-review${qs ? `?${qs}` : ''}`));
+   return asArray(body).map(normalizeReview);
   },
+  retry: false,
  });
 
- // Fetch my assignments
- const { data: myAssignments } = useQuery<UXReview[]>({
-  queryKey: ['ux-review-assignments'],
-  queryFn: () => apiService.get(`/ux-review/assignments/${localStorage.getItem('userId')}`),
- });
+ // "My Assignments" is derived from the assignments embedded in each review
+ // (there is no per-user assignments endpoint), keyed on the logged-in user.
+ const myId = user?.id;
+ const isAssignedToMe = (review: UXReview) =>
+  !!myId && review.assignments.some((a: any) => (a?.assigneeId ?? a?.User?.id) === myId);
 
  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
   setTabValue(newValue);
@@ -192,12 +271,12 @@ const UXReviewDashboard: React.FC = () => {
   }
  };
 
- const filteredReviews = reviews?.filter((review) => {
+ const filteredReviews = (Array.isArray(reviews) ? reviews : []).filter((review) => {
   if (tabValue === 1) {
-   return myAssignments?.some((assignment) => assignment.review.id === review.id);
+   return isAssignedToMe(review);
   }
   return true;
- }) || [];
+ });
 
  if (statsLoading || reviewsLoading) {
   return (

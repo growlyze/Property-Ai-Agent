@@ -33,6 +33,12 @@ api.interceptors.request.use(
 // Add response interceptor to handle auth errors
 api.interceptors.response.use(
   (response) => {
+    // An HTML body means the request never reached the API (e.g. a dev-server or
+    // CDN SPA fallback). Treat it as an error instead of handing pages a string.
+    const contentType = String(response.headers?.['content-type'] || '');
+    if (contentType.includes('text/html') && typeof response.data === 'string') {
+      return Promise.reject(new Error(`Unexpected HTML response from ${response.config?.url ?? 'API'}`));
+    }
     return response;
   },
   (error) => {

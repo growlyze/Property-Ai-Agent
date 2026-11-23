@@ -18,7 +18,7 @@ export class BuildingHealthService {
   static async getBuildingHealth(buildingId?: string): Promise<BuildingHealth> {
     try {
       const params = buildingId ? `?buildingId=${buildingId}` : '';
-      const response = await apiService.get(`/api/building-health${params}`);
+      const response = await apiService.get(`/building-health${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching building health:', error);
@@ -32,7 +32,7 @@ export class BuildingHealthService {
   static async getBuildingSystems(buildingId?: string): Promise<BuildingSystem[]> {
     try {
       const params = buildingId ? `?buildingId=${buildingId}` : '';
-      const response = await apiService.get(`/api/building-health/systems${params}`);
+      const response = await apiService.get(`/building-health/systems${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching building systems:', error);
@@ -52,7 +52,7 @@ export class BuildingHealthService {
       params.append('range', timeRange);
       if (buildingId) params.append('buildingId', buildingId);
 
-      const response = await apiService.get(`/api/building-health/metrics?${params.toString()}`);
+      const response = await apiService.get(`/building-health/metrics?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching health metrics:', error);
@@ -66,7 +66,7 @@ export class BuildingHealthService {
   static async getMaintenanceHotspots(buildingId?: string): Promise<MaintenanceHotspot[]> {
     try {
       const params = buildingId ? `?buildingId=${buildingId}` : '';
-      const response = await apiService.get(`/api/building-health/hotspots${params}`);
+      const response = await apiService.get(`/building-health/hotspots${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching maintenance hotspots:', error);
@@ -86,7 +86,7 @@ export class BuildingHealthService {
       if (severity) params.append('severity', severity);
       if (buildingId) params.append('buildingId', buildingId);
 
-      const response = await apiService.get(`/api/building-health/alerts?${params.toString()}`);
+      const response = await apiService.get(`/building-health/alerts?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching predictive alerts:', error);
@@ -108,7 +108,7 @@ export class BuildingHealthService {
       if (priority) params.append('priority', priority);
       if (buildingId) params.append('buildingId', buildingId);
 
-      const response = await apiService.get(`/api/building-health/recommendations?${params.toString()}`);
+      const response = await apiService.get(`/building-health/recommendations?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching AI recommendations:', error);
@@ -125,7 +125,7 @@ export class BuildingHealthService {
     notes?: string
   ): Promise<void> {
     try {
-      await apiService.put(`/api/building-health/systems/${systemId}/status`, {
+      await apiService.put(`/building-health/systems/${systemId}/status`, {
         status,
         notes
       });
@@ -140,7 +140,7 @@ export class BuildingHealthService {
    */
   static async acknowledgeAlert(alertId: string, notes?: string): Promise<void> {
     try {
-      await apiService.put(`/api/building-health/alerts/${alertId}/acknowledge`, {
+      await apiService.put(`/building-health/alerts/${alertId}/acknowledge`, {
         notes,
         acknowledgedAt: new Date().toISOString()
       });
@@ -162,7 +162,7 @@ export class BuildingHealthService {
       if (systemId) params.append('systemId', systemId);
       if (severity) params.append('severity', severity);
 
-      const response = await apiService.get(`/api/building-health/system-alerts?${params.toString()}`);
+      const response = await apiService.get(`/building-health/system-alerts?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching system alerts:', error);
@@ -182,7 +182,7 @@ export class BuildingHealthService {
       if (systemId) params.append('systemId', systemId);
       if (upcomingOnly) params.append('upcomingOnly', 'true');
 
-      const response = await apiService.get(`/api/building-health/maintenance-schedules?${params.toString()}`);
+      const response = await apiService.get(`/building-health/maintenance-schedules?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching maintenance schedules:', error);
@@ -205,7 +205,7 @@ export class BuildingHealthService {
     }
   ): Promise<MaintenanceSchedule> {
     try {
-      const response = await apiService.post(`/api/building-health/maintenance-schedules`, {
+      const response = await apiService.post(`/building-health/maintenance-schedules`, {
         systemId,
         ...schedule
       });
@@ -248,7 +248,7 @@ export class BuildingHealthService {
         params.append('endDate', dateRange.end);
       }
 
-      const response = await apiService.get(`/api/building-health/performance-summary?${params.toString()}`);
+      const response = await apiService.get(`/building-health/performance-summary?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching building performance summary:', error);
@@ -277,7 +277,7 @@ export class BuildingHealthService {
       params.append('range', timeRange);
       if (buildingId) params.append('buildingId', buildingId);
 
-      const response = await apiService.get(`/api/building-health/energy-consumption?${params.toString()}`);
+      const response = await apiService.get(`/building-health/energy-consumption?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching energy consumption:', error);
@@ -307,7 +307,7 @@ export class BuildingHealthService {
   }> {
     try {
       const params = buildingId ? `?buildingId=${buildingId}` : '';
-      const response = await apiService.get(`/api/building-health/compliance${params}`);
+      const response = await apiService.get(`/building-health/compliance${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching compliance status:', error);
@@ -336,7 +336,7 @@ export class BuildingHealthService {
       if (sensorType) params.append('type', sensorType);
       if (buildingId) params.append('buildingId', buildingId);
 
-      const response = await apiService.get(`/api/building-health/sensor-data?${params.toString()}`);
+      const response = await apiService.get(`/building-health/sensor-data?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching sensor data:', error);

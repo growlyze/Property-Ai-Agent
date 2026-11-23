@@ -49,6 +49,7 @@ import {
  Timeline as TimelineIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
+import { asArray } from '../utils/safeData';
 
 interface Integration {
  id: string;
@@ -138,13 +139,15 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
   setLoading(true);
   try {
    const [integrationsData, logsData, errorsData] = await Promise.all([
-    apiService.get('/api/integrations'),
-    apiService.get('/api/integrations/sync-logs'),
-    apiService.get('/api/integrations/errors'),
+    apiService.get('/integrations'),
+    apiService.get('/integrations/sync-logs'),
+    apiService.get('/integrations/errors'),
    ]);
-   setIntegrations(integrationsData.data);
-   setSyncLogs(logsData.data);
-   setErrorReports(errorsData.data);
+   // apiService resolves failed calls to { error }; the integrations module has
+   // no backend routes yet, so fall back to empty lists.
+   setIntegrations(asArray<Integration>(integrationsData?.data));
+   setSyncLogs(asArray<SyncLog>(logsData?.data));
+   setErrorReports(asArray<ErrorReport>(errorsData?.data));
   } catch (error) {
    console.error('Error loading integration data:', error);
   } finally {
@@ -154,7 +157,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleSyncNow = async (integrationId: string) => {
   try {
-   await apiService.post(`/api/integrations/${integrationId}/sync`);
+   await apiService.post(`/integrations/${integrationId}/sync`);
    loadData();
   } catch (error) {
    console.error('Error triggering sync:', error);
@@ -163,7 +166,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleSyncAll = async () => {
   try {
-   await apiService.post('/api/integrations/sync-all');
+   await apiService.post('/integrations/sync-all');
    loadData();
   } catch (error) {
    console.error('Error triggering all syncs:', error);
@@ -172,7 +175,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleToggleIntegration = async (integrationId: string, enabled: boolean) => {
   try {
-   await apiService.put(`/api/integrations/${integrationId}/toggle`, { enabled });
+   await apiService.put(`/integrations/${integrationId}/toggle`, { enabled });
    loadData();
   } catch (error) {
    console.error('Error toggling integration:', error);
@@ -183,7 +186,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
   if (!selectedIntegration) return;
   
   try {
-   await apiService.put(`/api/integrations/${selectedIntegration}/config`, configForm);
+   await apiService.put(`/integrations/${selectedIntegration}/config`, configForm);
    setShowConfigDialog(false);
    setSelectedIntegration(null);
    loadData();
@@ -194,7 +197,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleResolveError = async (errorId: string) => {
   try {
-   await apiService.put(`/api/integrations/errors/${errorId}/resolve`);
+   await apiService.put(`/integrations/errors/${errorId}/resolve`);
    loadData();
   } catch (error) {
    console.error('Error resolving error:', error);
@@ -310,6 +313,11 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
         </Box>
 
         <Grid container spacing={2}>
+         {integrations.length === 0 && (
+          <Grid xs={12}>
+           <Typography color="text.secondary">No integrations configured yet.</Typography>
+          </Grid>
+         )}
          {integrations.map((integration) => (
           <Grid xs={12} md={6} lg={4} key={integration.id}>
            <Paper sx={{ p: 2 }}>
@@ -384,6 +392,9 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
        </TableRow>
       </TableHead>
       <TableBody>
+       {syncLogs.length === 0 && (
+        <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No sync logs yet.</TableCell></TableRow>
+       )}
        {syncLogs.map((log) => (
         <TableRow key={log.id}>
          <TableCell>{log.integrationName}</TableCell>
@@ -398,7 +409,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
          <TableCell>{formatDuration(log.duration)}</TableCell>
          <TableCell>{formatDate(log.timestamp)}</TableCell>
          <TableCell>
-          {log.errors.length > 0 ? (
+          {(log.errors?.length ?? 0) > 0 ? (
            <Tooltip title={log.errors.join(', ')}>
             <Chip 
              label={`${log.errors.length} errors`} 
@@ -429,6 +440,9 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
        </TableRow>
       </TableHead>
       <TableBody>
+       {errorReports.length === 0 && (
+        <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No errors reported.</TableCell></TableRow>
+       )}
        {errorReports.map((error) => (
         <TableRow key={error.id}>
          <TableCell>{error.integrationName}</TableCell>
@@ -467,6 +481,9 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
    <TabPanel value={tabValue} index={3}>
     <List>
+     {integrations.length === 0 && (
+      <ListItem><ListItemText secondary="No integrations configured yet." /></ListItem>
+     )}
      {integrations.map((integration) => (
       <ListItem key={integration.id} divider>
        <ListItemText

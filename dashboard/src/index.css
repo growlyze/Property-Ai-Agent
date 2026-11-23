@@ -54,7 +54,7 @@ body {
     Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F6F7FB;
+  background-color: var(--color-background-default, #f5f0e6);
   font-size: var(--font-size-base);
   line-height: 1.5;
   color: #1a202c;
@@ -98,7 +98,7 @@ a:focus,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #4299e1;
+  outline: 2px solid #f55809;
   outline-offset: 2px;
 }
 
@@ -145,7 +145,7 @@ code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
   font-size: 0.875em;
-  background-color: #f7fafc;
+  background-color: #ece4d4;
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
 }

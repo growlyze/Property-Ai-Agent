@@ -21,6 +21,12 @@ export default defineConfig({
     // Allow Vite to manage HMR (default true). Optionally specify port explicitly:
     // hmr: { host: '127.0.0.1', port: 3002 },
     cors: true,
+    // Mirror nginx.conf in dev: relative `/api` and `/uploads` calls (services/api.ts
+    // uses baseURL '/api') go to the backend instead of falling back to index.html.
+    proxy: {
+      '/api': { target: process.env.VITE_DEV_API_TARGET || 'http://localhost:3001', changeOrigin: true },
+      '/uploads': { target: process.env.VITE_DEV_API_TARGET || 'http://localhost:3001', changeOrigin: true },
+    },
     watch: {
       usePolling: false,
     },

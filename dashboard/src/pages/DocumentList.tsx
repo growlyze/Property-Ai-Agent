@@ -72,8 +72,8 @@ const DocumentList: React.FC = () => {
     queryKey: ['documents', page, searchTerm, typeFilter, entityFilter, dateFrom, dateTo],
     queryFn: () => dashboardService.getDocuments(page, limit, filters),
     select: (response) => ({
-      documents: response.data,
-      total: response.total,
+      documents: Array.isArray(response?.data) ? response.data : [],
+      total: response?.total ?? 0,
     }),
   });
 
@@ -304,7 +304,7 @@ const DocumentList: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data?.documents.map((document: Document) => (
+            {(data?.documents ?? []).map((document: Document) => (
               <TableRow key={document.id}>
                 <TableCell>
                   <Box>
@@ -320,7 +320,7 @@ const DocumentList: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={document.fileType.toUpperCase()}
+                    label={String(document.fileType || 'file').toUpperCase()}
                     color={getFileTypeColor(document.fileType) as any}
                     size="small"
                   />
@@ -339,11 +339,11 @@ const DocumentList: React.FC = () => {
                 <TableCell>{new Date(document.uploadedAt).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {document.tags.slice(0, 2).map((tag, index) => (
+                    {(document.tags ?? []).slice(0, 2).map((tag, index) => (
                       <Chip key={index} label={tag} size="small" variant="outlined" />
                     ))}
-                    {document.tags.length > 2 && (
-                      <Chip label={`+${document.tags.length - 2}`} size="small" variant="outlined" />
+                    {(document.tags ?? []).length > 2 && (
+                      <Chip label={`+${(document.tags ?? []).length - 2}`} size="small" variant="outlined" />
                     )}
                   </Box>
                 </TableCell>
@@ -366,6 +366,14 @@ const DocumentList: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+
+            {(data?.documents ?? []).length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  No documents found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

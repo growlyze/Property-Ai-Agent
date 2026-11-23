@@ -218,7 +218,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
           sx={{
             height: 400,
             width: '100%',
-            bgcolor: '#f5f5f5',
+            bgcolor: '#f5f0e6',
             borderRadius: 1,
             position: 'relative',
             overflow: 'hidden',

@@ -386,7 +386,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
             <React.Fragment key={alert.id}>
               <ListItem
                 sx={{
-                  backgroundColor: alert.status === 'resolved' ? '#f5f5f5' : 'transparent',
+                  backgroundColor: alert.status === 'resolved' ? '#f5f0e6' : 'transparent',
                   opacity: alert.status === 'resolved' ? 0.7 : 1
                 }}
               >

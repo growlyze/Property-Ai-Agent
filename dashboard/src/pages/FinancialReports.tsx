@@ -27,6 +27,7 @@ import {
   Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { queryKeys } from '../config/queryClient';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { dashboardService, FinancialReport, FinancialReportsParams } from '../services/dashboardService';
 
 const FinancialReports: React.FC = () => {
@@ -51,7 +52,7 @@ const FinancialReports: React.FC = () => {
   };
 
   const handleExport = (format: 'csv' | 'pdf') => {
-    if (report && report.length > 0) {
+    if (Array.isArray(report) && report.length > 0) {
       dashboardService.exportReport(format, selectedReport.type || 'monthly', selectedReport)
         .then((blob) => {
           const url = window.URL.createObjectURL(blob);
@@ -123,7 +124,17 @@ const FinancialReports: React.FC = () => {
     );
   }
 
-  const currentReport = report && report.length > 0 ? report[0] : null;
+  const currentReport = Array.isArray(report) && report.length > 0 ? report[0] : null;
+  // One row per period bucket, stacked by payment status, for the trends chart.
+  const trendRows = (() => {
+    const byDate = new Map<string, { date: string; paid: number; pending: number; overdue: number }>();
+    for (const t of currentReport?.paymentTrends ?? []) {
+      const row = byDate.get(t.date) ?? { date: t.date, paid: 0, pending: 0, overdue: 0 };
+      if (t.status === 'paid' || t.status === 'pending' || t.status === 'overdue') row[t.status] += t.amount;
+      byDate.set(t.date, row);
+    }
+    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  })();
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -260,7 +271,7 @@ const FinancialReports: React.FC = () => {
                   </Typography>
                 </Box>
                 <Typography variant="h4" color="info.main">
-                  {currentReport.propertyBreakdown.length}
+                  {(currentReport.propertyBreakdown ?? []).length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Active properties
@@ -269,16 +280,33 @@ const FinancialReports: React.FC = () => {
             </Card>
           </Box>
 
-          {/* Payment Trends Chart Placeholder */}
+          {/* Payment Trends Chart */}
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" gutterBottom>
               Payment Trends
             </Typography>
-            <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant="body1" color="text.secondary">
-                Chart visualization would be implemented here using a charting library like Chart.js or Recharts
-              </Typography>
-            </Box>
+            {trendRows.length === 0 ? (
+              <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', borderRadius: 1 }}>
+                <Typography variant="body1" color="text.secondary">
+                  No payments in this period.
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={trendRows} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#d8cdb9" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} tick={{ fontSize: 12 }} />
+                    <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
+                    <Legend />
+                    <Bar dataKey="paid" name="Paid" stackId="a" fill="#0db664" stroke="#140827" />
+                    <Bar dataKey="pending" name="Pending" stackId="a" fill="#ffb900" stroke="#140827" />
+                    <Bar dataKey="overdue" name="Overdue" stackId="a" fill="#d92d20" stroke="#140827" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            )}
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Showing payment trends over time for the selected period
             </Typography>
@@ -290,7 +318,7 @@ const FinancialReports: React.FC = () => {
               Property Breakdown
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {currentReport.propertyBreakdown.map((property) => (
+              {(currentReport.propertyBreakdown ?? []).map((property) => (
                 <Box
                   key={property.propertyId}
                   sx={{

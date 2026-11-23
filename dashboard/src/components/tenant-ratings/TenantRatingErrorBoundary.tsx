@@ -66,7 +66,7 @@ class TenantRatingErrorBoundary extends Component<Props, State> {
                   overflow: 'auto', 
                   marginTop: 8,
                   padding: 8,
-                  backgroundColor: '#f5f5f5',
+                  backgroundColor: '#f5f0e6',
                   borderRadius: 4
                 }}>
                   {this.state.errorInfo.componentStack}

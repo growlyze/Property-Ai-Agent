@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient, Priority } from '@prisma/client';
+import { MaintenanceStatus, Prisma, PrismaClient, Priority } from '@prisma/client';
 import { maintenanceService } from '../services/maintenance.service';
 import {
   canAccessMaintenanceRequest,
@@ -74,10 +74,47 @@ const OWNERSHIP_INCLUDE = {
 class MaintenanceController {
   async getAllMaintenanceRequests(req: Request, res: Response) {
     try {
-      const maintenanceRequests = await maintenanceService.getAllMaintenanceRequests(
-        maintenanceScopeFilter(req)
+      // GET /api/maintenance → { data, total, page, limit }. Optional search,
+      // status and priority (comma lists, case-insensitive). Paged only when
+      // page/limit is sent (limit capped at 100), otherwise all in-scope rows.
+      const paged = req.query.page !== undefined || req.query.limit !== undefined;
+      const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? '10'), 10) || 10));
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const enumList = <T extends string>(raw: unknown, allowed: readonly T[]): T[] =>
+        typeof raw === 'string'
+          ? (raw.split(',').map((v) => v.trim().toUpperCase().replace(/[s-]+/g, '_')) as T[]).filter((v) =>
+              allowed.includes(v)
+            )
+          : [];
+      const statuses = enumList(req.query.status, Object.values(MaintenanceStatus));
+      const priorities = enumList(req.query.priority, Object.values(Priority));
+
+      const filter: Prisma.MaintenanceRequestWhereInput[] = [];
+      if (statuses.length) filter.push({ status: { in: statuses } });
+      if (priorities.length) filter.push({ priority: { in: priorities } });
+      if (search) {
+        const contains = { contains: search, mode: 'insensitive' as const };
+        filter.push({
+          OR: [
+            { title: contains },
+            { description: contains },
+            { Rental: { title: contains } },
+            { Rental: { address: contains } },
+            { User: { firstName: contains } },
+            { User: { lastName: contains } },
+          ],
+        });
+      }
+
+      const { rows, total } = await maintenanceService.getAllMaintenanceRequests(
+        maintenanceScopeFilter(req),
+        {
+          filter: filter.length ? { AND: filter } : undefined,
+          ...(paged ? { skip: (page - 1) * limit, take: limit } : {}),
+        }
       );
-      res.status(200).json({ data: maintenanceRequests });
+      res.status(200).json({ data: rows, total, page: paged ? page : 1, limit: paged ? limit : total });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

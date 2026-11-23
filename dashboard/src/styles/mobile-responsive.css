@@ -162,7 +162,7 @@
 
 .mobile-nav-item:hover,
 .mobile-nav-item:focus {
-  background-color: #f1f5f9;
+  background-color: #ece4d4;
   color: #0f172a;
 }
 
@@ -256,7 +256,7 @@
 
 .mobile-card-actions {
   padding: 0.75rem 1rem;
-  background-color: #f8fafc;
+  background-color: #fbf8f2;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -349,7 +349,7 @@
 
 .mobile-search .MuiInputBase-root {
   border-radius: 24px;
-  background-color: #f8fafc;
+  background-color: #fbf8f2;
 }
 
 /* Mobile Filters */
@@ -475,7 +475,7 @@
   .mobile-nav-item:hover,
   .mobile-nav-item:focus {
     background-color: #334155;
-    color: #f1f5f9;
+    color: #ece4d4;
   }
 
   .mobile-card {

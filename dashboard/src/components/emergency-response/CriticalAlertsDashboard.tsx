@@ -105,7 +105,7 @@ export const CriticalAlertsDashboard: React.FC<CriticalAlertsDashboardProps> = (
       };
 
       const alertsData = await emergencyResponseService.getAlerts(dashboardFilters, sortOptions);
-      setAlerts(alertsData);
+      setAlerts(Array.isArray(alertsData) ? alertsData : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load alerts');
     } finally {

@@ -13,6 +13,9 @@ import oauthRoutes from './oauthRoutes';
 import mfaRoutes from './mfaRoutes';
 import usersRoutes from './usersRoutes';
 import tenantRoutes from './tenantRoutes';
+import dashboardOverviewRoutes from './dashboardOverview.routes';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { getFinancialReports } from '../controllers/financialReport.controller';
 import tenantAnalyticsRoutes from './tenantAnalyticsRoutes';
 import leaseRoutes from './leaseRoutes';
 import maintenanceRoutes from './maintenanceRoutes';
@@ -97,6 +100,8 @@ router.use(`${API_PREFIX}/auth`, oauthRoutes); // OAuth routes for Google authen
 router.use(`${API_PREFIX}/mfa`, mfaRoutes); // Multi-factor authentication routes
 router.use(`${API_PREFIX}/users`, usersRoutes); // User management routes with inter-service endpoints
 router.use(`${API_PREFIX}/tenants`, tenantRoutes);
+router.use(`${API_PREFIX}/dashboard`, dashboardOverviewRoutes); // home dashboard overview
+router.get(`${API_PREFIX}/financial-reports`, authMiddleware.protect, getFinancialReports);
 router.use(`${API_PREFIX}/tenant`, tenantAnalyticsRoutes); // NEW: Tenant sentiment analytics routes
 router.use(`${API_PREFIX}/leases`, leaseRoutes);
 router.use(`${API_PREFIX}/maintenance`, maintenanceRoutes);

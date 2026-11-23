@@ -114,12 +114,14 @@ export const MLInsightsScreen: React.FC = () => {
   const loadChurnPredictions = async () => {
     try {
       // Fetch real lease data from backend
-      const leasesResponse = await api.get<LeaseLike[] | { leases?: LeaseLike[] }>(
-        ENDPOINTS.LEASES.LIST
-      );
+      // GET /leases answers `{ data, total, page, limit }`; older backends sent a
+      // bare array or `{ leases }`.
+      const leasesResponse = await api.get<
+        LeaseLike[] | { data?: LeaseLike[]; leases?: LeaseLike[] }
+      >(ENDPOINTS.LEASES.LIST);
       const leases: LeaseLike[] = Array.isArray(leasesResponse)
         ? leasesResponse
-        : leasesResponse.leases ?? [];
+        : leasesResponse.data ?? leasesResponse.leases ?? [];
       
       // Filter active leases
       const activeLeases = leases.filter((lease) => 

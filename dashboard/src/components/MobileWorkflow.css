@@ -23,7 +23,7 @@
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+  background-color: #fbf8f2;
 }
 
 .workflow-title {
@@ -302,7 +302,7 @@ select.workflow-field {
   gap: 12px;
   padding: 16px 20px;
   border-top: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+  background-color: #fbf8f2;
 }
 
 .nav-button {
@@ -328,7 +328,7 @@ select.workflow-field {
 }
 
 .nav-button.secondary {
-  background-color: #f5f5f5;
+  background-color: #f5f0e6;
   color: #666;
   border: 1px solid #ddd;
 }
@@ -347,7 +347,7 @@ select.workflow-field {
 .keyboard-hint {
   text-align: center;
   padding: 8px 20px;
-  background-color: #f8f9fa;
+  background-color: #fbf8f2;
   border-top: 1px solid #e0e0e0;
 }
 

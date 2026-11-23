@@ -102,7 +102,7 @@ export const MitigationStrategies: React.FC<MitigationStrategiesProps> = ({
       default:
         return {
           color: '#757575',
-          bgColor: '#f5f5f5',
+          bgColor: '#f5f0e6',
           icon: <InfoIcon />,
           label: 'Low Priority'
         };

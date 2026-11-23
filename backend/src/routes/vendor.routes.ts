@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
 
+router.get('/', authMiddleware.protect, vendorController.listVendors);
 router.get('/:id', authMiddleware.protect, vendorController.getProfile);
 router.put(
   '/:id',

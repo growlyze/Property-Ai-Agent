@@ -59,8 +59,8 @@ const MaintenanceRequestList: React.FC = () => {
     queryKey: ['maintenance-requests', page, searchTerm, statusFilter, priorityFilter],
     queryFn: () => dashboardService.getMaintenanceRequests(page, limit, searchTerm, statusFilter, priorityFilter),
     select: (response) => ({
-      requests: response.data,
-      total: response.total,
+      requests: Array.isArray(response?.data) ? response.data : [],
+      total: response?.total ?? 0,
     }),
   });
 
@@ -130,7 +130,9 @@ const MaintenanceRequestList: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'open':
       case 'pending': return 'warning';
+      case 'in_progress':
       case 'in progress': return 'info';
       case 'completed': return 'success';
       default: return 'default';
@@ -141,7 +143,8 @@ const MaintenanceRequestList: React.FC = () => {
     switch (priority) {
       case 'low': return 'success';
       case 'medium': return 'warning';
-      case 'high': return 'error';
+      case 'high':
+      case 'emergency': return 'error';
       default: return 'default';
     }
   };
@@ -239,7 +242,7 @@ const MaintenanceRequestList: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data?.requests.map((request: MaintenanceRequest) => (
+            {(data?.requests ?? []).map((request: MaintenanceRequest) => (
               <TableRow key={request.id}>
                 <TableCell>{request.tenantName || 'N/A'}</TableCell>
                 <TableCell>{request.unitAddress || 'N/A'}</TableCell>
@@ -271,6 +274,14 @@ const MaintenanceRequestList: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+
+            {(data?.requests ?? []).length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  {searchTerm || statusFilter || priorityFilter ? 'No maintenance requests match your filters.' : 'No maintenance requests yet.'}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

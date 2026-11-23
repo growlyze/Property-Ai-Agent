@@ -206,7 +206,7 @@ const NotificationTemplates: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Box display="flex" gap={0.5} flexWrap="wrap">
-                    {template.variables.map((variable) => (
+                    {(template.variables ?? []).map((variable) => (
                       <Chip
                         key={variable}
                         label={`{${variable}}`}
@@ -241,6 +241,15 @@ const NotificationTemplates: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {!loading && templates.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                    No notification templates yet.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

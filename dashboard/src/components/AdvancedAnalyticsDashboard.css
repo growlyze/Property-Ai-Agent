@@ -187,7 +187,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
+  background: #fbf8f2;
   border-radius: 12px;
   transition: all 0.3s ease;
 }
@@ -232,7 +232,7 @@
 
 .alert-item.critical {
   border-left: 4px solid #f44336;
-  background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), #f8f9fa);
+  background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), #fbf8f2);
 }
 
 .alert-item.critical .alert-icon {
@@ -255,7 +255,7 @@
 }
 
 .property-card {
-  background: #f8f9fa;
+  background: #fbf8f2;
   padding: 1.5rem;
   border-radius: 15px;
   transition: all 0.3s ease;
@@ -369,7 +369,7 @@
 .summary-metrics .metric {
   text-align: center;
   padding: 1rem;
-  background: #f8f9fa;
+  background: #fbf8f2;
   border-radius: 12px;
 }
 
@@ -403,7 +403,7 @@
 }
 
 .alerts-table {
-  background: #f8f9fa;
+  background: #fbf8f2;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -429,7 +429,7 @@
 }
 
 .table-row:hover {
-  background: #f8f9fa;
+  background: #fbf8f2;
 }
 
 .table-row.critical {
@@ -501,7 +501,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
+  background: #fbf8f2;
   border-radius: 12px;
 }
 
@@ -546,7 +546,7 @@
 }
 
 .chart-container {
-  background: #f8f9fa;
+  background: #fbf8f2;
   padding: 2rem;
   border-radius: 15px;
 }
@@ -625,7 +625,7 @@
 }
 
 .trend-summary {
-  background: #f8f9fa;
+  background: #fbf8f2;
   padding: 2rem;
   border-radius: 15px;
 }
@@ -689,7 +689,7 @@
 }
 
 .option-group {
-  background: #f8f9fa;
+  background: #fbf8f2;
   padding: 1.5rem;
   border-radius: 12px;
 }
@@ -749,7 +749,7 @@
 }
 
 .export-options {
-  background: #f8f9fa;
+  background: #fbf8f2;
   padding: 2rem;
   border-radius: 15px;
   text-align: center;
@@ -804,7 +804,7 @@
 
 .report-preview {
   margin-top: 2rem;
-  background: #f8f9fa;
+  background: #fbf8f2;
   padding: 2rem;
   border-radius: 15px;
 }

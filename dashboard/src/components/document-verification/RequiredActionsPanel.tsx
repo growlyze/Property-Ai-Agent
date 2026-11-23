@@ -36,11 +36,14 @@ import { updateRequiredAction } from '../../services/documentVerificationService
 interface RequiredActionsPanelProps {
   actions: RequiredAction[];
   onActionUpdate?: (actionId: string, completed: boolean) => void;
+  /** Tenant whose verification this is; required to persist an action update. */
+  tenantId?: string;
 }
 
 const RequiredActionsPanel: React.FC<RequiredActionsPanelProps> = ({
   actions,
-  onActionUpdate
+  onActionUpdate,
+  tenantId
 }) => {
   const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set());
   const [updatingActions, setUpdatingActions] = useState<Set<string>>(new Set());
@@ -99,7 +102,11 @@ const RequiredActionsPanel: React.FC<RequiredActionsPanelProps> = ({
     setUpdatingActions(prev => new Set(prev).add(actionId));
     
     try {
-      await updateRequiredAction(actionId, completed);
+      // The service signature is (tenantId, actionId, completed); it used to be
+      // called without the tenant id. Skip the API call when no id is known.
+      if (tenantId) {
+        await updateRequiredAction(tenantId, actionId, completed);
+      }
       onActionUpdate?.(actionId, completed);
     } catch (error) {
       console.error('Failed to update action:', error);
@@ -110,7 +117,7 @@ const RequiredActionsPanel: React.FC<RequiredActionsPanelProps> = ({
         return newSet;
       });
     }
-  }, [onActionUpdate]);
+  }, [onActionUpdate, tenantId]);
 
   const formatDueDate = (date: Date) => {
     const now = new Date();

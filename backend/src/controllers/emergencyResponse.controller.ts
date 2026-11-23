@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/database';
+import { maintenanceScopeFilter, canAccessMaintenanceRequest } from '../utils/rentalAccess';
 
 /**
  * `/api/emergency-response` — THIS FILE WAS RENAMED AWAY FROM A MOCK.
@@ -55,26 +56,64 @@ const NOT_IMPLEMENTED = {
     'the operation succeeded.',
 } as const;
 
-/** Emergency alerts are implemented over `MaintenanceRequest` priority rows. */
-export const getAlerts = async (_req: Request, res: Response) => {
+/**
+ * Emergency alerts are implemented over `MaintenanceRequest` priority rows.
+ *
+ * Tenancy: rows are limited with `maintenanceScopeFilter` (admin = all,
+ * landlord/manager = requests on their own rentals, resident = their own
+ * requests). Only display fields are selected: never the requester's password,
+ * tokens or other secrets.
+ */
+const ALERT_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  status: true,
+  priority: true,
+  createdAt: true,
+  updatedAt: true,
+  rentalId: true,
+  requestedById: true,
+  Rental: {
+    select: {
+      id: true,
+      title: true,
+      address: true,
+      city: true,
+      unitNumber: true,
+      managerId: true,
+      ownerId: true,
+      createdById: true,
+    },
+  },
+  User: { select: { id: true, firstName: true, lastName: true, role: true } },
+} as const;
+
+/** Strip the ownership ids used for the access check before responding. */
+function toAlertDto(row: any) {
+  if (!row) return row;
+  const { Rental, ...rest } = row;
+  const rental = Rental
+    ? {
+        id: Rental.id,
+        title: Rental.title,
+        address: Rental.address,
+        city: Rental.city,
+        unitNumber: Rental.unitNumber,
+      }
+    : null;
+  return { ...rest, Rental: rental };
+}
+
+export const getAlerts = async (req: Request, res: Response) => {
   try {
-    // Real, tenant-scoped data: an "emergency alert" in the current schema is a
-    // MaintenanceRequest with EMERGENCY priority. Returning the actual rows beats
-    // returning a fabricated fire alarm, and it can be scoped properly.
+    const scope = maintenanceScopeFilter(req);
     const alerts = await prisma.maintenanceRequest.findMany({
-      where: { priority: 'EMERGENCY' },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        createdAt: true,
-        rentalId: true,
-      },
+      where: { AND: [{ priority: 'EMERGENCY' }, ...(scope ? [scope] : [])] },
+      select: ALERT_SELECT,
       orderBy: { createdAt: 'desc' },
     });
-    return res.json(alerts);
+    return res.json(alerts.map(toAlertDto));
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -83,22 +122,15 @@ export const getAlerts = async (_req: Request, res: Response) => {
 export const getAlert = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const alert = await prisma.maintenanceRequest.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        createdAt: true,
-        rentalId: true,
-      },
+    const alert = await prisma.maintenanceRequest.findFirst({
+      where: { id, priority: 'EMERGENCY' },
+      select: ALERT_SELECT,
     });
-    if (!alert) {
+    // 404 (not 403) for rows the caller may not see, so ids are not probeable.
+    if (!alert || !canAccessMaintenanceRequest(req, alert)) {
       return res.status(404).json({ message: 'Alert not found' });
     }
-    return res.json(alert);
+    return res.json(toAlertDto(alert));
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

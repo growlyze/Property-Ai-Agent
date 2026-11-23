@@ -35,6 +35,7 @@ import {
  Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
+import { asArray } from '../utils/safeData';
 
 interface RFQ {
  id: string;
@@ -98,9 +99,9 @@ const VendorBiddingPlatformScreen: React.FC = () => {
     apiService.get('/vendor-bidding/bids'),
     apiService.get('/vendor-bidding/vendors'),
    ]);
-   setRfqs(rfqsData.data || []);
-   setBids(bidsData.data || []);
-   setVendors(vendorsData.data || []);
+   setRfqs(asArray(rfqsData?.data));
+   setBids(asArray(bidsData?.data));
+   setVendors(asArray(vendorsData?.data));
   } catch (error) {
    console.error('Error loading data:', error);
    // Set empty arrays to prevent filter errors
@@ -253,6 +254,9 @@ const VendorBiddingPlatformScreen: React.FC = () => {
        </TableRow>
       </TableHead>
       <TableBody>
+       {rfqs.length === 0 && (
+         <TableRow><TableCell colSpan={7} sx={{ color: 'text.secondary' }}>No RFQs yet.</TableCell></TableRow>
+       )}
        {rfqs.map((rfq) => (
         <TableRow key={rfq.id}>
          <TableCell>{rfq.title}</TableCell>
@@ -377,6 +381,9 @@ const VendorBiddingPlatformScreen: React.FC = () => {
         </TableRow>
        </TableHead>
        <TableBody>
+        {bids.length === 0 && (
+         <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No bids yet.</TableCell></TableRow>
+        )}
         {bids
          .filter(b => selectedRFQ ? b.vendorId === selectedRFQ : true)
          .map((bid) => (

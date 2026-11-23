@@ -48,6 +48,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
+import { asArray } from '../utils/safeData';
 
 interface Role {
   id: string;
@@ -165,11 +166,11 @@ const AccessControlManagementScreen: React.FC = () => {
         apiService.get('/access-control/temporary-access'),
         apiService.get('/access-control/logs'),
       ]);
-      setRoles(rolesData?.data || []);
-      setPermissions(permissionsData?.data || []);
-      setUsers(usersData?.data || []);
-      setTempAccess(tempAccessData?.data || []);
-      setAccessLogs(logsData?.data || []);
+      setRoles(asArray(rolesData?.data));
+      setPermissions(asArray(permissionsData?.data));
+      setUsers(asArray(usersData?.data));
+      setTempAccess(asArray(tempAccessData?.data));
+      setAccessLogs(asArray(logsData?.data));
     } catch (error) {
       console.error('Error loading access control data:', error);
       // Set empty arrays to prevent undefined errors
@@ -304,6 +305,9 @@ const AccessControlManagementScreen: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
+              {roles.length === 0 && (
+                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No roles yet.</TableCell></TableRow>
+              )}
               {roles.map((role) => (
                 <TableRow key={role.id}>
                   <TableCell>{role.name}</TableCell>
@@ -371,6 +375,9 @@ const AccessControlManagementScreen: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
+              {users.length === 0 && (
+                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No users yet.</TableCell></TableRow>
+              )}
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{`${user.firstName} ${user.lastName}`}</TableCell>
@@ -426,6 +433,9 @@ const AccessControlManagementScreen: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
+              {tempAccess.length === 0 && (
+                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No temporary access grants yet.</TableCell></TableRow>
+              )}
               {tempAccess.map((access) => (
                 <TableRow key={access.id}>
                   <TableCell>{access.userName}</TableCell>
@@ -473,6 +483,9 @@ const AccessControlManagementScreen: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
+              {accessLogs.length === 0 && (
+                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No access logs yet.</TableCell></TableRow>
+              )}
               {accessLogs.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell>{log.userName}</TableCell>

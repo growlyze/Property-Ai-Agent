@@ -283,6 +283,15 @@ const NotificationList: React.FC = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {!loading && notifications.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                    No notifications yet.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

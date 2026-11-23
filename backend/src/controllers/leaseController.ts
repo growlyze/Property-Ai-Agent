@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { LeaseStatus, Prisma, PrismaClient } from '@prisma/client';
 import {
   canAccessLease,
   canModifyLease,
@@ -76,14 +76,85 @@ const OWNERSHIP_INCLUDE = {
 } as const;
 
 class LeaseController {
+  /**
+   * GET /api/leases → `{ data, total, page, limit }`.
+   *
+   * Scoped by `leaseScopeFilter`. Optional `search` (tenant name/email, rental
+   * title/address) and `status`. Paged only when `page` or `limit` is sent
+   * (limit capped at 100); without them every in-scope lease is returned, as
+   * before. Each row adds `tenantName` / `unitAddress` / `unitId` for display;
+   * the tenant relation is selected field-by-field so no credentials leak.
+   */
   async getAllLeases(req: Request, res: Response) {
     try {
       const scope = leaseScopeFilter(req);
-      const leases = await prisma.lease.findMany({
-        where: scope,
-        include: OWNERSHIP_INCLUDE,
-      });
-      res.status(200).json(leases);
+      const paged = req.query.page !== undefined || req.query.limit !== undefined;
+      const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? '10'), 10) || 10));
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const status = typeof req.query.status === 'string' ? req.query.status.trim().toUpperCase() : '';
+
+      const and: Prisma.LeaseWhereInput[] = [];
+      if (scope) and.push(scope as Prisma.LeaseWhereInput);
+      if (status && (Object.values(LeaseStatus) as string[]).includes(status)) {
+        and.push({ status: status as LeaseStatus });
+      }
+      if (search) {
+        const contains = { contains: search, mode: 'insensitive' as const };
+        and.push({
+          OR: [
+            { User: { firstName: contains } },
+            { User: { lastName: contains } },
+            { User: { email: contains } },
+            { Rental: { title: contains } },
+            { Rental: { address: contains } },
+            { Rental: { city: contains } },
+          ],
+        });
+      }
+      const where: Prisma.LeaseWhereInput = and.length ? { AND: and } : {};
+
+      const [total, leases] = await Promise.all([
+        prisma.lease.count({ where }),
+        prisma.lease.findMany({
+          where,
+          include: {
+            Rental: {
+              select: {
+                ...OWNERSHIP_INCLUDE.Rental.select,
+                id: true,
+                title: true,
+                unitNumber: true,
+                address: true,
+                city: true,
+                state: true,
+              },
+            },
+            User: { select: { id: true, firstName: true, lastName: true, email: true } },
+          },
+          orderBy: { startDate: 'desc' },
+          ...(paged ? { skip: (page - 1) * limit, take: limit } : {}),
+        }),
+      ]);
+
+      const data = leases.map((lease) => ({
+        ...lease,
+        unitId: lease.rentalId,
+        tenantName: lease.User ? `${lease.User.firstName} ${lease.User.lastName}`.trim() : null,
+        unitAddress: lease.Rental
+          ? [lease.Rental.address, lease.Rental.unitNumber ? `Unit ${lease.Rental.unitNumber}` : null, lease.Rental.city]
+              .filter(Boolean)
+              .join(', ')
+          : null,
+      }));
+
+      // Unpaged callers (mobile apps, tenancy tests) get the bare array they
+      // always got; the dashboard sends page/limit and gets the paged envelope.
+      if (!paged) {
+        res.status(200).json(data);
+        return;
+      }
+      res.status(200).json({ data, total, page, limit });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

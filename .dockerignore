@@ -1,0 +1,26 @@
+# Docker build context = repo root (see deploy/). Keep images small and secret-free.
+**/node_modules
+.git
+**/.env
+**/.env.*
+!**/.env.example
+mobile
+propertyapp/src
+propertyapp/assets
+ContractorApp/src
+ContractorApp/assets
+docs
+deliverables
+web-bundles
+_src_legacy
+infrastructure
+tests
+dashboard/src
+dashboard/public
+dashboard/e2e
+dashboard/playwright-report
+dashboard/test-results
+backend/backups
+backend/voicemails
+backend/uploads
+**/*.log

@@ -353,7 +353,7 @@ class EmergencyResponseService {
   private messageHandlers: Map<string, (data: any) => void> = new Map();
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    this.baseUrl = import.meta.env.VITE_API_URL || '/api';
   }
 
   // WebSocket connection methods

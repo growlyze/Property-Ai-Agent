@@ -14,7 +14,7 @@ import {
   ReportParameters
 } from '../types/reporting';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 class ReportingService {
   private api = axios.create({

@@ -74,7 +74,7 @@ const baseConfig: Omit<EnvironmentConfig, 'environment'> = {
   version: import.meta.env.VITE_APP_VERSION || '1.0.0',
   buildDate: import.meta.env.VITE_APP_BUILD_DATE || new Date().toISOString(),
   api: {
-    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+    baseUrl: import.meta.env.VITE_API_URL || '',
     timeout: 30000,
     retries: 3,
   },
@@ -118,7 +118,7 @@ const environmentConfigs: Record<Environment, Partial<EnvironmentConfig>> = {
   development: {
     api: {
       ...baseConfig.api,
-      baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+      baseUrl: import.meta.env.VITE_API_URL || '',
     },
     ai: {
       ...baseConfig.ai,

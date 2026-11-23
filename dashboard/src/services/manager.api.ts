@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use the same API URL pattern as other services
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Debug logging to see what URL is being used
 console.log('Manager API - Environment VITE_API_URL:', import.meta.env.VITE_API_URL);

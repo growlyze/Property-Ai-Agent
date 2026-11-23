@@ -13,7 +13,7 @@ interface LoginResponse {
 
 class AuthService {
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/auth/login`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ class AuthService {
   }
 
   async oauthLogin(provider: 'google' | 'facebook', token: string) {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/auth/${provider}/token`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/${provider}/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Navigation Hooks
+// Property AI Agent Navigation Hooks
 // Utility hooks for navigation functionality
 
 import { useContext, useEffect } from 'react';

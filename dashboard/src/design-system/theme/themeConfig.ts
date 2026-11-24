@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Theme Configuration
+// Property AI Agent Theme Configuration
 // Light and dark theme definitions with CSS custom property mappings
 
 import { tokens } from '../tokens';

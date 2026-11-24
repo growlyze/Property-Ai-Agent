@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Standardized Button - Main Export
+// Property AI Agent Standardized Button - Main Export
 // This file provides the standardized button implementation that replaces
 // the previous dual API system (variant + mode props)
 

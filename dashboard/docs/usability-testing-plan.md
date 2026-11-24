@@ -1,6 +1,6 @@
 # Usability Testing Plan: AI-Powered UI Mockups
 
-This document outlines the plan for conducting usability testing on the UI mockups for the new AI-powered screens in the Growlyze Property AI Agent application.
+This document outlines the plan for conducting usability testing on the UI mockups for the new AI-powered screens in the Property AI Agent application.
 
 ## 1. Objectives
 

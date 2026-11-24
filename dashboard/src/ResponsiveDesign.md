@@ -1,6 +1,6 @@
 # Responsive Design Strategy
 
-This document outlines the responsive design strategy for the Growlyze Property AI Agent web dashboard.
+This document outlines the responsive design strategy for the Property AI Agent web dashboard.
 
 ## Guiding Principles
 

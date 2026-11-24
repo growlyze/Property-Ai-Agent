@@ -1,5 +1,5 @@
 /**
- * Analytics-related types for the Growlyze Property AI Agent system
+ * Analytics-related types for the Property AI Agent system
  */
 
 export interface AnalyticsResult {

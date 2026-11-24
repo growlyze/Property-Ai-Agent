@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Forms Showcase Page
+// Property AI Agent Forms Showcase Page
 // Demonstrates the enhanced form system capabilities
 
 import * as React from 'react';
@@ -226,7 +226,7 @@ const FormsShowcase: React.FC = () => {
     'Rich input types with enhanced UX features',
     'Form state management and error handling',
     'Property management specific components',
-    'Integration with Growlyze Property AI Agent design system',
+    'Integration with Property AI Agent design system',
   ];
 
   return (
@@ -237,7 +237,7 @@ const FormsShowcase: React.FC = () => {
           Enhanced Forms System
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          Growlyze Property AI Agent&apos;s comprehensive form system with validation, accessibility, and enhanced UX features.
+          Property AI Agent&apos;s comprehensive form system with validation, accessibility, and enhanced UX features.
         </Typography>
         
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>

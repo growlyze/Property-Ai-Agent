@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Design Tokens - Colors
+// Property AI Agent Design Tokens - Colors
 // Foundation color system for consistent theming across platforms
 
 export interface PrimitiveColors {

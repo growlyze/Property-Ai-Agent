@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Line Chart Component
+// Property AI Agent Line Chart Component
 // Responsive line chart with accessibility and interaction features
 
 import * as React from 'react';

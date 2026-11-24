@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Data Visualization - Main Export
+// Property AI Agent Data Visualization - Main Export
 // Central access point for all chart components, hooks, and utilities
 
 // Core types
@@ -60,7 +60,7 @@ export const transformDataForChart = (rawData: any[], config: {
   }
 };
 
-// Growlyze Property AI Agent specific data generators (for demo purposes)
+// Property AI Agent specific data generators (for demo purposes)
 export const generatePropertyRevenueData = (months: number = 12) => {
   const data = [];
   const baseRevenue = 50000;
@@ -87,7 +87,7 @@ export const generatePropertyRevenueData = (months: number = 12) => {
     metadata: {
       title: 'Property Revenue Trend',
       subtitle: `Revenue over the last ${months} months`,
-      source: 'Growlyze Property AI Agent Analytics',
+      source: 'Property AI Agent Analytics',
       lastUpdated: new Date(),
     }
   };
@@ -125,7 +125,7 @@ export const generateExpenseBreakdownData = () => {
     metadata: {
       title: 'Monthly Expense Breakdown',
       subtitle: 'Distribution of property expenses by category',
-      source: 'Growlyze Property AI Agent Financial Tracking',
+      source: 'Property AI Agent Financial Tracking',
       lastUpdated: new Date(),
     }
   };
@@ -158,7 +158,7 @@ export const generateOccupancyTrendData = (months: number = 12) => {
     metadata: {
       title: 'Property Occupancy Rate',
       subtitle: `Occupancy percentage over the last ${months} months`,
-      source: 'Growlyze Property AI Agent Leasing Analytics',
+      source: 'Property AI Agent Leasing Analytics',
       lastUpdated: new Date(),
     }
   };

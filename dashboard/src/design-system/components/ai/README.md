@@ -1,6 +1,6 @@
 # AI Components
 
-This directory contains the core AI component infrastructure for the Growlyze Property AI Agent Dashboard. These components provide consistent patterns for displaying AI-generated content, confidence scores, explanations, and user feedback mechanisms.
+This directory contains the core AI component infrastructure for the Property AI Agent Dashboard. These components provide consistent patterns for displaying AI-generated content, confidence scores, explanations, and user feedback mechanisms.
 
 ## Components Overview
 

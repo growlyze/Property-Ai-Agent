@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Accessibility Foundation - Main Export
+// Property AI Agent Accessibility Foundation - Main Export
 // Central access point for all accessibility utilities, components, and hooks
 
 // Hooks

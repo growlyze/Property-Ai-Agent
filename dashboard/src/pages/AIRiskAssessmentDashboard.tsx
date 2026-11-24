@@ -59,7 +59,7 @@ import {
 } from '../types/risk-assessment';
 
 /**
- * Growlyze Property AI Agent Dashboard - AI Risk Assessment Dashboard
+ * Property AI Agent Dashboard - AI Risk Assessment Dashboard
  * Main dashboard for AI-powered risk assessment with visualization and comparison features
  */
 const AIRiskAssessmentDashboard: React.FC = () => {
@@ -323,7 +323,7 @@ const AIRiskAssessmentDashboard: React.FC = () => {
       {/* Header */}
       <Box mb={4}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Growlyze Property AI Agent Dashboard
+          Property AI Agent Dashboard
         </Typography>
         <Typography variant="h5" component="h2" color="primary" gutterBottom>
           AI Risk Assessment Dashboard

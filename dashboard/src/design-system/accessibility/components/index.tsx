@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Accessibility Components
+// Property AI Agent Accessibility Components
 // Reusable components for consistent accessibility patterns
 
 import React, { forwardRef, ReactNode } from 'react';

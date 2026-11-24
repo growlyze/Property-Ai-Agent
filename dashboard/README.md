@@ -1,4 +1,4 @@
-# Growlyze Property AI Agent Rental Management Dashboard
+# Property AI Agent Rental Management Dashboard
 
 A modern, rental-focused dashboard built with React, TypeScript, and Material-UI for managing rental properties efficiently.
 

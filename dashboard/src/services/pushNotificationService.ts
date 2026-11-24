@@ -264,7 +264,7 @@ class PushNotificationService {
   // Test notifications
   async sendTestNotification(): Promise<void> {
     const testPayload: PushNotificationPayload = {
-      title: 'Growlyze Property AI Agent - Test Notification',
+      title: 'Property AI Agent - Test Notification',
       body: 'This is a test notification to verify your settings are working correctly.',
       icon: '/favicon.ico',
       badge: '/favicon.ico',

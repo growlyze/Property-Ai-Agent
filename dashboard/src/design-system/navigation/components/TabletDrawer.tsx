@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Tablet Drawer Navigation
+// Property AI Agent Tablet Drawer Navigation
 // Slide-out drawer navigation for tablet breakpoints (768px-1023px)
 
 import React from 'react';
@@ -166,7 +166,7 @@ export const TabletDrawer: React.FC<TabletDrawerProps> = ({ className }) => {
               color: 'var(--color-primary-main)',
             }}
           >
-            Growlyze Property AI Agent
+            Property AI Agent
           </Typography>
           
           <CloseButton 
@@ -230,7 +230,7 @@ export const TabletDrawer: React.FC<TabletDrawerProps> = ({ className }) => {
             backgroundColor: 'var(--color-surface-default)',
           }}>
             <Typography variant="caption" color="text.secondary">
-              Growlyze Property AI Agent Dashboard
+              Property AI Agent Dashboard
             </Typography>
             <br />
             <Typography variant="caption" color="text.secondary">

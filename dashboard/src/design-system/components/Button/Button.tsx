@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Standardized Button Component
+// Property AI Agent Standardized Button Component
 // Single API button system replacing dual variant/mode approach
 
 import React, { forwardRef } from 'react';
@@ -6,7 +6,7 @@ import { ButtonProps } from './Button.types';
 import { StyledButton, ButtonContent, LoadingSpinner } from './Button.styles';
 
 /**
- * Growlyze Property AI Agent standardized Button component
+ * Property AI Agent standardized Button component
  * 
  * Replaces the previous dual API system (variant + mode) with a clean,
  * single variant API that integrates with the design token system.

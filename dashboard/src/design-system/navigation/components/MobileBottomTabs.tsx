@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Mobile Bottom Tabs Navigation
+// Property AI Agent Mobile Bottom Tabs Navigation
 // Bottom tab navigation for mobile breakpoints (<768px)
 
 import React from 'react';

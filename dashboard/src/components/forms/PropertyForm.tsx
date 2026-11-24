@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Property Management Form
+// Property AI Agent Property Management Form
 // Example form showcasing the enhanced form system
 
 import * as React from 'react';

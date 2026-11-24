@@ -1,5 +1,5 @@
 /**
- * Demo data for Growlyze Property AI Agent.
+ * Demo data for Property AI Agent.
  *
  * Adds realistic, current-looking data on top of the base seed (prisma/seed.ts)
  * so dashboard screens look populated for a sales demo.
@@ -89,7 +89,7 @@ const DEMO_MAINTENANCE: MrSeed[] = [
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log("Seeding Growlyze demo data...");
+  console.log("Seeding Property AI Agent demo data...");
 
   // ---- Lookups -------------------------------------------------------------
   const admin = await prisma.user.findUnique({ where: { email: "admin@growlyze.com" } });

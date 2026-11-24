@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Form Layout Components
+// Property AI Agent Form Layout Components
 // Flexible layouts for organizing form fields with responsive design
 
 import * as React from 'react';

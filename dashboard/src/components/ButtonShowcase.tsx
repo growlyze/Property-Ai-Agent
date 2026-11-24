@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Button Showcase Component
+// Property AI Agent Button Showcase Component
 // Test component to demonstrate all button variants and functionality
 
 import React, { useState } from 'react';
@@ -28,7 +28,7 @@ const ButtonShowcase: React.FC = () => {
   return (
     <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
       <Typography variant="h3" gutterBottom>
-        Growlyze Property AI Agent Button System
+        Property AI Agent Button System
       </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>

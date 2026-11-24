@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Theme Hook
+// Property AI Agent Theme Hook
 // Custom hook for accessing and managing theme state
 
 import { useCallback, useEffect, useState } from 'react';

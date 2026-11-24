@@ -1,6 +1,6 @@
 # UI Design Handoff Documentation
 
-This document provides the necessary information for the development team to implement the UI designs for the Growlyze Property AI Agent platform.
+This document provides the necessary information for the development team to implement the UI designs for the Property AI Agent platform.
 
 ## 1. Asset Specifications
 

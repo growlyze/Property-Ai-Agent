@@ -1,6 +1,6 @@
 # AI Risk Assessment Dashboard: Wireframes & User Flow
 
-This document outlines the wireframes and user flow for the AI Risk Assessment Dashboard in the Growlyze Property AI Agent application. The dashboard is designed to provide property managers with a clear, compliant, and intuitive way to assess applicant risk.
+This document outlines the wireframes and user flow for the AI Risk Assessment Dashboard in the Property AI Agent application. The dashboard is designed to provide property managers with a clear, compliant, and intuitive way to assess applicant risk.
 
 ## 1. Dashboard View
 

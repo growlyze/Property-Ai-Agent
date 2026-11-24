@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent WCAG Compliance Utilities
+// Property AI Agent WCAG Compliance Utilities
 // Functions to validate and ensure WCAG 2.1 AA compliance
 
 /**

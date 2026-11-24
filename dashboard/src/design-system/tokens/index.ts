@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Design Tokens - Main Export
+// Property AI Agent Design Tokens - Main Export
 // Central access point for all design tokens
 
 export * from './colors';

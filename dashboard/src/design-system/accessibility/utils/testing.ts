@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Accessibility Testing Utilities
+// Property AI Agent Accessibility Testing Utilities
 // Functions to test and validate accessibility compliance
 
 import { performWCAGCheck, WCAGComplianceCheck, checkColorContrast } from './wcag';

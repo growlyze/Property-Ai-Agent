@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Button Component Types
+// Property AI Agent Button Component Types
 // TypeScript interfaces for the standardized button system
 
 import { ButtonHTMLAttributes, ReactNode } from 'react';

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Data Visualization Types
+// Property AI Agent Data Visualization Types
 // Type definitions for charts, data, and visualization components
 
 export type ChartType = 'line' | 'bar' | 'area' | 'pie' | 'doughnut' | 'scatter' | 'heatmap' | 'gauge';

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Design Tokens - Spacing
+// Property AI Agent Design Tokens - Spacing
 // 8px base grid system for consistent spacing across components
 
 export interface SpacingScale {

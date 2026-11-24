@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Accessibility Hooks
+// Property AI Agent Accessibility Hooks
 // Custom React hooks for consistent accessibility patterns
 
 import { useEffect, useRef, useState, useCallback, RefObject } from 'react';

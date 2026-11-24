@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Theme Context
+// Property AI Agent Theme Context
 // React Context for global theme management
 
 import React, { createContext, useContext, ReactNode } from 'react';

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Navigation System - Main Export
+// Property AI Agent Navigation System - Main Export
 // Central access point for all navigation components, hooks, and utilities
 
 // Core navigation system

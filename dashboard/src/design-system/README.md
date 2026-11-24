@@ -1,6 +1,6 @@
-# Growlyze Property AI Agent Design System
+# Property AI Agent Design System
 
-This document outlines the design system and UI component library for the Growlyze Property AI Agent platform. The goal is to ensure a consistent, accessible, and high-quality user experience across all applications.
+This document outlines the design system and UI component library for the Property AI Agent platform. The goal is to ensure a consistent, accessible, and high-quality user experience across all applications.
 
 ## 1. Core Principles
 

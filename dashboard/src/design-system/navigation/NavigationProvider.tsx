@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Navigation Provider
+// Property AI Agent Navigation Provider
 // Context and state management for responsive navigation system
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';

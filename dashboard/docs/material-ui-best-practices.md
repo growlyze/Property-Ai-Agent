@@ -1,6 +1,6 @@
-# Material-UI Best Practices for Growlyze Property AI Agent Dashboard
+# Material-UI Best Practices for Property AI Agent Dashboard
 
-This document outlines key aspects and best practices for utilizing Material-UI (MUI) within the Growlyze Property AI Agent dashboard to ensure consistency, maintainability, and optimal performance.
+This document outlines key aspects and best practices for utilizing Material-UI (MUI) within the Property AI Agent dashboard to ensure consistency, maintainability, and optimal performance.
 
 ## 1. Theming and Customization
 
@@ -20,7 +20,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // Growlyze Property AI Agent primary color
+      main: '#1976d2', // Property AI Agent primary color
     },
     secondary: {
       main: '#dc004e',
@@ -79,4 +79,4 @@ Material-UI components are designed with accessibility in mind, but proper usage
     *   `components/`: Wrapper components or custom styled components that extend MUI.
 *   **Storybook:** Document all reusable components in Storybook to facilitate development, testing, and design handoff.
 
-By following these best practices, the Growlyze Property AI Agent dashboard can leverage Material-UI effectively to build a robust, scalable, and user-friendly interface.
+By following these best practices, the Property AI Agent dashboard can leverage Material-UI effectively to build a robust, scalable, and user-friendly interface.

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Theme System - Main Export
+// Property AI Agent Theme System - Main Export
 // Central access point for all theme-related functionality
 
 export * from './ThemeContext';

@@ -4,7 +4,7 @@ import { toDataURL } from 'qrcode';
 
 export const generateMFASecret = async (email: string) => {
   const secret = authenticator.generateSecret();
-  const otpauth = authenticator.keyuri(email, 'Growlyze Property AI Agent', secret);
+  const otpauth = authenticator.keyuri(email, 'Property AI Agent', secret);
   const qrCode = await toDataURL(otpauth);
 
   return { secret, qrCode };

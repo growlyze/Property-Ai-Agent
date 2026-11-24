@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Accessibility Showcase Component
+// Property AI Agent Accessibility Showcase Component
 // Demonstrates all accessibility features and best practices
 
 import React, { useState, useRef } from 'react';
@@ -86,7 +86,7 @@ const AccessibilityShowcase: React.FC = () => {
       <SkipLink href="#main-content">Skip to main content</SkipLink>
       
       <Typography variant="h3" gutterBottom id="main-heading">
-        Growlyze Property AI Agent Accessibility Foundation
+        Property AI Agent Accessibility Foundation
       </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>

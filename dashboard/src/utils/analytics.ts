@@ -57,7 +57,7 @@ class AnalyticsService {
 
     gtag('js', new Date());
     gtag('config', config.monitoring.analytics.googleAnalyticsId, {
-      app_name: 'Growlyze Property AI Agent Dashboard',
+      app_name: 'Property AI Agent Dashboard',
       app_version: config.version,
       debug_mode: config.features.debugMode,
     });

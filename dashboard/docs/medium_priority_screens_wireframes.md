@@ -1,6 +1,6 @@
 # Medium-Priority AI Screens: Wireframes & User Flow
 
-This document outlines the wireframes and user flow for the medium-priority AI screens in the Growlyze Property AI Agent application.
+This document outlines the wireframes and user flow for the medium-priority AI screens in the Property AI Agent application.
 
 ## 1. AI Personalization Dashboard
 

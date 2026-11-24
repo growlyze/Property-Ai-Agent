@@ -1,4 +1,4 @@
-// IoT Types for Growlyze Property AI Agent Dashboard
+// IoT Types for Property AI Agent Dashboard
 
 export enum DeviceType {
   SMART_LOCK = 'SMART_LOCK',

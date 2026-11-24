@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Pie Chart Component
+// Property AI Agent Pie Chart Component
 // Responsive pie/doughnut chart with accessibility and interaction features
 
 import * as React from 'react';

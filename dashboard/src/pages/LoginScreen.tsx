@@ -112,7 +112,7 @@ const LoginScreen: React.FC = () => {
         }}
       >
         <Typography component="h1" variant="h4" gutterBottom>
-          Growlyze Property AI Agent Dashboard
+          Property AI Agent Dashboard
         </Typography>
         
         <Paper 

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Analytics Dashboard
+// Property AI Agent Analytics Dashboard
 // Comprehensive dashboard showcasing data visualization components
 
 import * as React from 'react';
@@ -273,7 +273,7 @@ const AnalyticsDashboard: React.FC = () => {
 
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            This dashboard demonstrates Growlyze Property AI Agent&apos;s data visualization capabilities with sample data.
+            This dashboard demonstrates Property AI Agent&apos;s data visualization capabilities with sample data.
             Real-time data integration and advanced analytics features are available in production.
           </Typography>
         </Alert>

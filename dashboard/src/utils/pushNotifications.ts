@@ -184,7 +184,7 @@ class PushNotificationService {
     }
 
     const testPayload: PushNotificationPayload = {
-      title: 'Growlyze Property AI Agent Test Notification',
+      title: 'Property AI Agent Test Notification',
       body: 'This is a test push notification to verify your setup is working correctly.',
       type: 'general',
       priority: 'normal',

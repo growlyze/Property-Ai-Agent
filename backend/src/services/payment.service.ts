@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 /**
- * Tenant-paid ACH convenience fee — the Growlyze Property AI Agent Free revenue line.
+ * Tenant-paid ACH convenience fee — the Property AI Agent Free revenue line.
  *
  * Spec: `deliverables/software-company/growlyze-gtm-free-tier-spec-2026-09-17.md:57`
  * — "Tenant-paid ACH convenience fee: **1.25%, min $2.50, max $12.00**".

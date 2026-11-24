@@ -1,6 +1,6 @@
-# Growlyze Property AI Agent Dashboard - Deployment Guide
+# Property AI Agent Dashboard - Deployment Guide
 
-This document provides comprehensive instructions for deploying the Growlyze Property AI Agent Dashboard to different environments.
+This document provides comprehensive instructions for deploying the Property AI Agent Dashboard to different environments.
 
 ## Table of Contents
 

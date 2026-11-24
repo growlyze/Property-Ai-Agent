@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Desktop Sidebar Navigation
+// Property AI Agent Desktop Sidebar Navigation
 // Fixed sidebar navigation for desktop breakpoints (1024px+)
 
 import React from 'react';
@@ -232,7 +232,7 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ className }) => 
                   color: 'var(--color-primary-main)',
                 }}
               >
-                Growlyze Property AI Agent
+                Property AI Agent
               </Typography>
             ) : (
               <Typography 

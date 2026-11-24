@@ -23,7 +23,7 @@ class PlaidService {
       user: {
         client_user_id: userId,
       },
-      client_name: 'Growlyze Property AI Agent',
+      client_name: 'Property AI Agent',
       products: [Products.Auth, Products.Transactions],
       country_codes: [CountryCode.Us],
       language: 'en',

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Form Provider
+// Property AI Agent Form Provider
 // Context and state management for enhanced form system
 
 import * as React from 'react';

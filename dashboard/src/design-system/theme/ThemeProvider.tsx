@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Theme Provider
+// Property AI Agent Theme Provider
 // Main theme provider component that wraps the entire application
 
 import React, { ReactNode } from 'react';

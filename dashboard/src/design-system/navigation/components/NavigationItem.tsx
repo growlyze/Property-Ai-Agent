@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Navigation Item Component
+// Property AI Agent Navigation Item Component
 // Consistent navigation item component used across all navigation contexts
 
 import React from 'react';

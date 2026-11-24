@@ -1,5 +1,5 @@
 /**
- * Real-time Alert System Types for Growlyze Property AI Agent
+ * Real-time Alert System Types for Property AI Agent
  */
 
 export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';

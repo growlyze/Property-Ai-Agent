@@ -105,7 +105,7 @@ const Header: React.FC = () => {
             display: { xs: 'none', sm: 'block' }
           }}
         >
-          {staff ? 'Growlyze Property AI Agent Dashboard' : `Growlyze ${roleName} Portal`}
+          {staff ? 'Property AI Agent Dashboard' : `${roleName} Portal`}
         </Typography>
         {/* Keep the right-hand controls right-aligned when the title is hidden on phones */}
         <Box sx={{ flexGrow: 1, display: { xs: 'block', sm: 'none' } }} />

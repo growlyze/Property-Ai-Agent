@@ -1,6 +1,6 @@
 # Security Settings Dashboard: Wireframes & User Flow
 
-This document outlines the wireframes and user flow for the Security Settings Dashboard in the Growlyze Property AI Agent application. The dashboard is designed to provide users with a clear and comprehensive overview of their account security.
+This document outlines the wireframes and user flow for the Security Settings Dashboard in the Property AI Agent application. The dashboard is designed to provide users with a clear and comprehensive overview of their account security.
 
 ## 1. Dashboard Layout
 

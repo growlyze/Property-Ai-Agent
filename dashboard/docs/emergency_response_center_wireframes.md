@@ -1,6 +1,6 @@
 # Emergency Response Center: Wireframes & User Flow
 
-This document outlines the wireframes and user flow for the Emergency Response Center in the Growlyze Property AI Agent application. The center is designed for high-stress situations, prioritizing clarity, speed, and ease of use.
+This document outlines the wireframes and user flow for the Emergency Response Center in the Property AI Agent application. The center is designed for high-stress situations, prioritizing clarity, speed, and ease of use.
 
 ## 1. Screen Layout
 

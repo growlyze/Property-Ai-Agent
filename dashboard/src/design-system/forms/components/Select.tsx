@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Enhanced Select Component
+// Property AI Agent Enhanced Select Component
 // Accessible select dropdown with search, multi-select, and validation
 
 import * as React from 'react';

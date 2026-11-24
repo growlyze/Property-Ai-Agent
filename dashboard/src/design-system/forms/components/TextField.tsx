@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Enhanced TextField Component
+// Property AI Agent Enhanced TextField Component
 // Accessible text input with validation and enhanced UX features
 
 import * as React from 'react';

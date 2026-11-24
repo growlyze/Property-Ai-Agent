@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 import { tokens } from './tokens';
 
-// Define the theme using Growlyze Property AI Agent design tokens
+// Define the theme using Property AI Agent design tokens
 const theme = createTheme({
   palette: {
     primary: {

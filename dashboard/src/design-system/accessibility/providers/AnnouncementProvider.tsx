@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Announcement Provider
+// Property AI Agent Announcement Provider
 // Global provider for managing screen reader announcements
 
 import React, { createContext, useContext, useRef, useCallback, ReactNode } from 'react';

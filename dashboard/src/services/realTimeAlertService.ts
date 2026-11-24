@@ -1,5 +1,5 @@
 /**
- * Real-Time Alert Service for Growlyze Property AI Agent
+ * Real-Time Alert Service for Property AI Agent
  *
  * Comprehensive alert system that monitors property analytics and delivers
  * real-time notifications through multiple channels (WebSocket, Push, Email, SMS)
@@ -603,9 +603,9 @@ export class RealTimeAlertService {
    */
   private async sendEmailNotification(alert: Alert): Promise<void> {
     const recipient = 'property-manager@company.com'; // This would be dynamic
-    const subject = `Growlyze Property AI Agent Alert: ${alert.title}`;
+    const subject = `Property AI Agent Alert: ${alert.title}`;
     const body = `
-Growlyze Property AI Agent Alert Notification
+Property AI Agent Alert Notification
 
 ${alert.title}
 ${alert.message}
@@ -622,7 +622,7 @@ ${alert.recommendations.map(rec => `- ${rec}`).join('\n')}
 
 View Alert: https://app.growlyze.com/alerts/${alert.id}
 
-This is an automated notification from Growlyze Property AI Agent.
+This is an automated notification from Property AI Agent.
     `.trim();
 
     await sendNotification(recipient, 'email', body);
@@ -633,7 +633,7 @@ This is an automated notification from Growlyze Property AI Agent.
    */
   private async sendSMSNotification(alert: Alert): Promise<void> {
     const recipient = '+1234567890'; // This would be dynamic
-    const message = `Growlyze Property AI Agent Alert: ${alert.title} - ${alert.propertyName || alert.propertyId} (${alert.severity.toUpperCase()})`;
+    const message = `Property AI Agent Alert: ${alert.title} - ${alert.propertyName || alert.propertyId} (${alert.severity.toUpperCase()})`;
 
     await sendNotification(recipient, 'sms', message);
   }

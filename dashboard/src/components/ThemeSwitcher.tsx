@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Theme Switcher Component
+// Property AI Agent Theme Switcher Component
 // Simple component to test theme switching functionality
 
 import React from 'react';

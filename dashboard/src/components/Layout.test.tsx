@@ -26,7 +26,7 @@ describe('Layout Component', () => {
   });
 
   it('renders the header with the application title', () => {
-    expect(screen.getByText('Growlyze Property AI Agent Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Property AI Agent Dashboard')).toBeInTheDocument();
   });
 
   it('renders the main navigation links', () => {

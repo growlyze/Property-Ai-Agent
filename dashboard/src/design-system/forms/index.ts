@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Enhanced Forms - Main Export
+// Property AI Agent Enhanced Forms - Main Export
 // Central access point for all form components, hooks, and utilities
 
 // Core form system
@@ -101,7 +101,7 @@ export const FORM_CONFIGS = {
   },
 } as const;
 
-// Common validation patterns for Growlyze Property AI Agent
+// Common validation patterns for Property AI Agent
 export const VALIDATION_PATTERNS = {
   // Contact information
   EMAIL: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -250,7 +250,7 @@ export const createSelectOptions = (items: Array<{ value: any; label: string; [k
     icon: item.icon,
   }));
 
-// Growlyze Property AI Agent specific form constants
+// Property AI Agent specific form constants
 export const PROPERTY_FORM_CONSTANTS = {
   PROPERTY_TYPES: [
     { value: 'apartment', label: 'Apartment' },

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Design Tokens - Typography
+// Property AI Agent Design Tokens - Typography
 // Consistent typography scale and weights for all text elements
 
 export interface FontWeights {

@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Button Component Styles
+// Property AI Agent Button Component Styles
 // Styled components using design tokens for consistent theming
 
 import { styled, keyframes, alpha } from '@mui/material/styles';

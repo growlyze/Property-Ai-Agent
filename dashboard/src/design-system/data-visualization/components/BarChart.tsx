@@ -1,4 +1,4 @@
-// Growlyze Property AI Agent Bar Chart Component
+// Property AI Agent Bar Chart Component
 // Responsive bar chart with grouping, stacking, and accessibility features
 
 import * as React from 'react';

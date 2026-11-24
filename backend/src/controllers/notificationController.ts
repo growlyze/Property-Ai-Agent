@@ -44,7 +44,7 @@ function toDto(n: Row) {
     recipientIds: [n.userId],
     recipientNames: n.User ? [`${n.User.firstName} ${n.User.lastName}`.trim()] : [],
     senderId: 'system',
-    senderName: 'Growlyze',
+    senderName: 'Property AI Agent',
     priority: urgent ? 'high' : 'medium',
     status: n.isRead ? 'delivered' : 'sent',
     sentAt: n.createdAt.toISOString(),

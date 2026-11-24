@@ -1,6 +1,6 @@
 # AI Communication Training Screen: Wireframes & User Flow
 
-This document outlines the wireframes and user flow for the AI Communication Training Screen in the Growlyze Property AI Agent application. The screen is designed to give property managers control over how the AI communicates with tenants and other contacts.
+This document outlines the wireframes and user flow for the AI Communication Training Screen in the Property AI Agent application. The screen is designed to give property managers control over how the AI communicates with tenants and other contacts.
 
 ## 1. Screen Layout
 

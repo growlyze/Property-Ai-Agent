@@ -27,7 +27,7 @@ class DocumentExpirationService {
 
     for (const lease of expiringLeases) {
       const subject = 'Lease Renewal Reminder';
-      const message = `Dear ${lease.User.firstName},\n\nThis is a reminder that your lease is expiring on ${lease.endDate.toDateString()}.\n\nPlease contact us to discuss renewal options.\n\nThank you,\nGrowlyze Property AI Agent`; // Changed from 'lease.tenant.firstName' to 'lease.User.firstName'
+      const message = `Dear ${lease.User.firstName},\n\nThis is a reminder that your lease is expiring on ${lease.endDate.toDateString()}.\n\nPlease contact us to discuss renewal options.\n\nThank you,\nProperty AI Agent`; // Changed from 'lease.tenant.firstName' to 'lease.User.firstName'
       await sendEmail(lease.User.email, subject, message); // Changed from 'lease.tenant.email' to 'lease.User.email'
     }
   }

@@ -66,7 +66,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
  return (
   <Grid container spacing={3} mb={3}>
    {/* Main Stats */}
-   <Grid xs={12} sm={6} md={3}>
+   <Grid item xs={6} md={3}>
     <Card sx={{ height: '100%' }}>
      <CardContent>
       <Box display="flex" alignItems="center" mb={2}>
@@ -83,7 +83,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
     </Card>
    </Grid>
 
-   <Grid xs={12} sm={6} md={3}>
+   <Grid item xs={6} md={3}>
     <Card sx={{ height: '100%' }}>
      <CardContent>
       <Box display="flex" alignItems="center" mb={2}>
@@ -100,7 +100,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
     </Card>
    </Grid>
 
-   <Grid xs={12} sm={6} md={3}>
+   <Grid item xs={6} md={3}>
     <Card sx={{ height: '100%' }}>
      <CardContent>
       <Box display="flex" alignItems="center" mb={2}>
@@ -117,7 +117,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
     </Card>
    </Grid>
 
-   <Grid xs={12} sm={6} md={3}>
+   <Grid item xs={6} md={3}>
     <Card sx={{ height: '100%' }}>
      <CardContent>
       <Box display="flex" alignItems="center" mb={2}>
@@ -134,8 +134,11 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
     </Card>
    </Grid>
 
+   {/* Distributions are only meaningful once there are reviews. */}
+   {stats.totalReviews > 0 && (
+   <>
    {/* Severity Distribution */}
-   <Grid xs={12} md={6}>
+   <Grid item xs={12} md={6}>
     <Card>
      <CardContent>
       <Typography variant="h6" gutterBottom>
@@ -168,7 +171,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
    </Grid>
 
    {/* Priority Distribution */}
-   <Grid xs={12} md={6}>
+   <Grid item xs={12} md={6}>
     <Card>
      <CardContent>
       <Typography variant="h6" gutterBottom>
@@ -201,7 +204,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
    </Grid>
 
    {/* Review Type Distribution */}
-   <Grid xs={12}>
+   <Grid item xs={12}>
     <Card>
      <CardContent>
       <Typography variant="h6" gutterBottom>
@@ -237,6 +240,8 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
      </CardContent>
     </Card>
    </Grid>
+   </>
+   )}
   </Grid>
  );
 };

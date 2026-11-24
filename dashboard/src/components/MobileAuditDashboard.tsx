@@ -30,6 +30,33 @@ import {
 } from '@mui/icons-material';
 import MobileAudit, { MobileAuditResult } from '../utils/mobileAudit';
 
+/** Human-readable value for one audit metric (objects, floats and 0-sized bundles used to leak through raw). */
+const formatValue = (key: string, value: unknown): string => {
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (value && typeof value === 'object') {
+    const on = Object.entries(value as Record<string, unknown>).filter(([, v]) => Boolean(v)).map(([k]) => k);
+    return on.length ? on.map((k) => k.charAt(0).toUpperCase() + k.slice(1)).join(', ') : 'None detected';
+  }
+  if (typeof value === 'number') {
+    if (/time/i.test(key)) return `${Math.round(value)} ms`;
+    if (/size/i.test(key)) return value > 0 ? `${Math.round(value / 1024)} KB` : 'Not measured';
+    return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  }
+  return String(value ?? '—');
+};
+
+/** Collapse repeated issues into one line with a count, and name bare tags. */
+const summarizeIssues = (issues: string[]) => {
+  const counts = new Map<string, number>();
+  issues.forEach((raw) => {
+    const text = raw.replace(/ for a$/, ' for a link').replace(/ for button$/, ' for a button');
+    counts.set(text, (counts.get(text) ?? 0) + 1);
+  });
+  return Array.from(counts.entries()).map(([text, n]) => (n > 1 ? `${text} (${n} elements)` : text));
+};
+
+const MAX_ISSUES = 6;
+
 const MobileAuditDashboard: React.FC = () => {
   const [auditResult, setAuditResult] = useState<MobileAuditResult | null>(null);
   const [isAuditing, setIsAuditing] = useState(false);
@@ -84,7 +111,7 @@ const MobileAuditDashboard: React.FC = () => {
         </Box>
 
         {issues.length > 0 && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
+          <Alert severity="warning" sx={{ mb: 1 }}>
             <Typography variant="body2">
               {issues.length} issue{issues.length !== 1 ? 's' : ''} found
             </Typography>
@@ -98,12 +125,16 @@ const MobileAuditDashboard: React.FC = () => {
               <ListItem key={key}>
                 <ListItemText
                   primary={
-                    <Box display="flex" justifyContent="space-between">
-                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                    <Box display="flex" justifyContent="space-between" gap={2}>
+                      <Typography variant="body2" sx={{ '&::first-letter': { textTransform: 'uppercase' } }}>
                         {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
                       </Typography>
-                      <Typography variant="body2" fontWeight="bold">
-                        {typeof value === 'boolean' ? (value ? '✓' : '✗') : String(value)}
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        sx={{ textAlign: 'right', color: typeof value === 'boolean' ? (value ? 'success.main' : 'error.main') : 'text.primary' }}
+                      >
+                        {formatValue(key, value)}
                       </Typography>
                     </Box>
                   }
@@ -118,11 +149,16 @@ const MobileAuditDashboard: React.FC = () => {
             <Typography variant="subtitle2" color="error" gutterBottom>
               Issues to Address:
             </Typography>
-            {issues.map((issue, index) => (
-              <Typography key={index} variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            {summarizeIssues(issues).slice(0, MAX_ISSUES).map((issue, index) => (
+              <Typography key={index} variant="body2" color="text.secondary" sx={{ mb: 0.5, wordBreak: 'break-word' }}>
                 • {issue}
               </Typography>
             ))}
+            {summarizeIssues(issues).length > MAX_ISSUES && (
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                and {summarizeIssues(issues).length - MAX_ISSUES} more
+              </Typography>
+            )}
           </Box>
         )}
       </CardContent>
@@ -130,12 +166,11 @@ const MobileAuditDashboard: React.FC = () => {
   );
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', width: '100%', textAlign: 'left' }}>
+      <Box display="flex" alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} mb={3}>
         <Box display="flex" alignItems="center">
-          <AssessmentIcon sx={{ mr: 2, fontSize: 32 }} />
           <Box>
-            <Typography variant="h4" component="h1">
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
               Mobile Compatibility Audit
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -223,7 +258,7 @@ const MobileAuditDashboard: React.FC = () => {
                 <TouchAppIcon />,
                 auditResult.touchTargets,
                 auditResult.touchTargets.issues.map(issue =>
-                  `${issue.element} (${issue.size.width}x${issue.size.height}px) - ${issue.selector}`
+                  `<${issue.element}> smaller than 44px (${Math.round(issue.size.width)}×${Math.round(issue.size.height)}px)`
                 )
               )}
             </Box>
@@ -257,7 +292,7 @@ const MobileAuditDashboard: React.FC = () => {
             <Card sx={{ mt: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  📋 Action Items & Recommendations
+                  Action items and recommendations
                 </Typography>
                 <List>
                   {auditResult.recommendations.map((recommendation, index) => (
@@ -281,7 +316,7 @@ const MobileAuditDashboard: React.FC = () => {
             <Card sx={{ mt: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  🔍 Touch Target Details
+                  Touch target details
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={2}>
                   Elements that don&apos;t meet the 44px minimum touch target size (WCAG AA requirement)
@@ -300,11 +335,11 @@ const MobileAuditDashboard: React.FC = () => {
                           <ListItemText
                             primary={
                               <Typography variant="body2" fontWeight="bold">
-                                {issue.element} - {issue.size.width}×{issue.size.height}px
+                                {'<'}{issue.element}{'>'} {Math.round(issue.size.width)}×{Math.round(issue.size.height)}px
                               </Typography>
                             }
                             secondary={
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" noWrap title={issue.selector}>
                                 {issue.selector}
                               </Typography>
                             }

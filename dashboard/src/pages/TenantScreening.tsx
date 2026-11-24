@@ -1,386 +1,295 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
- Box,
- Typography,
- Button,
- Table,
- TableBody,
- TableCell,
- TableContainer,
- TableHead,
- TableRow,
- Paper,
- Chip,
- TextField,
- GridLegacy as Grid,
- FormControl,
- InputLabel,
- Select,
- MenuItem,
- Card,
- CardContent,
- IconButton,
- Tooltip,
- Alert,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import {
- Visibility as ViewIcon,
- Edit as EditIcon,
- Delete as DeleteIcon,
- Add as AddIcon,
- Search as SearchIcon,
- FilterList as FilterIcon,
+  Add as AddIcon,
+  Search as SearchIcon,
+  ChevronRight as ChevronRightIcon,
+  AssignmentInd as AssignmentIndIcon,
+  HourglassTop as HourglassIcon,
+  CheckCircle as CheckCircleIcon,
+  ReportProblem as ReportProblemIcon,
 } from '@mui/icons-material';
+import {
+  ScreeningApplication,
+  STATUS_COLOR,
+  RISK_COLOR,
+  RISK_LABEL,
+  applicantName,
+  checkColor,
+  creditColor,
+  fetchApplications,
+  money,
+  pretty,
+  relativeDate,
+  rentalLabel,
+  riskLevel,
+} from '../services/screeningApplications';
 
-interface TenantApplication {
- id: string;
- applicantName: string;
- email: string;
- phone: string;
- rentalProperty: string;
- applicationDate: string;
- status: 'pending' | 'approved' | 'rejected' | 'under_review';
- creditScore?: number;
- monthlyIncome?: number;
- employmentStatus: string;
- references: number;
+/**
+ * Tenant screening: every rental application the caller can see
+ * (GET /api/applications, scoped server-side), with screening status, AI risk
+ * level, credit score and income.
+ */
+
+function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label: string; value: number; sub: string; accent: string }) {
+  return (
+    <Card sx={{ height: '100%' }}>
+      <CardContent sx={{ p: { xs: 1.75, sm: 2.5 } }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: 1.5 }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '8px',
+              bgcolor: accent,
+              color: '#fff',
+              display: 'grid',
+              placeItems: 'center',
+              border: '1.5px solid #140827',
+              flexShrink: 0,
+            }}
+          >
+            {icon}
+          </Box>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+            {label}
+          </Typography>
+        </Stack>
+        <Typography sx={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1.1 }}>{value}</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+          {sub}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
 }
 
 const TenantScreening: React.FC = () => {
- const [applications, setApplications] = useState<TenantApplication[]>([]);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState<string | null>(null);
- const [searchTerm, setSearchTerm] = useState('');
- const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
 
- // Mock data for demonstration
- useEffect(() => {
-  const mockApplications: TenantApplication[] = [
-   {
-    id: '1',
-    applicantName: 'John Smith',
-    email: 'john.smith@email.com',
-    phone: '(555) 123-4567',
-    rentalProperty: 'Downtown Apartment 2B',
-    applicationDate: '2024-01-15',
-    status: 'pending',
-    creditScore: 720,
-    monthlyIncome: 5000,
-    employmentStatus: 'Full-time',
-    references: 3,
-   },
-   {
-    id: '2',
-    applicantName: 'Sarah Johnson',
-    email: 'sarah.j@email.com',
-    phone: '(555) 987-6543',
-    rentalProperty: 'Suburban House 123',
-    applicationDate: '2024-01-14',
-    status: 'under_review',
-    creditScore: 680,
-    monthlyIncome: 4200,
-    employmentStatus: 'Full-time',
-    references: 2,
-   },
-   {
-    id: '3',
-    applicantName: 'Mike Davis',
-    email: 'mike.davis@email.com',
-    phone: '(555) 456-7890',
-    rentalProperty: 'City Loft 5A',
-    applicationDate: '2024-01-13',
-    status: 'approved',
-    creditScore: 750,
-    monthlyIncome: 6000,
-    employmentStatus: 'Full-time',
-    references: 4,
-   },
-  ];
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['screening-applications'],
+    queryFn: fetchApplications,
+  });
+  const applications = data ?? [];
 
-  setTimeout(() => {
-   setApplications(mockApplications);
-   setLoading(false);
-  }, 1000);
- }, []);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return applications.filter((a) => {
+      const haystack = [applicantName(a), a.User?.email ?? '', rentalLabel(a)].join(' ').toLowerCase();
+      return (!q || haystack.includes(q)) && (!status || a.status === status);
+    });
+  }, [applications, search, status]);
 
- const getStatusColor = (status: string) => {
-  switch (status) {
-   case 'approved':
-    return 'success';
-   case 'rejected':
-    return 'error';
-   case 'under_review':
-    return 'warning';
-   case 'pending':
-    return 'info';
-   default:
-    return 'default';
-  }
- };
+  const pending = applications.filter((a) => a.status === 'PENDING');
+  const screeningOpen = pending.filter((a) => (a.Screening?.status ?? 'PENDING') !== 'COMPLETED').length;
+  const highRisk = pending.filter((a) => riskLevel(a) === 'high').length;
+  const approved = applications.filter((a) => a.status === 'APPROVED').length;
 
- const getStatusLabel = (status: string) => {
-  switch (status) {
-   case 'approved':
-    return 'Approved';
-   case 'rejected':
-    return 'Rejected';
-   case 'under_review':
-    return 'Under Review';
-   case 'pending':
-    return 'Pending';
-   default:
-    return status;
-  }
- };
-
- const filteredApplications = applications.filter(app => {
-  const matchesSearch = app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             app.rentalProperty.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesStatus = statusFilter === '' || app.status === statusFilter;
-  return matchesSearch && matchesStatus;
- });
-
- if (loading) {
   return (
-   <Box>
-    <Typography variant="h4" gutterBottom>
-     Tenant Screening
-    </Typography>
-    <Typography>Loading applications...</Typography>
-   </Box>
-  );
- }
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: 'auto', textAlign: 'left' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={2}
+        sx={{ mb: 3 }}
+      >
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>
+            Tenant screening
+          </Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            Rental applications with screening, background check and AI risk results.
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddIcon />} component={RouterLink} to="/tenant-screening/applications/new" sx={{ flexShrink: 0 }}>
+          New application
+        </Button>
+      </Stack>
 
- if (error) {
-  return (
-   <Box>
-    <Typography variant="h4" gutterBottom>
-     Tenant Screening
-    </Typography>
-    <Alert severity="error">{error}</Alert>
-   </Box>
-  );
- }
-
- return (
-  <Box>
-   <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-    <Typography variant="h4">
-     Tenant Screening
-    </Typography>
-    <Button
-     variant="contained"
-     startIcon={<AddIcon />}
-     component={Link}
-     to="/tenant-screening/applications/new"
-    >
-     New Application
-    </Button>
-   </Box>
-
-   {/* Summary Cards */}
-   <Grid container spacing={3} mb={3}>
-    <Grid xs={12} sm={6} md={3}>
-     <Card>
-      <CardContent>
-       <Typography color="textSecondary" gutterBottom>
-        Total Applications
-       </Typography>
-       <Typography variant="h4">
-        {applications.length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-    <Grid xs={12} sm={6} md={3}>
-     <Card>
-      <CardContent>
-       <Typography color="textSecondary" gutterBottom>
-        Pending Review
-       </Typography>
-       <Typography variant="h4">
-        {applications.filter(app => app.status === 'pending').length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-    <Grid xs={12} sm={6} md={3}>
-     <Card>
-      <CardContent>
-       <Typography color="textSecondary" gutterBottom>
-        Under Review
-       </Typography>
-       <Typography variant="h4">
-        {applications.filter(app => app.status === 'under_review').length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-    <Grid xs={12} sm={6} md={3}>
-     <Card>
-      <CardContent>
-       <Typography color="textSecondary" gutterBottom>
-        Approved
-       </Typography>
-       <Typography variant="h4">
-        {applications.filter(app => app.status === 'approved').length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-   </Grid>
-
-   {/* Filters */}
-   <Card sx={{ mb: 3 }}>
-    <CardContent>
-     <Grid container spacing={2} alignItems="center">
-      <Grid xs={12} md={6}>
-       <TextField
-        fullWidth
-        label="Search applications"
-        variant="outlined"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        InputProps={{
-         startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-        }}
-       />
-      </Grid>
-      <Grid xs={12} md={3}>
-       <FormControl fullWidth>
-        <InputLabel>Status</InputLabel>
-        <Select
-         value={statusFilter}
-         label="Status"
-         onChange={(e) => setStatusFilter(e.target.value)}
+      {isLoading ? (
+        <Box sx={{ display: 'grid', placeItems: 'center', py: 10 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              Retry
+            </Button>
+          }
         >
-         <MenuItem value="">All Statuses</MenuItem>
-         <MenuItem value="pending">Pending</MenuItem>
-         <MenuItem value="under_review">Under Review</MenuItem>
-         <MenuItem value="approved">Approved</MenuItem>
-         <MenuItem value="rejected">Rejected</MenuItem>
-        </Select>
-       </FormControl>
-      </Grid>
-     </Grid>
-    </CardContent>
-   </Card>
+          Could not load applications. Check that the API is running, then try again.
+        </Alert>
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: { xs: 1.5, sm: 2.5 },
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+              mb: 2.5,
+            }}
+          >
+            <Kpi icon={<AssignmentIndIcon fontSize="small" />} label="Applications" value={applications.length} sub="All time" accent="#397ae7" />
+            <Kpi icon={<HourglassIcon fontSize="small" />} label="Awaiting decision" value={pending.length} sub={`${screeningOpen} still being screened`} accent="#ffb900" />
+            <Kpi icon={<ReportProblemIcon fontSize="small" />} label="High risk" value={highRisk} sub="Pending applications flagged by AI" accent="#e5484d" />
+            <Kpi icon={<CheckCircleIcon fontSize="small" />} label="Approved" value={approved} sub="Applications approved" accent="#0db664" />
+          </Box>
 
-   {/* Applications Table */}
-   <TableContainer component={Paper}>
-    <Table>
-     <TableHead>
-      <TableRow>
-       <TableCell>Applicant</TableCell>
-       <TableCell>Contact</TableCell>
-       <TableCell>Property</TableCell>
-       <TableCell>Application Date</TableCell>
-       <TableCell>Status</TableCell>
-       <TableCell>Credit Score</TableCell>
-       <TableCell>Monthly Income</TableCell>
-       <TableCell>Actions</TableCell>
-      </TableRow>
-     </TableHead>
-     <TableBody>
-      {filteredApplications.map((application) => (
-       <TableRow key={application.id}>
-        <TableCell>
-         <Typography variant="subtitle2">
-          {application.applicantName}
-         </Typography>
-         <Typography variant="body2" color="textSecondary">
-          {application.employmentStatus}
-         </Typography>
-        </TableCell>
-        <TableCell>
-         <Typography variant="body2">
-          {application.email}
-         </Typography>
-         <Typography variant="body2" color="textSecondary">
-          {application.phone}
-         </Typography>
-        </TableCell>
-        <TableCell>{application.rentalProperty}</TableCell>
-        <TableCell>{new Date(application.applicationDate).toLocaleDateString()}</TableCell>
-        <TableCell>
-         <Chip
-          label={getStatusLabel(application.status)}
-          color={getStatusColor(application.status) as any}
-          size="small"
-         />
-        </TableCell>
-        <TableCell>
-         {application.creditScore ? (
-          <Typography
-           variant="body2"
-           color={application.creditScore >= 700 ? 'success.main' : 
-               application.creditScore >= 600 ? 'warning.main' : 'error.main'}
-          >
-           {application.creditScore}
-          </Typography>
-         ) : (
-          <Typography variant="body2" color="textSecondary">
-           N/A
-          </Typography>
-         )}
-        </TableCell>
-        <TableCell>
-         {application.monthlyIncome ? (
-          `$${application.monthlyIncome.toLocaleString()}`
-         ) : (
-          <Typography variant="body2" color="textSecondary">
-           N/A
-          </Typography>
-         )}
-        </TableCell>
-        <TableCell>
-         <Tooltip title="View Details">
-          <IconButton
-           component={Link}
-           to={`/tenant-screening/applications/${application.id}`}
-           size="small"
-           color="primary"
-          >
-           <ViewIcon />
-          </IconButton>
-         </Tooltip>
-         <Tooltip title="Edit">
-          <IconButton
-           size="small"
-           color="secondary"
-          >
-           <EditIcon />
-          </IconButton>
-         </Tooltip>
-         <Tooltip title="Delete">
-          <IconButton
-           size="small"
-           color="error"
-          >
-           <DeleteIcon />
-          </IconButton>
-         </Tooltip>
-        </TableCell>
-       </TableRow>
-      ))}
-     </TableBody>
-    </Table>
-   </TableContainer>
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+                <TextField
+                  size="small"
+                  placeholder="Search by applicant, email or property"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  sx={{ flex: 1, maxWidth: { md: 420 } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  inputProps={{ 'aria-label': 'Search applications' }}
+                />
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <InputLabel id="screening-status-label">Status</InputLabel>
+                  <Select labelId="screening-status-label" value={status} label="Status" onChange={(e) => setStatus(String(e.target.value))}>
+                    <MenuItem value="">All statuses</MenuItem>
+                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="APPROVED">Approved</MenuItem>
+                    <MenuItem value="REJECTED">Rejected</MenuItem>
+                    <MenuItem value="WITHDRAWN">Withdrawn</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
 
-   {filteredApplications.length === 0 && (
-    <Box textAlign="center" py={4}>
-     <Typography variant="h6" color="textSecondary">
-      No applications found
-     </Typography>
-     <Typography variant="body2" color="textSecondary">
-      {searchTerm || statusFilter ? 'Try adjusting your filters' : 'No applications have been submitted yet'}
-     </Typography>
+              {filtered.length === 0 ? (
+                <Box sx={{ py: 5 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    No applications found
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {search || status ? 'Try a different search or status filter.' : 'Applications will appear here when someone applies for one of your rentals.'}
+                  </Typography>
+                </Box>
+              ) : (
+                <TableContainer sx={{ overflowX: 'auto' }}>
+                  <Table size="small" sx={{ minWidth: 960, '& th, & td': { px: 1, whiteSpace: 'nowrap' }, '& td:nth-of-type(1), & td:nth-of-type(2)': { whiteSpace: 'normal' } }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Applicant</TableCell>
+                        <TableCell>Property</TableCell>
+                        <TableCell>Applied</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Screening</TableCell>
+                        <TableCell>AI risk</TableCell>
+                        <TableCell align="right">Credit</TableCell>
+                        <TableCell align="right">Income / mo</TableCell>
+                        <TableCell align="right" />
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filtered.map((a: ScreeningApplication) => {
+                        const level = riskLevel(a);
+                        const credit = a.RiskAssessment?.details?.creditScore;
+                        const to = `/tenant-screening/applications/${a.id}`;
+                        return (
+                          <TableRow key={a.id} hover>
+                            <TableCell>
+                              <Typography
+                                component={RouterLink}
+                                to={to}
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700, color: 'inherit', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                              >
+                                {applicantName(a)}
+                              </Typography>
+                              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                {a.User?.email ?? ''}
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ minWidth: 150 }}>{rentalLabel(a)}</TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>{relativeDate(a.appliedDate)}</TableCell>
+                            <TableCell>
+                              <Chip size="small" label={pretty(a.status)} color={STATUS_COLOR[a.status] ?? 'default'} />
+                            </TableCell>
+                            <TableCell>
+                              {a.Screening ? (
+                                <Chip size="small" variant="outlined" label={pretty(a.Screening.status)} color={checkColor(a.Screening.status)} />
+                              ) : (
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                  Not started
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                              {level ? (
+                                <Chip size="small" label={`${RISK_LABEL[level]} · ${Math.round(a.RiskAssessment!.score)}`} color={RISK_COLOR[level]} variant="outlined" />
+                              ) : (
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                  Not assessed
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: creditColor(credit) }}>
+                                {typeof credit === 'number' ? credit : '—'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">{money(a.RiskAssessment?.details?.monthlyIncome)}</TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="Open application">
+                                <IconButton component={RouterLink} to={to} size="small" aria-label={`Open application from ${applicantName(a)}`}>
+                                  <ChevronRightIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </Box>
-   )}
-  </Box>
- );
+  );
 };
 
 export default TenantScreening;

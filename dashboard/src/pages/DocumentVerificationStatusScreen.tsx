@@ -4,8 +4,34 @@ import {
  Typography,
  GridLegacy as Grid,
  Box,
- Alert
+ Alert,
+ Button,
+ Card,
+ CardContent,
+ Stack
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import { EmptyPanel } from '../components/empty/EmptyStates';
+
+/** The verification steps, shown on the empty state so it explains the feature. */
+const HOW_IT_WORKS = [
+ { title: 'Documents submitted', text: 'ID, proof of income and references are uploaded by the applicant.' },
+ { title: 'Automated checks', text: 'Documents are checked for completeness, legibility and expiry dates.' },
+ { title: 'Manager review', text: 'A property manager reviews flagged items and requests anything missing.' },
+ { title: 'Verified', text: 'The applicant is notified and the result is added to their screening file.' },
+];
+
+const PageTitle = () => (
+ <Box sx={{ mb: 3 }}>
+  <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
+   Document Verification
+  </Typography>
+  <Typography sx={{ color: 'text.secondary' }}>
+   Track identity and income document checks for applicants and tenants.
+  </Typography>
+ </Box>
+);
 import { VerificationState, VerificationStep } from '../types/document-verification';
 import { getVerificationState, getVerificationSteps } from '../services/documentVerificationService';
 import StatusDetailsPanel from '../components/document-verification/StatusDetailsPanel';
@@ -83,7 +109,8 @@ const DocumentVerificationStatusScreen: React.FC = () => {
  if (error) {
   return (
    <Container maxWidth="lg" sx={{ py: 4 }}>
-    <Alert severity="error" sx={{ mb: 3 }}>
+    <PageTitle />
+    <Alert severity="error" sx={{ mb: 3, border: '2px solid #140827' }}>
      {error}
     </Alert>
    </Container>
@@ -92,10 +119,60 @@ const DocumentVerificationStatusScreen: React.FC = () => {
 
  if (!verificationState) {
   return (
-   <Container maxWidth="lg" sx={{ py: 4 }}>
-    <Alert severity="warning">
-     No verification data yet.
-    </Alert>
+   <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 } }}>
+    <PageTitle />
+    <Card sx={{ mb: 3 }}>
+     <CardContent>
+      <EmptyPanel
+       icon={<FactCheckOutlinedIcon />}
+       title="No verifications in progress"
+       text="When an applicant or tenant submits documents for verification, their progress through the steps below will appear here."
+       action={
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
+         <Button component={RouterLink} to="/tenant-screening" variant="contained">
+          Go to Tenant Screening
+         </Button>
+         <Button component={RouterLink} to="/documents" variant="outlined">
+          Open Documents
+         </Button>
+        </Stack>
+       }
+      />
+     </CardContent>
+    </Card>
+    <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5 }}>
+     How verification works
+    </Typography>
+    <Grid container spacing={2}>
+     {HOW_IT_WORKS.map((step, i) => (
+      <Grid item xs={12} sm={6} md={3} key={step.title}>
+       <Card sx={{ height: '100%' }}>
+        <CardContent sx={{ p: 2.5 }}>
+         <Box
+          sx={{
+           width: 32,
+           height: 32,
+           borderRadius: '50%',
+           border: '1.5px solid #140827',
+           bgcolor: 'primary.main',
+           color: '#fff',
+           fontWeight: 800,
+           display: 'grid',
+           placeItems: 'center',
+           mb: 1.5,
+          }}
+         >
+          {i + 1}
+         </Box>
+         <Typography sx={{ fontWeight: 800, mb: 0.5 }}>{step.title}</Typography>
+         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {step.text}
+         </Typography>
+        </CardContent>
+       </Card>
+      </Grid>
+     ))}
+    </Grid>
    </Container>
   );
  }
@@ -113,7 +190,7 @@ const DocumentVerificationStatusScreen: React.FC = () => {
 
    <Grid container spacing={3}>
     {/* Verification Process Stepper */}
-    <Grid xs={12}>
+    <Grid item xs={12}>
      <VerificationStepper
       steps={verificationSteps}
       currentStep={verificationState.currentStep}
@@ -122,12 +199,12 @@ const DocumentVerificationStatusScreen: React.FC = () => {
     </Grid>
 
     {/* Status Details Panel */}
-    <Grid xs={12}>
+    <Grid item xs={12}>
      <StatusDetailsPanel verificationState={verificationState} />
     </Grid>
 
     {/* Required Actions Panel */}
-    <Grid xs={12}>
+    <Grid item xs={12}>
      <RequiredActionsPanel
       actions={verificationState.requiredActions}
       tenantId={tenantId}

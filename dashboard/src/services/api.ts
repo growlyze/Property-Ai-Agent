@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Application, Document, Property } from '../types/tenant-screening';
+import { handleAuthError } from './authRefresh';
 
 // Get the base URL from environment variables
 const baseURL = import.meta.env.VITE_API_URL || '/api';
@@ -41,19 +42,9 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
-    // Handle 401 Unauthorized errors
-    if (error.response && error.response.status === 401) {
-      // Clear local storage - FIXED: clear 'authToken' instead of 'token'
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      
-      // Redirect to login page
-      window.location.href = '/login';
-    }
-    
-    return Promise.reject(error);
-  }
+  // 401: renew the session with the refresh token and retry once; only if that
+  // fails is the user sent to /login (see services/authRefresh.ts).
+  (error) => handleAuthError(error, (config) => api(config))
 );
 
 // Tenant Screening API endpoints

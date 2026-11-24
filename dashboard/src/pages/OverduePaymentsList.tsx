@@ -27,6 +27,7 @@ import {
   IconButton,
   Tooltip,
   Skeleton,
+  Snackbar,
 } from '@mui/material';
 import {
   FilterList as FilterIcon,
@@ -55,19 +56,31 @@ const OverduePaymentsList: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filters, setFilters] = useState<OverduePaymentsFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [notice, setNotice] = useState<{ severity: 'success' | 'error'; text: string } | null>(null);
 
-  // Mock data for properties and tenants - in real app, these would come from API
-  const mockProperties = [
-    { id: '1', title: 'Sunset Apartments' },
-    { id: '2', title: 'Riverside Complex' },
-    { id: '3', title: 'Downtown Towers' },
-  ];
+  // Filter options come from the live property (unit) and tenant lists.
+  const { data: propertyOptions = [] } = useQuery({
+    queryKey: ['overdue-filter', 'properties'],
+    queryFn: async () => {
+      const res = await dashboardService.getProperties(1, 100);
+      return (res.data ?? [])
+        .map((p: any) => ({ id: String(p.id), title: String(p.title || p.address || 'Untitled property') }))
+        .sort((x: { title: string }, y: { title: string }) => x.title.localeCompare(y.title));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const mockTenants = [
-    { id: '1', name: 'John Smith' },
-    { id: '2', name: 'Sarah Johnson' },
-    { id: '3', name: 'Mike Davis' },
-  ];
+  const { data: tenantOptions = [] } = useQuery({
+    queryKey: ['overdue-filter', 'tenants'],
+    queryFn: async () => {
+      const res: any = await dashboardService.getTenants(1, 100);
+      const rows: any[] = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      return rows
+        .map((t) => ({ id: String(t.id), name: String(t.name || [t.firstName, t.lastName].filter(Boolean).join(' ') || t.email) }))
+        .sort((x, y) => x.name.localeCompare(y.name));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: overduePayments, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.dashboard.overduePayments(filters),
@@ -122,9 +135,25 @@ const OverduePaymentsList: React.FC = () => {
   };
 
   const handleExport = (format: 'csv' | 'pdf') => {
-    // Mock export functionality
-    console.log(`Exporting overdue payments as ${format.toUpperCase()}`);
-    // In real implementation, this would call dashboardService.exportReport
+    if (format === 'pdf') {
+      // The browser's print dialog offers "Save as PDF".
+      window.print();
+      return;
+    }
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = ['Tenant', 'Property', 'Unit', 'Amount', 'Due date', 'Days overdue', 'Status'];
+    const lines = filteredPayments.map((p: any) =>
+      [p.tenantName, p.propertyName, p.unitNumber, p.amount, new Date(p.dueDate).toISOString().slice(0, 10), p.daysOverdue, p.status]
+        .map(esc)
+        .join(',')
+    );
+    const blob = new Blob([[header.join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `overdue-payments-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const totalOverdueAmount = filteredPayments.reduce((sum, payment) => sum + payment.amount, 0);
@@ -134,19 +163,19 @@ const OverduePaymentsList: React.FC = () => {
   const handleSendReminder = async (paymentId: string) => {
     try {
       await dashboardService.triggerPaymentReminder(paymentId);
-      // In a real app, you'd show a success message
-      console.log('Payment reminder sent successfully');
+      setNotice({ severity: 'success', text: 'Payment reminder sent.' });
     } catch (error) {
-      console.error('Failed to send payment reminder:', error);
+      setNotice({ severity: 'error', text: 'Could not send the reminder. Please try again.' });
     }
   };
 
   const handleMarkAsPaid = async (paymentId: string) => {
     try {
       await dashboardService.markPaymentPaid(paymentId);
+      setNotice({ severity: 'success', text: 'Payment marked as paid.' });
       refetch(); // Refresh the data
     } catch (error) {
-      console.error('Failed to mark payment as paid:', error);
+      setNotice({ severity: 'error', text: 'Could not mark the payment as paid. Please try again.' });
     }
   };
 
@@ -302,7 +331,7 @@ const OverduePaymentsList: React.FC = () => {
                   <MenuItem value="">
                     <em>All Properties</em>
                   </MenuItem>
-                  {mockProperties.map((property) => (
+                  {propertyOptions.map((property: { id: string; title: string }) => (
                     <MenuItem key={property.id} value={property.id}>
                       {property.title}
                     </MenuItem>
@@ -319,7 +348,7 @@ const OverduePaymentsList: React.FC = () => {
                   <MenuItem value="">
                     <em>All Tenants</em>
                   </MenuItem>
-                  {mockTenants.map((tenant) => (
+                  {tenantOptions.map((tenant) => (
                     <MenuItem key={tenant.id} value={tenant.id}>
                       {tenant.name}
                     </MenuItem>
@@ -445,6 +474,11 @@ const OverduePaymentsList: React.FC = () => {
             rowsPerPageOptions={[5, 10, 25, 50]}
           />
         </Paper>
+        <Snackbar open={Boolean(notice)} autoHideDuration={4000} onClose={() => setNotice(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert severity={notice?.severity ?? 'success'} onClose={() => setNotice(null)} variant="filled">
+            {notice?.text}
+          </Alert>
+        </Snackbar>
       </Container>
     </LocalizationProvider>
   );

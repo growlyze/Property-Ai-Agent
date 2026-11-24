@@ -39,13 +39,17 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(({ theme }) 
   padding: `${tokens.spacing.sm} ${tokens.spacing.xs}`,
   
   '& .MuiBottomNavigationAction-label': {
-    fontSize: tokens.typography.body.small.fontSize,
+    fontSize: '0.7rem',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%',
     fontWeight: tokens.typography.fontWeight.medium,
     lineHeight: tokens.typography.body.small.lineHeight,
     marginTop: tokens.spacing.xs,
     
     '&.Mui-selected': {
-      fontSize: tokens.typography.body.small.fontSize,
+      fontSize: '0.7rem',
     },
   },
   
@@ -156,13 +160,13 @@ export const MobileBottomTabs: React.FC<MobileBottomTabsProps> = ({ className })
 
   return (
     <>
-      {/* Spacer to prevent content from being hidden behind fixed bottom navigation */}
-      <ContentSpacer />
-      
+      {/* No spacer here: Layout's <main> already reserves 80px at the bottom. */}
+
       <Landmark role="navigation" aria-label="Primary mobile navigation">
         <StyledBottomNavigation
           value={activeIndex >= 0 ? activeIndex : false}
           onChange={handleChange}
+          showLabels
           className={className}
           component="nav"
           aria-label="Primary navigation tabs"

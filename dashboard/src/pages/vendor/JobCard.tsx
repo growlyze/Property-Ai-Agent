@@ -137,17 +137,23 @@ function QuoteList({ quotes }: { quotes: WorkOrderQuote[] }) {
       </Typography>
       <Stack spacing={0.75} sx={{ mt: 0.5 }}>
         {quotes.map((q) => (
-          <Stack key={q.id} direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-            <Typography variant="body2" sx={{ minWidth: 0, wordBreak: 'break-word' }}>
-              <strong>{money(q.amount, 2)}</strong>
-              {q.details ? ` · ${q.details}` : ''}
-              <Typography component="span" variant="caption" sx={{ color: 'text.secondary' }}>
-                {' '}
-                · {fmtDate(q.createdAt)}
+          <Box key={q.id}>
+            <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+              <Typography variant="body2">
+                <strong>{money(q.amount, 2)}</strong>
+                <Typography component="span" variant="caption" sx={{ color: 'text.secondary' }}>
+                  {' '}
+                  · {fmtDate(q.createdAt)}
+                </Typography>
               </Typography>
-            </Typography>
-            <StatusChip status={q.status} />
-          </Stack>
+              <StatusChip status={q.status} />
+            </Stack>
+            {q.details && (
+              <Typography variant="body2" sx={{ color: 'text.secondary', wordBreak: 'break-word', mt: 0.25 }}>
+                {q.details}
+              </Typography>
+            )}
+          </Box>
         ))}
       </Stack>
     </Box>
@@ -195,7 +201,7 @@ export function JobCard({
           </Typography>
         )}
 
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.25, flexWrap: 'wrap', rowGap: 1 }}>
+        <Stack direction="row" spacing={1} useFlexGap alignItems="center" sx={{ mt: 1.25, flexWrap: 'wrap' }}>
           <PriorityChip priority={job.priority} />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {job.scheduledFor ? `Scheduled ${fmtDate(job.scheduledFor)}` : `Created ${fmtDate(job.createdAt)}`}

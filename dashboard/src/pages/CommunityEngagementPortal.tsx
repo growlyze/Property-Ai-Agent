@@ -47,6 +47,7 @@ import {
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
 import { asArray } from '../utils/safeData';
+import { EmptyPanel, NotConnectedNotice, TableEmptyRow } from '../components/empty/EmptyStates';
 
 interface TabPanelProps {
  children?: React.ReactNode;
@@ -120,7 +121,7 @@ function TabPanel(props: TabPanelProps) {
    aria-labelledby={`simple-tab-${index}`}
    {...other}
   >
-   {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+   {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
   </div>
  );
 }
@@ -167,6 +168,8 @@ const CommunityEngagementPortal: React.FC = () => {
   duration: 1,
  });
 
+ const [unavailable, setUnavailable] = useState(false);
+
  useEffect(() => {
   loadData();
  }, []);
@@ -182,6 +185,7 @@ const CommunityEngagementPortal: React.FC = () => {
    ]);
    // apiService never throws: failed calls resolve to { error }. The community
    // module has no backend routes yet, so fall back to empty lists.
+   setUnavailable(Boolean((announcementsData as any)?.error));
    setAnnouncements(asArray<Announcement>(announcementsData?.data));
    setEvents(asArray<CommunityEvent>(eventsData?.data));
    setForumPosts(asArray<ForumPost>(forumData?.data));
@@ -258,13 +262,22 @@ const CommunityEngagementPortal: React.FC = () => {
  };
 
  return (
-  <Box sx={{ width: '100%', p: 2 }}>
-   <Typography variant="h4" gutterBottom>
-    Community Engagement Portal
+  <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', width: '100%' }}>
+   <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
+    Community Engagement
    </Typography>
-   
+   <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+    Announcements, events, the resident forum, local services and amenity bookings.
+   </Typography>
+
+   {unavailable && (
+    <NotConnectedNotice>
+     The community module isn't connected to the server yet. Posts, events and reservations will appear here once it is enabled. To message residents today, use Communications.
+    </NotConnectedNotice>
+   )}
+
    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-    <Tabs value={value} onChange={handleChange} aria-label="community engagement portal tabs">
+    <Tabs value={value} onChange={handleChange} aria-label="community engagement portal tabs" variant="scrollable" allowScrollButtonsMobile>
      <Tab 
       label={
        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -313,12 +326,13 @@ const CommunityEngagementPortal: React.FC = () => {
    </Box>
 
    <TabPanel value={value} index={0}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-     <Typography variant="h5">Announcements</Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+     <Typography variant="h6" sx={{ fontWeight: 800 }}>Announcements</Typography>
      <Button
       variant="contained"
       startIcon={<AddIcon />}
       onClick={() => setShowAnnouncementForm(true)}
+      disabled={unavailable}
      >
       New Announcement
      </Button>
@@ -326,10 +340,10 @@ const CommunityEngagementPortal: React.FC = () => {
 
     <Grid container spacing={2}>
      {announcements.length === 0 && (
-      <Typography color="text.secondary" sx={{ p: 2 }}>No announcements yet.</Typography>
+      <Grid item xs={12}><EmptyPanel icon={<AnnouncementIcon />} title="No announcements yet" text="Post building news, maintenance windows and reminders for residents." /></Grid>
      )}
      {announcements.map((announcement) => (
-      <Grid xs={12} md={6} key={announcement.id}>
+      <Grid item xs={12} md={6} key={announcement.id}>
        <Card>
         <CardContent>
          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
@@ -356,12 +370,13 @@ const CommunityEngagementPortal: React.FC = () => {
    </TabPanel>
 
    <TabPanel value={value} index={1}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-     <Typography variant="h5">Community Events</Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+     <Typography variant="h6" sx={{ fontWeight: 800 }}>Community Events</Typography>
      <Button
       variant="contained"
       startIcon={<AddIcon />}
       onClick={() => setShowEventForm(true)}
+      disabled={unavailable}
      >
       Create Event
      </Button>
@@ -369,10 +384,10 @@ const CommunityEngagementPortal: React.FC = () => {
 
     <Grid container spacing={2}>
      {events.length === 0 && (
-      <Typography color="text.secondary" sx={{ p: 2 }}>No events yet.</Typography>
+      <Grid item xs={12}><EmptyPanel icon={<EventIcon />} title="No upcoming events" text="Create an event such as a rooftop social or move-in day and residents can RSVP." /></Grid>
      )}
      {events.map((event) => (
-      <Grid xs={12} md={4} key={event.id}>
+      <Grid item xs={12} md={4} key={event.id}>
        <Card>
         <CardContent>
          <Typography variant="h6" gutterBottom>
@@ -410,12 +425,13 @@ const CommunityEngagementPortal: React.FC = () => {
    </TabPanel>
 
    <TabPanel value={value} index={2}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-     <Typography variant="h5">Community Forum</Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+     <Typography variant="h6" sx={{ fontWeight: 800 }}>Community Forum</Typography>
      <Button
       variant="contained"
       startIcon={<AddIcon />}
       onClick={() => setShowForumForm(true)}
+      disabled={unavailable}
      >
       New Post
      </Button>
@@ -423,7 +439,7 @@ const CommunityEngagementPortal: React.FC = () => {
 
     <List>
      {forumPosts.length === 0 && (
-      <Typography color="text.secondary" sx={{ p: 2 }}>No forum posts yet.</Typography>
+      <Grid item xs={12}><EmptyPanel icon={<ForumIcon />} title="No forum posts yet" text="Resident questions and discussions will appear here." /></Grid>
      )}
      {forumPosts.map((post) => (
       <ListItem key={post.id} divider>
@@ -449,15 +465,15 @@ const CommunityEngagementPortal: React.FC = () => {
    </TabPanel>
 
    <TabPanel value={value} index={3}>
-    <Typography variant="h5" gutterBottom>
+    <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
      Service Recommendations
     </Typography>
     <Grid container spacing={2}>
      {services.length === 0 && (
-      <Typography color="text.secondary" sx={{ p: 2 }}>No service recommendations yet.</Typography>
+      <Grid item xs={12}><EmptyPanel icon={<ServiceIcon />} title="No service recommendations yet" text="Recommended local services such as cleaners and movers will be listed here." /></Grid>
      )}
      {services.map((service) => (
-      <Grid xs={12} md={6} key={service.id}>
+      <Grid item xs={12} md={6} key={service.id}>
        <Card>
         <CardContent>
          <Typography variant="h6" gutterBottom>
@@ -485,12 +501,13 @@ const CommunityEngagementPortal: React.FC = () => {
    </TabPanel>
 
    <TabPanel value={value} index={4}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-     <Typography variant="h5">Amenity Reservations</Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+     <Typography variant="h6" sx={{ fontWeight: 800 }}>Amenity Reservations</Typography>
      <Button
       variant="contained"
       startIcon={<AddIcon />}
       onClick={() => setShowReservationForm(true)}
+      disabled={unavailable}
      >
       Reserve Amenity
      </Button>
@@ -510,9 +527,7 @@ const CommunityEngagementPortal: React.FC = () => {
       </TableHead>
       <TableBody>
        {reservations.length === 0 && (
-        <TableRow>
-         <TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No reservations yet.</TableCell>
-        </TableRow>
+        <TableEmptyRow colSpan={6} icon={<LocationIcon />} title="No amenity reservations" text="Bookings for the gym, party room or other shared spaces will show here." />
        )}
        {reservations.map((reservation) => (
         <TableRow key={reservation.id}>

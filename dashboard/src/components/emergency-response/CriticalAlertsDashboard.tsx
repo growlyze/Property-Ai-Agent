@@ -392,7 +392,7 @@ export const CriticalAlertsDashboard: React.FC<CriticalAlertsDashboardProps> = (
                               <LocationIcon fontSize="small" color="action" />
                               <Typography variant="caption" color="text.secondary" component="span">
                                 {alert.location.propertyName}
-                                {alert.location.unitNumber && ` - Unit ${alert.location.unitNumber}`}
+                                {alert.location.unitNumber && !String(alert.location.propertyName ?? "").includes(`Unit ${alert.location.unitNumber}`) && ` - Unit ${alert.location.unitNumber}`}
                               </Typography>
                             </Box>
                             

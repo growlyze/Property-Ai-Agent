@@ -8,17 +8,20 @@ import reportWebVitals from './reportWebVitals';
 import { config, isProduction } from './config/environment';
 import { reportPerformance } from './utils/monitoring';
 
-// Service worker registration for mobile optimization
+// No service worker. The old one served pages, bundles and API data from a
+// cache, so users kept seeing stale screens and data after deploys. Remove any
+// worker and cache a browser still has from that version.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
+  navigator.serviceWorker
+    .getRegistrations()
+    .then((regs) => regs.forEach((reg) => reg.unregister()))
+    .catch(() => {});
+}
+if ('caches' in window) {
+  caches
+    .keys()
+    .then((names) => names.forEach((name) => caches.delete(name)))
+    .catch(() => {});
 }
 
 const root = ReactDOM.createRoot(

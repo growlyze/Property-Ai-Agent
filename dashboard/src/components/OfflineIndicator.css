@@ -57,10 +57,10 @@
 }
 
 /* Status-specific styling */
+/* Online is the normal state: show nothing. The badge only appears when the
+   connection drops, while syncing, or with changes waiting to sync. */
 .offline-indicator.online {
-  background-color: #e8f5e8;
-  border: 1px solid #4caf50;
-  color: #2e7d32;
+  display: none;
 }
 
 .offline-indicator.offline {
@@ -308,5 +308,19 @@
 
   .offline-indicator.syncing {
     animation: none;
+  }
+}
+/*
+ * Phones: the bar used to sit at top 45-50px, overlapping the 56-64px app bar
+ * and the page title, and a full-width "Online" banner is noise. Show it only
+ * when something needs attention (offline, syncing, pending items), below the bar.
+ */
+@media (max-width: 767px) {
+  .offline-indicator {
+    top: 68px;
+  }
+
+  .offline-indicator.online {
+    display: none;
   }
 }

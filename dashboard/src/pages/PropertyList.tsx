@@ -1,211 +1,176 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   Box,
-  Typography,
-  TextField,
   Button,
+  Chip,
+  InputAdornment,
+  Link,
   Pagination,
-  CircularProgress,
-  Alert,
+  Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  IconButton,
-  Dialog,
+  TextField,
+  Typography,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Link } from 'react-router-dom';
-import PropertyForm from '../components/PropertyForm';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { dashboardService, Property } from '../services/dashboardService';
+import { ErrorNote, Loading, StatusChip, fmtDate, money, pretty } from '../components/portal/PortalUI';
 
-const columns = [
-  { field: 'id', headerName: 'ID', width: 90, hide: true },
-  {
-    field: 'address',
-    headerName: 'Address',
-    width: 250,
-    renderCell: (params: any) => (
-      <Link to={`/properties/${params.row.id}`} style={{ textDecoration: 'none' }}>
-        {params.value}
-      </Link>
-    ),
-  },
-  { field: 'propertyType', headerName: 'Type', width: 120 },
-  { field: 'status', headerName: 'Status', width: 100 },
-  { field: 'totalUnits', headerName: 'Units', width: 80 },
-  {
-    field: 'createdAt',
-    headerName: 'Created',
-    width: 150,
-    valueFormatter: (params: any) => new Date(params.value).toLocaleDateString(),
-  },
-];
+const PAGE_SIZE = 10;
+/** While searching we load one larger page and filter/paginate it here, so search also
+ *  works against an API that ignores `search`. */
+const SEARCH_FETCH_LIMIT = 100;
 
+const matches = (p: any, term: string) =>
+  [p.title, p.address, p.city, p.state, p.zipCode, p.unitNumber, p.propertyType]
+    .filter(Boolean)
+    .some((v) => String(v).toLowerCase().includes(term));
+
+/**
+ * Properties list. "Properties" are the Rental records (one per unit) exposed through
+ * GET /api/properties; each row links to its rental detail page.
+ */
 const PropertyList: React.FC = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const limit = 10;
-  const totalPages = Math.max(1, Math.ceil((total || 0) / limit));
-
-  const [openForm, setOpenForm] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Partial<any>>({});
-  const [openDelete, setOpenDelete] = useState(false);
-  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
-
-  const fetchProperties = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await dashboardService.getProperties(page, limit, searchTerm);
-      setProperties(Array.isArray(response?.data) ? response.data : []);
-      setTotal(response?.total ?? 0);
-    } catch (err) {
-      setProperties([]);
-      setTotal(0);
-      setError('Failed to fetch properties');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [input, setInput] = useState('');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetchProperties();
-  }, [page, searchTerm]);
+    const t = setTimeout(() => {
+      setSearch(input.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [input]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setPage(1);
-  };
+  const query = useQuery({
+    queryKey: ['properties-list', search ? 'search' : page, search],
+    queryFn: () =>
+      search
+        ? dashboardService.getProperties(1, SEARCH_FETCH_LIMIT, search)
+        : dashboardService.getProperties(page, PAGE_SIZE),
+    placeholderData: keepPreviousData,
+  });
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
+  const { rows, total } = useMemo(() => {
+    const data: Property[] = Array.isArray(query.data?.data) ? query.data!.data : [];
+    if (!search) return { rows: data, total: query.data?.total ?? data.length };
+    const filtered = data.filter((p) => matches(p, search.toLowerCase()));
+    return { rows: filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), total: filtered.length };
+  }, [query.data, search, page]);
 
-  const handleOpenForm = (isEdit: boolean = false, property: Partial<any> = {}) => {
-    setEditMode(isEdit);
-    setSelectedProperty(property);
-    setOpenForm(true);
-  };
-
-  const handleCloseForm = () => {
-    setOpenForm(false);
-    setSelectedProperty({});
-  };
-
-  const handleSubmitSuccess = () => {
-    fetchProperties();
-    handleCloseForm();
-  };
-
-  const handleOpenDelete = (id: string) => {
-    setSelectedDeleteId(id);
-    setOpenDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setOpenDelete(false);
-    setSelectedDeleteId(null);
-  };
-
-  const handleDelete = async () => {
-    if (selectedDeleteId) {
-      try {
-        await dashboardService.deleteProperty(selectedDeleteId);
-        fetchProperties();
-      } catch (error) {
-        setError('Failed to delete property');
-      }
-      handleCloseDelete();
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Property Listings
-      </Typography>
-
-      {error && <Alert severity="error">{error}</Alert>}
-
-      <Box sx={{ mb: 2 }}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', flexWrap: 'wrap' }}>
-          <TextField
-            label="Search Properties"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Search by address or type..."
-            sx={{ minWidth: 300 }}
-          />
-          <Button variant="contained" component={Link} to="/properties/new">
-            Add Property
-          </Button>
+    <Box sx={{ textAlign: 'left' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        spacing={1.5}
+        sx={{ mb: 2 }}
+      >
+        <Box>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 800 }}>
+            Properties
+          </Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            {query.isLoading ? 'Loading…' : `${total} ${total === 1 ? 'unit' : 'units'}${search ? ` matching “${search}”` : ''}`}
+          </Typography>
         </Box>
-      </Box>
+        <Button variant="contained" startIcon={<AddIcon />} component={RouterLink} to="/rentals/new" sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}>
+          Add property
+        </Button>
+      </Stack>
 
-      <TableContainer component={Paper} sx={{ minHeight: 400 }}>
-        <Table aria-label="Property listings table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Address</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Units</TableCell>
-              <TableCell>Created</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {properties.map((property) => (
-              <TableRow key={property.id}>
-                <TableCell>
-                  <Link to={`/properties/${property.id}`} style={{ textDecoration: 'none' }}>
-                    {property.address}
-                  </Link>
-                </TableCell>
-                <TableCell>{property.propertyType}</TableCell>
-                <TableCell>{property.status}</TableCell>
-                <TableCell>{property.totalUnits}</TableCell>
-                <TableCell>{new Date(property.createdAt).toLocaleDateString()}</TableCell>
-              </TableRow>
-            ))}
-{properties.length === 0 && (
+      <TextField
+        size="small"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Search by name, address, city or unit…"
+        inputProps={{ 'aria-label': 'Search properties' }}
+        sx={{ mb: 2, width: { xs: '100%', sm: 420 } }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      {query.isError && (
+        <Box sx={{ mb: 2 }}>
+          <ErrorNote text="Could not load properties." onRetry={() => query.refetch()} />
+        </Box>
+      )}
+
+      {query.isLoading ? (
+        <Loading />
+      ) : (
+        <TableContainer component={Paper} sx={{ overflowX: 'auto' }}>
+          <Table aria-label="Properties" sx={{ minWidth: 760 }}>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                  {loading ? 'Loading…' : searchTerm ? 'No properties match your search.' : 'No properties yet.'}
-                </TableCell>
+                <TableCell>Property</TableCell>
+                <TableCell>Address</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell align="right">Rent</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Availability</TableCell>
+                <TableCell>Added</TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {rows.map((p: any) => (
+                <TableRow key={p.id} hover>
+                  <TableCell sx={{ fontWeight: 700 }}>
+                    <Link component={RouterLink} to={`/rentals/${p.id}`} underline="hover" sx={{ fontWeight: 700 }}>
+                      {p.title || p.address}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{[p.address, p.city, p.state].filter(Boolean).join(', ')}</TableCell>
+                  <TableCell>{pretty(p.propertyType) || '—'}</TableCell>
+                  <TableCell align="right">{p.rent != null ? money(Number(p.rent)) : '—'}</TableCell>
+                  <TableCell>
+                    <StatusChip status={p.status} />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      color={p.isAvailable ? 'success' : 'default'}
+                      label={p.isAvailable ? 'Available' : 'Let'}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmtDate(p.createdAt)}</TableCell>
+                </TableRow>
+              ))}
+              {rows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                    {search ? `No properties match “${search}”.` : 'No properties yet. Add your first one to get started.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-      <Box display="flex" justifyContent="center" mt={2}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-          aria-label="Property list pagination"
-        />
-      </Box>
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Pagination count={totalPages} page={page} onChange={(_, v) => setPage(v)} color="primary" aria-label="Property list pagination" />
+        </Box>
+      )}
     </Box>
   );
 };

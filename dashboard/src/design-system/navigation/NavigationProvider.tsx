@@ -85,9 +85,9 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   const theme = useTheme();
   
   // Breakpoint detection
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'), { noSsr: true });
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'), { noSsr: true });
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'), { noSsr: true });
   
   // Determine current breakpoint
   const getCurrentBreakpoint = (): NavigationBreakpoint => {

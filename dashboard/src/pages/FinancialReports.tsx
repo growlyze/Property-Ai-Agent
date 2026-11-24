@@ -52,22 +52,31 @@ const FinancialReports: React.FC = () => {
   };
 
   const handleExport = (format: 'csv' | 'pdf') => {
-    if (Array.isArray(report) && report.length > 0) {
-      dashboardService.exportReport(format, selectedReport.type || 'monthly', selectedReport)
-        .then((blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `financial-report-${selectedReport.type}-${selectedReport.period}.${format}`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        })
-        .catch((error) => {
-          console.error('Export failed:', error);
-        });
+    const current = Array.isArray(report) && report.length > 0 ? report[0] : null;
+    if (!current) return;
+    if (format === 'pdf') {
+      // The browser's print dialog offers "Save as PDF".
+      window.print();
+      return;
     }
+    // Built here from the loaded report, so the export always matches what is on screen.
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows: unknown[][] = [
+      ['Property', 'Revenue', 'Overdue'],
+      ...(current.propertyBreakdown ?? []).map((p) => [p.propertyName, p.revenue, p.overdue]),
+      [],
+      ['Total revenue', current.totalRevenue],
+      ['Total overdue', current.totalOverdue],
+    ];
+    const blob = new Blob([rows.map((r) => r.map(esc).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `financial-report-${selectedReport.type}-${selectedReport.period}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const formatCurrency = (amount: number) => {
@@ -133,21 +142,21 @@ const FinancialReports: React.FC = () => {
       if (t.status === 'paid' || t.status === 'pending' || t.status === 'overdue') row[t.status] += t.amount;
       byDate.set(t.date, row);
     }
-    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+    return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
   })();
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Box>
-          <Typography variant="h3" component="h1" gutterBottom>
+      <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, justifyContent: 'space-between', alignItems: { xs: 'stretch', md: 'flex-start' } }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="h3" component="h1" gutterBottom sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' }, fontWeight: 800 }}>
             Financial Reports
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Comprehensive financial analysis and reporting for your properties
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', flexShrink: 0 }}>
           <Button
             variant="outlined"
             startIcon={<DownloadIcon />}
@@ -292,11 +301,19 @@ const FinancialReports: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
+              <Box sx={{ height: 300, width: '100%', minWidth: 0, overflow: 'hidden' }}>
+                <ResponsiveContainer width="99%" height="100%">
                   <BarChart data={trendRows} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#d8cdb9" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(d: string) =>
+                        /^\d{4}-\d{2}-\d{2}$/.test(d)
+                          ? new Date(`${d}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+                          : d
+                      }
+                    />
                     <YAxis tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} tick={{ fontSize: 12 }} />
                     <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
                     <Legend />
@@ -325,6 +342,7 @@ const FinancialReports: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    gap: 2,
                     p: 2,
                     border: 1,
                     borderColor: 'divider',
@@ -336,14 +354,14 @@ const FinancialReports: React.FC = () => {
                       {property.propertyName}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Property ID: {property.propertyId}
+                      {property.overdue > 0 ? 'Has overdue rent' : 'Up to date'}
                     </Typography>
                   </Box>
-                  <Box sx={{ textAlign: 'right' }}>
+                  <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
                     <Typography variant="h6" color="primary.main">
                       {formatCurrency(property.revenue)}
                     </Typography>
-                    <Typography variant="body2" color="error.main">
+                    <Typography variant="body2" color={property.overdue > 0 ? "error.main" : "text.secondary"}>
                       Overdue: {formatCurrency(property.overdue)}
                     </Typography>
                   </Box>

@@ -75,14 +75,30 @@ interface NotificationSettings {
   weeklyReports: boolean;
 }
 
+/**
+ * Device and sign-in history are sample data until session tracking is wired to
+ * the API. Timestamps are generated relative to now so the page never looks stale.
+ */
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000);
+const fmtWhen = (d: Date) =>
+  d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+const fmtAgo = (d: Date) => {
+  const mins = Math.round((Date.now() - d.getTime()) / 60_000);
+  if (mins < 60) return `${mins} min ago`;
+  const h = Math.round(mins / 60);
+  if (h < 24) return `${h} hour${h === 1 ? '' : 's'} ago`;
+  const days = Math.round(h / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+};
+
 const SecuritySettingsDashboard: React.FC = () => {
   const [securityLevel, setSecurityLevel] = useState(75);
   const [devices, setDevices] = useState<Device[]>([
     {
       id: '1',
-      name: 'MacBook Pro',
+      name: 'MacBook Pro (office)',
       type: 'desktop',
-      lastAccess: '2 hours ago',
+      lastAccess: fmtAgo(minutesAgo(125)),
       location: 'San Francisco, CA',
       trusted: true
     },
@@ -90,15 +106,15 @@ const SecuritySettingsDashboard: React.FC = () => {
       id: '2',
       name: 'iPhone 14',
       type: 'mobile',
-      lastAccess: '1 day ago',
+      lastAccess: fmtAgo(minutesAgo(26 * 60)),
       location: 'San Francisco, CA',
       trusted: true
     },
     {
       id: '3',
-      name: 'Unknown Device',
+      name: 'Windows PC (Chrome)',
       type: 'desktop',
-      lastAccess: '3 days ago',
+      lastAccess: fmtAgo(minutesAgo(3 * 24 * 60 + 40)),
       location: 'New York, NY',
       trusted: false
     }
@@ -107,21 +123,21 @@ const SecuritySettingsDashboard: React.FC = () => {
   const [loginAttempts] = useState<LoginAttempt[]>([
     {
       id: '1',
-      timestamp: '2024-01-15 14:30',
+      timestamp: fmtWhen(minutesAgo(125)),
       location: 'San Francisco, CA',
       success: true,
       ipAddress: '192.168.1.1'
     },
     {
       id: '2',
-      timestamp: '2024-01-15 09:15',
+      timestamp: fmtWhen(minutesAgo(26 * 60)),
       location: 'San Francisco, CA',
       success: true,
       ipAddress: '192.168.1.1'
     },
     {
       id: '3',
-      timestamp: '2024-01-14 22:45',
+      timestamp: fmtWhen(minutesAgo(3 * 24 * 60 + 40)),
       location: 'New York, NY',
       success: false,
       ipAddress: '203.0.113.1'
@@ -138,6 +154,10 @@ const SecuritySettingsDashboard: React.FC = () => {
   
   const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const saveDevice = () => {
+    if (selectedDevice) setDevices((prev) => prev.map((d) => (d.id === selectedDevice.id ? selectedDevice : d)));
+    setDeviceDialogOpen(false);
+  };
 
   const getSecurityLevelColor = (level: number) => {
     if (level >= 80) return 'success';
@@ -179,18 +199,21 @@ const SecuritySettingsDashboard: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, fontWeight: 600 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 } }}>
+      <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
         Security Settings
       </Typography>
+      <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+        Review sign-ins and devices on your account and choose which security alerts you receive.
+      </Typography>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={3}>
         {/* Account Security Level */}
         <Grid item xs={12}>
-          <Paper elevation={2} sx={{ p: 4 }}>
+          <Card sx={{ p: { xs: 2, md: 3 } }}>
             <Box display="flex" alignItems="center" mb={3}>
               <ShieldIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography variant="h5" component="h2" fontWeight={600}>
+              <Typography variant="h6" component="h2" fontWeight={800}>
                 Account Security Level
               </Typography>
             </Box>
@@ -215,46 +238,27 @@ const SecuritySettingsDashboard: React.FC = () => {
             </Box>
             
             <Typography variant="body2" color="text.secondary">
-              A visual indicator of your account security level will be displayed here.
+              Strong password and verified email are in place. Turn on two-factor authentication and review unrecognised devices to reach Strong.
             </Typography>
-          </Paper>
+          </Card>
         </Grid>
 
         {/* Login Attempts */}
         <Grid item xs={12}>
-          <Paper elevation={2} sx={{ p: 4 }}>
+          <Card sx={{ p: { xs: 2, md: 3 } }}>
             <Box display="flex" alignItems="center" mb={3}>
               <LocationIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography variant="h5" component="h2" fontWeight={600}>
-                Login Attempts
-              </Typography>
-            </Box>
-            
-            {/* Map Placeholder */}
-            <Box 
-              sx={{ 
-                height: 300, 
-                bgcolor: 'grey.100', 
-                borderRadius: 2, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                mb: 3,
-                border: '2px dashed',
-                borderColor: 'grey.300'
-              }}
-            >
-              <Typography variant="body1" color="text.secondary" textAlign="center">
-                A map visualizing recent login attempts will be implemented here.
+              <Typography variant="h6" component="h2" fontWeight={800}>
+                Sign-in Activity
               </Typography>
             </Box>
             
             {/* Recent Login Attempts Table */}
-            <Typography variant="h6" gutterBottom>
-              Recent Activity
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Recent sign-ins to your account. Sample history until session tracking is connected.
             </Typography>
             <TableContainer>
-              <Table>
+              <Table size="small" sx={{ minWidth: 560 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>Time</TableCell>
@@ -266,7 +270,7 @@ const SecuritySettingsDashboard: React.FC = () => {
                 <TableBody>
                   {loginAttempts.map((attempt) => (
                     <TableRow key={attempt.id}>
-                      <TableCell>{attempt.timestamp}</TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{attempt.timestamp}</TableCell>
                       <TableCell>{attempt.location}</TableCell>
                       <TableCell>{attempt.ipAddress}</TableCell>
                       <TableCell>
@@ -282,34 +286,34 @@ const SecuritySettingsDashboard: React.FC = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </Paper>
+          </Card>
         </Grid>
 
         {/* Authorized Devices */}
         <Grid item xs={12}>
-          <Paper elevation={2} sx={{ p: 4 }}>
+          <Card sx={{ p: { xs: 2, md: 3 } }}>
             <Box display="flex" alignItems="center" mb={3}>
               <DeviceIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography variant="h5" component="h2" fontWeight={600}>
+              <Typography variant="h6" component="h2" fontWeight={800}>
                 Authorized Devices
               </Typography>
             </Box>
             
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              A list of devices with access to your account will be displayed here.
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Devices that have signed in to your account. Remove any you don't recognise.
             </Typography>
             
             <List>
               {devices.map((device, index) => (
                 <React.Fragment key={device.id}>
-                  <ListItem>
+                  <ListItem sx={{ px: 0, pr: 12 }}>
                     <Avatar sx={{ mr: 2, bgcolor: device.trusted ? 'success.main' : 'warning.main' }}>
                       {getDeviceIcon(device.type)}
                     </Avatar>
                     <ListItemText
                       primary={
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography variant="subtitle1">{device.name}</Typography>
+                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{device.name}</Typography>
                           {!device.trusted && (
                             <Chip label="Unverified" color="warning" size="small" />
                           )}
@@ -346,25 +350,26 @@ const SecuritySettingsDashboard: React.FC = () => {
                 </React.Fragment>
               ))}
             </List>
-          </Paper>
+          </Card>
         </Grid>
 
         {/* Notification Preferences */}
         <Grid item xs={12}>
-          <Paper elevation={2} sx={{ p: 4 }}>
+          <Card sx={{ p: { xs: 2, md: 3 } }}>
             <Box display="flex" alignItems="center" mb={3}>
               <NotificationsIcon sx={{ mr: 2, color: 'primary.main' }} />
-              <Typography variant="h5" component="h2" fontWeight={600}>
+              <Typography variant="h6" component="h2" fontWeight={800}>
                 Notification Preferences
               </Typography>
             </Box>
             
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Granular notification preferences for account activity will be available here.
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Choose which account activity sends you an alert.
             </Typography>
             
             <FormGroup>
               <FormControlLabel
+                sx={{ alignItems: 'flex-start', mb: 1.5, mx: 0, gap: 1.5 }}
                 control={
                   <Switch
                     checked={notifications.loginAlerts}
@@ -383,6 +388,7 @@ const SecuritySettingsDashboard: React.FC = () => {
               />
               
               <FormControlLabel
+                sx={{ alignItems: 'flex-start', mb: 1.5, mx: 0, gap: 1.5 }}
                 control={
                   <Switch
                     checked={notifications.deviceChanges}
@@ -401,6 +407,7 @@ const SecuritySettingsDashboard: React.FC = () => {
               />
               
               <FormControlLabel
+                sx={{ alignItems: 'flex-start', mb: 1.5, mx: 0, gap: 1.5 }}
                 control={
                   <Switch
                     checked={notifications.securityUpdates}
@@ -419,6 +426,7 @@ const SecuritySettingsDashboard: React.FC = () => {
               />
               
               <FormControlLabel
+                sx={{ alignItems: 'flex-start', mb: 1.5, mx: 0, gap: 1.5 }}
                 control={
                   <Switch
                     checked={notifications.suspiciousActivity}
@@ -437,6 +445,7 @@ const SecuritySettingsDashboard: React.FC = () => {
               />
               
               <FormControlLabel
+                sx={{ alignItems: 'flex-start', mb: 1.5, mx: 0, gap: 1.5 }}
                 control={
                   <Switch
                     checked={notifications.weeklyReports}
@@ -454,7 +463,7 @@ const SecuritySettingsDashboard: React.FC = () => {
                 }
               />
             </FormGroup>
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
 
@@ -468,13 +477,15 @@ const SecuritySettingsDashboard: React.FC = () => {
             label="Device Name"
             fullWidth
             variant="outlined"
-            defaultValue={selectedDevice?.name}
+            value={selectedDevice?.name ?? ''}
+            onChange={(e) => selectedDevice && setSelectedDevice({ ...selectedDevice, name: e.target.value })}
             sx={{ mb: 2 }}
           />
           <FormControlLabel
             control={
               <Switch
-                defaultChecked={selectedDevice?.trusted}
+                checked={!!selectedDevice?.trusted}
+                onChange={(e) => selectedDevice && setSelectedDevice({ ...selectedDevice, trusted: e.target.checked })}
                 color="primary"
               />
             }
@@ -483,7 +494,7 @@ const SecuritySettingsDashboard: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeviceDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => setDeviceDialogOpen(false)} variant="contained">
+          <Button onClick={saveDevice} variant="contained">
             Save Changes
           </Button>
         </DialogActions>

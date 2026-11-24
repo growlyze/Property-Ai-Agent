@@ -11,7 +11,6 @@ import {
  Button,
  Card,
  CardContent,
- Icon,
  Chip,
 
 } from '@mui/material';
@@ -19,6 +18,10 @@ import {
  ExpandMore,
  ExpandLess,
  Refresh,
+ Business,
+ Event,
+ LocalOffer,
+ Category,
 } from '@mui/icons-material';
 import { RecommendationCategorySectionProps } from '../../types/personalization';
 import { RecommendationCard } from './RecommendationCard';
@@ -49,15 +52,8 @@ export const RecommendationCategorySection: React.FC<RecommendationCategorySecti
  setLoading(false);
  };
 
- const getCategoryIcon = (iconName: string) => {
- // Map icon names to Material-UI icons
- const iconMap: Record<string, string> = {
-  'business': 'business',
-  'event': 'event',
-  'local_offer': 'local_offer',
- };
- return iconMap[iconName] || 'category';
- };
+ // Real icon components (the Material Icons font is not loaded, so <Icon>name</Icon> rendered as text).
+ const CategoryIcon = ({ business: Business, event: Event, local_offer: LocalOffer } as Record<string, typeof Business>)[category.icon] ?? Category;
 
  return (
  <Card 
@@ -74,19 +70,13 @@ export const RecommendationCategorySection: React.FC<RecommendationCategorySecti
    display: 'flex', 
    alignItems: 'center', 
    justifyContent: 'space-between',
+   flexWrap: 'wrap',
+   gap: 1,
    mb: 2,
    }}
   >
    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-   <Icon 
-    sx={{ 
-    mr: 1, 
-    color: 'primary.main',
-    fontSize: '1.5rem',
-    }}
-   >
-    {getCategoryIcon(category.icon)}
-   </Icon>
+   <CategoryIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: '1.75rem' }} />
    <Box>
     <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
     {category.name}
@@ -99,7 +89,7 @@ export const RecommendationCategorySection: React.FC<RecommendationCategorySecti
 
    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
    <Chip
-    label={`${category.totalItems} items`}
+    label={`${category.items.length} ${category.items.length === 1 ? 'item' : 'items'}`}
     size="small"
     variant="outlined"
     color="primary"
@@ -171,7 +161,7 @@ export const RecommendationCategorySection: React.FC<RecommendationCategorySecti
     >
      {expanded 
      ? 'Show Less' 
-     : `View All ${category.totalItems} Recommendations`
+     : `View All ${category.items.length} Recommendations`
      }
     </Button>
     </Box>

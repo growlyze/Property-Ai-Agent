@@ -1,5 +1,7 @@
 .App {
-  text-align: center;
+  /* Was `text-align: center` (Create React App template leftover), which
+     centred body text on every page. */
+  text-align: left;
 }
 
 .App-logo {

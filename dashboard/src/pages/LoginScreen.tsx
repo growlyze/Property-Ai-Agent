@@ -105,28 +105,35 @@ const LoginScreen: React.FC = () => {
     <Container maxWidth="sm">
       <Box
         sx={{
-          marginTop: 8,
+          marginTop: { xs: 4, sm: 8 },
+          mb: 4,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
         }}
       >
-        <Typography component="h1" variant="h4" gutterBottom>
-          Property AI Agent Dashboard
+        <Typography component="h1" variant="h4" sx={{ fontWeight: 800, textAlign: 'center', fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
+          Property AI Agent
+        </Typography>
+        <Typography sx={{ color: 'text.secondary', textAlign: 'center', mb: 3 }}>
+          Rentals, tenants, payments and maintenance in one place.
         </Typography>
         
         <Paper 
-          elevation={3}
+          elevation={0}
           sx={{ 
-            p: 4, 
+            p: { xs: 3, sm: 4 }, 
+            border: '2px solid #140827',
+            boxShadow: '6px 6px 0 #140827',
+            borderRadius: '12px',
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
           }}
         >
-          <Typography component="h2" variant="h5" gutterBottom>
-            Sign In
+          <Typography component="h2" variant="h5" sx={{ fontWeight: 800, alignSelf: 'flex-start' }}>
+            Sign in
           </Typography>
           
           {error && (

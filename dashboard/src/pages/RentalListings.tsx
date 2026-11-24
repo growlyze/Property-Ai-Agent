@@ -129,7 +129,7 @@ const RentalListings = () => {
 
  return (
   <Box p={3}>
-   <Box display="flex" justifyContent="between" alignItems="center" mb={3}>
+   <Box display="flex" justifyContent="space-between" gap={2} flexWrap="wrap" alignItems="center" mb={3}>
     <Typography variant="h4" component="h1">
      Rental Listings
     </Typography>
@@ -157,7 +157,7 @@ const RentalListings = () => {
       Filters
      </Typography>
      <Grid container spacing={2}>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <TextField
         fullWidth
         label="Search Title"
@@ -168,7 +168,7 @@ const RentalListings = () => {
         }}
        />
       </Grid>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <TextField
         fullWidth
         label="City"
@@ -176,7 +176,7 @@ const RentalListings = () => {
         onChange={(e) => handleFilterChange('city', e.target.value)}
        />
       </Grid>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <FormControl fullWidth>
         <InputLabel>Property Type</InputLabel>
         <Select
@@ -195,7 +195,7 @@ const RentalListings = () => {
         </Select>
        </FormControl>
       </Grid>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <FormControl fullWidth>
         <InputLabel>Status</InputLabel>
         <Select
@@ -211,7 +211,7 @@ const RentalListings = () => {
         </Select>
        </FormControl>
       </Grid>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <TextField
         fullWidth
         label="Min Rent"
@@ -220,7 +220,7 @@ const RentalListings = () => {
         onChange={(e) => handleFilterChange('minRent', e.target.value ? Number(e.target.value) : undefined)}
        />
       </Grid>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <TextField
         fullWidth
         label="Max Rent"
@@ -229,7 +229,7 @@ const RentalListings = () => {
         onChange={(e) => handleFilterChange('maxRent', e.target.value ? Number(e.target.value) : undefined)}
        />
       </Grid>
-      <Grid xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4}>
        <FormControl fullWidth>
         <InputLabel>Availability</InputLabel>
         <Select
@@ -256,15 +256,15 @@ const RentalListings = () => {
 
    {/* Rentals Table */}
    <TableContainer component={Paper}>
-    <Table>
+    <Table sx={{ minWidth: 980, "& td": { verticalAlign: "middle" } }}>
      <TableHead>
       <TableRow>
-       <TableCell>Title</TableCell>
-       <TableCell>Address</TableCell>
+       <TableCell sx={{ minWidth: 190 }}>Title</TableCell>
+       <TableCell sx={{ minWidth: 200 }}>Address</TableCell>
        <TableCell>Type</TableCell>
        <TableCell>Rent</TableCell>
-       <TableCell>Bedrooms</TableCell>
-       <TableCell>Bathrooms</TableCell>
+       <TableCell>Beds</TableCell>
+       <TableCell>Baths</TableCell>
        <TableCell>Status</TableCell>
        <TableCell>Available</TableCell>
        <TableCell>Actions</TableCell>

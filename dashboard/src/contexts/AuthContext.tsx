@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { startSessionKeepAlive } from '../services/authRefresh';
 
 interface User {
   id: string;
@@ -48,6 +49,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
   }, []);
+
+  // Keep the session alive: renew the 15-minute access token in the background
+  // and pick up tokens renewed by the API client after a 401.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const stop = startSessionKeepAlive();
+    const onRefreshed = (e: Event) => {
+      const next = (e as CustomEvent<{ token: string }>).detail?.token;
+      if (next) setToken(next);
+      setRefreshToken(localStorage.getItem('refreshToken'));
+    };
+    window.addEventListener('auth:token-refreshed', onRefreshed);
+    return () => {
+      stop();
+      window.removeEventListener('auth:token-refreshed', onRefreshed);
+    };
+  }, [isAuthenticated]);
 
   const login = (userData: User, authToken: string, refreshTokenValue?: string) => {
     setUser(userData);

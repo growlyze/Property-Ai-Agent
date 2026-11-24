@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -24,30 +24,17 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import {
-  LocationOn,
-  ZoomIn,
-  ZoomOut,
-  CenterFocusStrong,
-  FilterList,
   Business,
-  AttachMoney,
-  People,
   Close,
 } from '@mui/icons-material';
 import { CompetitorData } from '../../types/market-intelligence';
 import ConfidenceIndicator from '../../design-system/components/ai/ConfidenceIndicator';
+import { toPercent } from './format';
 
 interface CompetitorAnalysisMapProps {
   competitors: CompetitorData[];
   onCompetitorSelect?: (competitor: CompetitorData) => void;
   loading?: boolean;
-}
-
-interface MapMarker {
-  id: string;
-  position: [number, number];
-  competitor: CompetitorData;
-  color: string;
 }
 
 const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
@@ -59,30 +46,39 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
   const [selectedCompetitor, setSelectedCompetitor] = useState<CompetitorData | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [mapFilter, setMapFilter] = useState<string>('all');
-  const [zoom, setZoom] = useState(12);
-  const [center, setCenter] = useState<[number, number]>([40.7128, -74.0060]); // Default to NYC
-
-  // Calculate map center based on competitor locations
-  useEffect(() => {
-    if (competitors && competitors.length > 0) {
-      const avgLat = competitors.reduce((sum, comp) => sum + comp.location[0], 0) / competitors.length;
-      const avgLng = competitors.reduce((sum, comp) => sum + comp.location[1], 0) / competitors.length;
-      setCenter([avgLat, avgLng]);
-    }
+  // Project competitor [lng, lat] onto the panel, padded so markers stay inside
+  const projected = useMemo(() => {
+    const valid = (competitors || []).filter(
+      (c) => c && Array.isArray(c.location) && c.location.length >= 2
+    );
+    if (valid.length === 0) return {} as Record<string, { x: number; y: number }>;
+    const xs = valid.map((c) => Number(c.location[0]));
+    const ys = valid.map((c) => Number(c.location[1]));
+    const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+    const spanX = maxX - minX || 1;
+    const spanY = maxY - minY || 1;
+    return valid.reduce((acc, c) => {
+      acc[c.id] = {
+        x: 15 + ((Number(c.location[0]) - minX) / spanX) * 70,
+        // latitude grows northwards, screen y grows downwards
+        y: 20 + (1 - (Number(c.location[1]) - minY) / spanY) * 55,
+      };
+      return acc;
+    }, {} as Record<string, { x: number; y: number }>);
   }, [competitors]);
 
   const getMarkerColor = (competitor: CompetitorData): string => {
-    const occupancy = competitor.occupancyRate;
+    const occupancy = toPercent(competitor.occupancyRate);
     if (occupancy >= 95) return '#4caf50'; // Green - High occupancy
     if (occupancy >= 85) return '#ff9800'; // Orange - Medium occupancy
     return '#f44336'; // Red - Low occupancy
   };
 
   const getMarkerSize = (competitor: CompetitorData): number => {
-    const marketShare = competitor.marketShare;
-    if (marketShare >= 15) return 24; // Large
-    if (marketShare >= 8) return 20;  // Medium
-    return 16; // Small
+    const marketShare = toPercent(competitor.marketShare);
+    if (marketShare >= 15) return 32; // Large
+    if (marketShare >= 8) return 26;  // Medium
+    return 20; // Small
   };
 
   const filteredCompetitors = useMemo(() => {
@@ -94,8 +90,8 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
       if (!competitor) return false; // Skip null/undefined competitors
       
       if (mapFilter === 'all') return true;
-      if (mapFilter === 'high-occupancy') return (competitor.occupancyRate || 0) >= 90;
-      if (mapFilter === 'low-occupancy') return (competitor.occupancyRate || 0) < 80;
+      if (mapFilter === 'high-occupancy') return toPercent(competitor.occupancyRate) >= 90;
+      if (mapFilter === 'low-occupancy') return toPercent(competitor.occupancyRate) < 90;
       if (mapFilter === 'premium') return (competitor.rentRange?.[1] || 0) > 3000;
       if (mapFilter === 'budget') return (competitor.rentRange?.[1] || 0) <= 2000;
       return true;
@@ -112,25 +108,6 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     setMapFilter(event.target.value);
-  };
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 1, 18));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 1, 8));
-  };
-
-  const handleRecenter = () => {
-    if (competitors && Array.isArray(competitors) && competitors.length > 0) {
-      const validCompetitors = competitors.filter(comp => comp && comp.location && Array.isArray(comp.location));
-      if (validCompetitors.length > 0) {
-        const avgLat = validCompetitors.reduce((sum, comp) => sum + (comp.location[0] || 0), 0) / validCompetitors.length;
-        const avgLng = validCompetitors.reduce((sum, comp) => sum + (comp.location[1] || 0), 0) / validCompetitors.length;
-        setCenter([avgLat, avgLng]);
-      }
-    }
   };
 
   const formatRentRange = (range: [number, number] | undefined) => {
@@ -176,7 +153,8 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
     <Card elevation={2}>
       <CardHeader
         title="Competitor Analysis Map"
-        subheader={`${filteredCompetitors.length} of ${competitors?.length || 0} competitors shown`}
+        subheader={`${filteredCompetitors.length} of ${competitors?.length || 0} competitors shown, positioned by location`}
+        sx={{ flexWrap: 'wrap', gap: 1, '& .MuiCardHeader-action': { m: 0 } }}
         action={
           <Box display="flex" gap={1} alignItems="center">
             <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -188,26 +166,11 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
               >
                 <MenuItem value="all">All Properties</MenuItem>
                 <MenuItem value="high-occupancy">High Occupancy (90%+)</MenuItem>
-                <MenuItem value="low-occupancy">Low Occupancy (&lt;80%)</MenuItem>
+                <MenuItem value="low-occupancy">Below 90% Occupancy</MenuItem>
                 <MenuItem value="premium">Premium ($3000+)</MenuItem>
                 <MenuItem value="budget">Budget (≤$2000)</MenuItem>
               </Select>
             </FormControl>
-            <Tooltip title="Zoom In">
-              <IconButton onClick={handleZoomIn} size="small">
-                <ZoomIn />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Zoom Out">
-              <IconButton onClick={handleZoomOut} size="small">
-                <ZoomOut />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Recenter">
-              <IconButton onClick={handleRecenter} size="small">
-                <CenterFocusStrong />
-              </IconButton>
-            </Tooltip>
           </Box>
         }
       />
@@ -216,7 +179,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
         <Box
           ref={mapRef}
           sx={{
-            height: 400,
+            height: { xs: 300, sm: 400 },
             width: '100%',
             bgcolor: '#f5f0e6',
             borderRadius: 1,
@@ -244,8 +207,8 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
 
           {/* Map Markers */}
           {filteredCompetitors.map((competitor, index) => {
-            const x = 50 + (index % 5) * 15 + Math.random() * 10;
-            const y = 30 + Math.floor(index / 5) * 20 + Math.random() * 10;
+            const pos = projected[competitor.id] || { x: 20 + index * 25, y: 50 };
+            const { x, y } = pos;
             const markerSize = getMarkerSize(competitor);
             const markerColor = getMarkerColor(competitor);
 
@@ -256,7 +219,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                   <Box>
                     <Typography variant="subtitle2">{competitor.name}</Typography>
                     <Typography variant="body2">
-                      Occupancy: {competitor.occupancyRate}%
+                      Occupancy: {toPercent(competitor.occupancyRate)}%
                     </Typography>
                     <Typography variant="body2">
                       Rent: {formatRentRange(competitor.rentRange)}
@@ -295,27 +258,27 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                       fontSize: markerSize * 0.6,
                     }}
                   />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      position: 'absolute',
+                      top: '100%',
+                      mt: 0.5,
+                      whiteSpace: 'nowrap',
+                      fontWeight: 600,
+                      color: 'text.primary',
+                      bgcolor: 'rgba(255,255,255,0.85)',
+                      px: 0.5,
+                      borderRadius: 0.5,
+                    }}
+                  >
+                    {competitor.name}
+                  </Typography>
                 </Box>
               </Tooltip>
             );
           })}
 
-          {/* Map Controls Overlay */}
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 16,
-              left: 16,
-              display: 'flex',
-              gap: 1,
-            }}
-          >
-            <Chip
-              label={`Zoom: ${zoom}`}
-              size="small"
-              sx={{ bgcolor: 'rgba(255, 255, 255, 0.9)' }}
-            />
-          </Box>
         </Box>
 
         {/* Legend */}
@@ -335,7 +298,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                   boxShadow: 1,
                 }}
               />
-              <Typography variant="body2">High Occupancy (95%+)</Typography>
+              <Typography variant="body2">Occupancy 95%+</Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
               <Box
@@ -348,7 +311,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                   boxShadow: 1,
                 }}
               />
-              <Typography variant="body2">Medium Occupancy (85-94%)</Typography>
+              <Typography variant="body2">Occupancy 85–94%</Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
               <Box
@@ -361,7 +324,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                   boxShadow: 1,
                 }}
               />
-              <Typography variant="body2">Low Occupancy (&lt;85%)</Typography>
+              <Typography variant="body2">Occupancy below 85%</Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="body2">Marker size indicates market share</Typography>
@@ -404,7 +367,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
               <Box display="flex" gap={2} mb={3}>
                 <Box textAlign="center" flex={1}>
                   <Typography variant="h5" color="primary">
-                    {selectedCompetitor.occupancyRate}%
+                    {toPercent(selectedCompetitor.occupancyRate)}%
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Occupancy
@@ -420,7 +383,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                 </Box>
                 <Box textAlign="center" flex={1}>
                   <Typography variant="h5" color="primary">
-                    {selectedCompetitor.marketShare}%
+                    {toPercent(selectedCompetitor.marketShare)}%
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Market Share
@@ -465,10 +428,10 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                     <ListItem key={activity.id} divider>
                       <ListItemText
                         primary={activity.description}
-                        secondary={activity.date.toLocaleDateString()}
+                        secondary={activity.date ? new Date(activity.date as any).toLocaleDateString() : undefined}
                       />
                       <ConfidenceIndicator
-                        confidence={activity.confidence}
+                        confidence={toPercent(activity.confidence)}
                         variant="circular"
                         size="small"
                         colorCoded

@@ -38,6 +38,7 @@ import ConfidenceIndicator from '../../design-system/components/ai/ConfidenceInd
 import ExplanationTooltip from '../../design-system/components/ai/ExplanationTooltip';
 import { AISummary, AIRecommendation } from '../../types/market-intelligence';
 import { AIFeedback } from '../../types/ai';
+import { toPercent, formatDateTime } from './format';
 
 interface MarketSummaryCardProps {
   summary: AISummary;
@@ -129,9 +130,14 @@ const MarketSummaryCard: React.FC<MarketSummaryCardProps> = ({
     );
   }
 
+  const confidencePct = toPercent(summary.confidence);
+  const updatedAt = formatDateTime(
+    (summary as any).generatedAt ?? (summary as any).timestamp
+  );
+
   return (
     <AIGeneratedContent
-      confidence={summary.confidence}
+      confidence={confidencePct}
       explanation={summary.explanation}
       onFeedback={handleFeedback}
       variant="outlined"
@@ -152,9 +158,9 @@ const MarketSummaryCard: React.FC<MarketSummaryCardProps> = ({
             </Box>
           }
           subheader={
-            <Box display="flex" alignItems="center" gap={2} mt={1}>
+            <Box display="flex" alignItems="center" flexWrap="wrap" gap={2} mt={1}>
               <ConfidenceIndicator
-                confidence={summary.confidence || 0}
+                confidence={confidencePct}
                 showTooltip
                 explanation="Confidence based on data quality, market stability, and prediction accuracy"
                 variant="linear"
@@ -162,9 +168,11 @@ const MarketSummaryCard: React.FC<MarketSummaryCardProps> = ({
                 colorCoded
                 showNumericalScore
               />
-              <Typography variant="caption" color="textSecondary">
-                Updated {summary.timestamp ? summary.timestamp.toLocaleString() : 'Unknown'}
-              </Typography>
+              {updatedAt && (
+                <Typography variant="caption" color="textSecondary">
+                  Updated {updatedAt}
+                </Typography>
+              )}
             </Box>
           }
         />
@@ -226,7 +234,7 @@ const MarketSummaryCard: React.FC<MarketSummaryCardProps> = ({
                         {recommendation.title || 'Recommendation'}
                       </Typography>
                       <ConfidenceIndicator
-                        confidence={recommendation.confidence?.value || 0}
+                        confidence={toPercent(recommendation.confidence)}
                         variant="circular"
                         size="small"
                         colorCoded
@@ -263,7 +271,7 @@ const MarketSummaryCard: React.FC<MarketSummaryCardProps> = ({
           <Divider sx={{ my: 2 }} />
 
           {/* Risk Factors and Opportunities */}
-          <Box display="flex" gap={3}>
+          <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3}>
             {/* Risk Factors */}
             {summary.riskFactors && summary.riskFactors.length > 0 && (
               <Box flex={1}>

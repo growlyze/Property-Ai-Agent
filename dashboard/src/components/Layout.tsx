@@ -70,8 +70,9 @@ const LayoutContent: React.FC = () => {
       {/* Desktop Sidebar */}
       {shouldShowSidebar && <DesktopSidebar />}
 
-      {/* Tablet Drawer */}
-      {shouldShowDrawer && <TabletDrawer />}
+      {/* Slide-out drawer: tablets, and phones (opened from the header menu button) so
+          every page is reachable, not only the five bottom tabs. */}
+      {(shouldShowDrawer || shouldShowBottomTabs) && <TabletDrawer />}
 
       {/* Main Content Area */}
       <Landmark role="main" aria-label="Main content">
@@ -103,31 +104,9 @@ const LayoutContent: React.FC = () => {
         </Box>
       </Landmark>
 
-      {/* Enhanced Mobile Bottom Navigation */}
-      {shouldShowBottomTabs && (
-        <Box
-          className="mobile-nav"
-          sx={{
-            display: { xs: 'flex', md: 'none' },
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            py: 1,
-            px: 2,
-            backgroundColor: 'background.paper',
-            borderTop: 1,
-            borderColor: 'divider',
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1100,
-            minHeight: '80px',
-          }}
-        >
-          <MobileBottomTabs />
-        </Box>
-      )}
+      {/* Mobile bottom navigation (MobileBottomTabs positions itself; the old fixed
+          wrapper doubled it into an 80px band with an empty strip under the tabs). */}
+      {shouldShowBottomTabs && <MobileBottomTabs />}
     </Box>
   );
 };

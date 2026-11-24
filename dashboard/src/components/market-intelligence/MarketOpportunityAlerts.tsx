@@ -5,7 +5,7 @@ import {
  CardHeader,
  Typography,
  Box,
- GridLegacy as Grid,
+ Grid,
  Chip,
  List,
  ListItem,
@@ -182,6 +182,7 @@ const MarketOpportunityAlerts: React.FC<MarketOpportunityAlertsProps> = ({
     <CardHeader
      title="Market Opportunities"
      subheader={`${opportunities?.length || 0} opportunities identified with potential ROI insights`}
+     sx={{ flexWrap: 'wrap', gap: 1, '& .MuiCardHeader-action': { m: 0 } }}
      action={
       <Box display="flex" gap={1}>
        {['critical', 'high', 'medium', 'low'].map((priority) => {
@@ -212,13 +213,13 @@ const MarketOpportunityAlerts: React.FC<MarketOpportunityAlertsProps> = ({
         >
          <CardContent>
           {/* Opportunity Header */}
-          <Box display="flex" alignItems="center" gap={2} mb={2}>
+          <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
            {getPriorityIcon(opportunity.priority)}
-           <Box flex={1}>
+           <Box flex={1} minWidth={0}>
             <Typography variant="h6" component="h3">
              {opportunity.title}
             </Typography>
-            <Box display="flex" alignItems="center" gap={1} mt={0.5}>
+            <Box display="flex" alignItems="center" flexWrap="wrap" gap={1} mt={0.5}>
              <Chip
               label={opportunity.priority}
               color={getPriorityColor(opportunity.priority) as any}
@@ -279,7 +280,7 @@ const MarketOpportunityAlerts: React.FC<MarketOpportunityAlertsProps> = ({
           </Alert>
 
           {/* Action Buttons */}
-          <Box display="flex" gap={1} mb={2}>
+          <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
            <Button
             variant="contained"
             color="primary"

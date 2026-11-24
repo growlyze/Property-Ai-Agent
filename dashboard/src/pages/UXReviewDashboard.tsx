@@ -38,6 +38,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
+import { EmptyPanel } from '../components/empty/EmptyStates';
 import { asArray, num } from '../utils/safeData';
 import { UXReviewCard } from '../components/ux-review/UXReviewCard';
 import { UXReviewStats } from '../components/ux-review/UXReviewStats';
@@ -287,17 +288,21 @@ const UXReviewDashboard: React.FC = () => {
  }
 
  return (
-  <Box p={isMobile ? 2 : 4}>
-   <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-    <Typography variant="h4" component="h1">
-     UX Review Dashboard
-    </Typography>
+  <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', width: '100%' }}>
+   <Box display="flex" justifyContent="space-between" alignItems="center" gap={2} mb={3}>
+    <Box sx={{ minWidth: 0 }}>
+     <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
+      UX Reviews
+     </Typography>
+     <Typography sx={{ color: 'text.secondary' }}>Track usability issues found in the app and who is fixing them.</Typography>
+    </Box>
     <Button
      variant="contained"
      color="primary"
      startIcon={<AddIcon />}
      onClick={() => setIsCreateModalOpen(true)}
      size={isMobile ? 'small' : 'medium'}
+     sx={{ flexShrink: 0 }}
     >
      New Review
     </Button>
@@ -341,15 +346,11 @@ const UXReviewDashboard: React.FC = () => {
    </Grid>
 
    {filteredReviews.length === 0 && (
-    <Box display="flex" flexDirection="column" alignItems="center" py={8}>
-     <BugReportIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-     <Typography variant="h6" color="text.secondary">
-      No reviews found
-     </Typography>
-     <Typography variant="body2" color="text.secondary">
-      {tabValue === 1 ? 'You have no assigned reviews' : 'No reviews match your filters'}
-     </Typography>
-    </Box>
+    <EmptyPanel
+     icon={<BugReportIcon />}
+     title={tabValue === 1 ? 'Nothing assigned to you' : 'No reviews found'}
+     text={tabValue === 1 ? 'Reviews assigned to you will appear here.' : 'Log a usability issue with New Review, or clear the filters above.'}
+    />
    )}
 
    {/* Modals */}

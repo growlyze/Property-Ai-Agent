@@ -10,7 +10,7 @@ import {
  CardHeader,
  Typography,
  Box,
- GridLegacy as Grid,
+ Grid,
  Chip,
  List,
  ListItem,
@@ -40,6 +40,7 @@ import {
 import AIGeneratedContent from '../../design-system/components/ai/AIGeneratedContent';
 import ConfidenceIndicator from '../../design-system/components/ai/ConfidenceIndicator';
 import { CompetitorData, CompetitorActivity } from '../../types/market-intelligence';
+import { toPercent } from './format';
 import { AIFeedback } from '../../types/ai';
 
 interface CompetitorActivityAnalysisProps {
@@ -153,7 +154,7 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
     <CardContent>
      <Grid container spacing={3}>
       {competitors.map((competitor) => (
-       <Grid size={6} key={competitor.id}>
+       <Grid size={12} key={competitor.id}>
         <Card
          variant="outlined"
          sx={{
@@ -173,7 +174,7 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
            <Avatar sx={{ bgcolor: 'primary.main' }}>
             {competitor.name.charAt(0)}
            </Avatar>
-           <Box flex={1}>
+           <Box flex={1} minWidth={0}>
             <Typography variant="h6" noWrap>
              {competitor.name}
             </Typography>
@@ -183,7 +184,7 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
             </Typography>
            </Box>
            <Chip
-            label={`${competitor.marketShare}%`}
+            label={`${toPercent(competitor.marketShare)}% share`}
             size="small"
             color="primary"
             variant="outlined"
@@ -192,17 +193,17 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
 
           {/* Key Metrics */}
           <Grid container spacing={2} mb={2}>
-           <Grid xs={6}>
+           <Grid size={6}>
             <Box textAlign="center">
              <Typography variant="h6" color="primary">
-              {competitor.occupancyRate}%
+              {toPercent(competitor.occupancyRate)}%
              </Typography>
              <Typography variant="caption" color="textSecondary">
               Occupancy
              </Typography>
             </Box>
            </Grid>
-           <Grid xs={6}>
+           <Grid size={6}>
             <Box textAlign="center">
              <Typography variant="h6" color="primary">
               {competitor.units}
@@ -309,17 +310,17 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
       <DialogContent>
        {/* Detailed Metrics */}
        <Grid container spacing={3} mb={3}>
-        <Grid size={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
          <Box textAlign="center">
           <Typography variant="h5" color="primary">
-           {selectedCompetitor.occupancyRate}%
+           {toPercent(selectedCompetitor.occupancyRate)}%
           </Typography>
           <Typography variant="body2" color="textSecondary">
            Occupancy Rate
           </Typography>
          </Box>
         </Grid>
-        <Grid size={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
          <Box textAlign="center">
           <Typography variant="h5" color="primary">
            {selectedCompetitor.units}
@@ -329,17 +330,17 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
           </Typography>
          </Box>
         </Grid>
-        <Grid size={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
          <Box textAlign="center">
           <Typography variant="h5" color="primary">
-           {selectedCompetitor.marketShare}%
+           {toPercent(selectedCompetitor.marketShare)}%
           </Typography>
           <Typography variant="body2" color="textSecondary">
            Market Share
           </Typography>
          </Box>
         </Grid>
-        <Grid size={3}>
+        <Grid size={{ xs: 6, sm: 3 }}>
          <Box textAlign="center">
           <Typography variant="h5" color="primary">
            {formatRentRange(selectedCompetitor.rentRange)}
@@ -383,12 +384,12 @@ const CompetitorActivityAnalysis: React.FC<CompetitorActivityAnalysisProps> = ({
             <Box flex={1}>
              <ListItemText
               primary={activity.description}
-              secondary={activity.date.toLocaleDateString()}
+              secondary={activity.date ? new Date(activity.date as any).toLocaleDateString() : undefined}
              />
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
              <ConfidenceIndicator
-              confidence={activity.confidence}
+              confidence={toPercent(activity.confidence)}
               variant="circular"
               size="small"
               colorCoded

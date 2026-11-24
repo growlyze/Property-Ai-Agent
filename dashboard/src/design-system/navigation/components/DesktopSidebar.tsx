@@ -176,7 +176,9 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ className }) => 
                 item={{
                   ...item,
                   id: `${item.id}-toggle`,
-                  label: '',
+                  // Was an empty label, which rendered as an unexplained "⌄" row.
+                  label: `${expandedSections[item.id] ? 'Less' : 'More'}: ${item.label}`,
+                  badge: undefined,
                   href: '#',
                   icon: expandedSections[item.id] ? ExpandLessIcon : ExpandMoreIcon,
                 }}

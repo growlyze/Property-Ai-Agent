@@ -1,6 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Same base and token key as services/api.ts (the old 'token' key and :5000 default
+// meant every marketing request went unauthenticated and the pages fell back to
+// empty lists or hard-coded mock data).
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class MarketingService {
   private api: AxiosInstance;
@@ -15,7 +18,7 @@ class MarketingService {
 
     // Add auth token to requests
     this.api.interceptors.request.use((config) => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }

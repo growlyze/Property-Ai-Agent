@@ -35,7 +35,7 @@ const Header: React.FC = () => {
   
   // Navigation system integration
   const { toggleDrawer } = useNavigation();
-  const { shouldShowDrawer } = useNavigationBreakpoint();
+  const { shouldShowDrawer, shouldShowBottomTabs } = useNavigationBreakpoint();
 
   const role = user?.role;
   const staff = isStaff(role);
@@ -84,13 +84,13 @@ const Header: React.FC = () => {
     >
       <Toolbar>
         {/* Menu toggle button for tablet drawer */}
-        {shouldShowDrawer && (
+        {(shouldShowDrawer || shouldShowBottomTabs) && (
           <IconButton
             color="inherit"
             aria-label="open navigation drawer"
             edge="start"
             onClick={toggleDrawer}
-            sx={{ mr: 2 }}
+            sx={{ mr: { xs: 1, sm: 2 } }}
           >
             <MenuIcon />
           </IconButton>
@@ -102,19 +102,23 @@ const Header: React.FC = () => {
           component="div" 
           sx={{ 
             flexGrow: 1,
-            display: { xs: 'none', sm: 'block' }
+            minWidth: 0,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
           }}
         >
-          {staff ? 'Property AI Agent Dashboard' : `${roleName} Portal`}
+          {staff ? (
+            <>
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Property AI Agent Dashboard</Box>
+              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Property AI Agent</Box>
+            </>
+          ) : `${roleName} Portal`}
         </Typography>
-        {/* Keep the right-hand controls right-aligned when the title is hidden on phones */}
-        <Box sx={{ flexGrow: 1, display: { xs: 'block', sm: 'none' } }} />
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0, sm: 1 }, flexShrink: 0 }}>
           {/* Search Icon (staff only) */}
           {staff && (
             <Tooltip title="Search">
-              <IconButton color="inherit" size="large">
+              <IconButton color="inherit" size="large" aria-label="Search" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
                 <SearchIcon />
               </IconButton>
             </Tooltip>

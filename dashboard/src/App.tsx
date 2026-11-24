@@ -111,7 +111,10 @@ function LazyRoute({ children }: { children: React.ReactNode }) {
 function App() {
   // Register service worker and initialize offline manager on app start
   React.useEffect(() => {
-    registerSW();
+    // Service worker intentionally NOT registered: the cache-first worker kept
+    // serving stale screens and API data after deploys (see public/sw.js and
+    // the cleanup in index.tsx). `registerSW` stays importable for future use.
+    void registerSW;
 
     // Initialize offline manager (it will auto-initialize when imported)
     console.log('[App] Offline manager initialized');

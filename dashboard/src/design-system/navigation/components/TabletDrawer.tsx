@@ -28,8 +28,12 @@ export interface TabletDrawerProps {
 const DRAWER_WIDTH = 320;
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  // Above the fixed AppBar (drawer + 1), otherwise the AppBar hides the drawer's
+  // header and close button.
+  zIndex: theme.zIndex.drawer + 2,
   '& .MuiDrawer-paper': {
     width: DRAWER_WIDTH,
+    maxWidth: '85vw',
     backgroundColor: 'var(--color-background-paper)',
     borderRight: '1px solid var(--color-border-default)',
     boxShadow: tokens.shadows.lg,
@@ -230,11 +234,7 @@ export const TabletDrawer: React.FC<TabletDrawerProps> = ({ className }) => {
             backgroundColor: 'var(--color-surface-default)',
           }}>
             <Typography variant="caption" color="text.secondary">
-              Property AI Agent Dashboard
-            </Typography>
-            <br />
-            <Typography variant="caption" color="text.secondary">
-              Tablet Navigation Mode
+              Property AI Agent
             </Typography>
           </Box>
         </DrawerContent>

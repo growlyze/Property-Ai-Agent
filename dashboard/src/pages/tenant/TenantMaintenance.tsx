@@ -210,7 +210,7 @@ const TenantMaintenance: React.FC = () => {
                         {m.description}
                       </Typography>
                     )}
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1, flexWrap: 'wrap', rowGap: 1 }}>
+                    <Stack direction="row" spacing={1} useFlexGap alignItems="center" sx={{ mt: 1, flexWrap: 'wrap' }}>
                       <PriorityChip priority={m.priority} />
                       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                         Reported {fmtDate(m.createdAt)}

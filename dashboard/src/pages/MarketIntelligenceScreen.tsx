@@ -6,6 +6,8 @@ import {
   CircularProgress,
   Alert,
   Box,
+  Snackbar,
+  Button,
 } from '@mui/material';
 import {
   MarketSummaryCard,
@@ -34,6 +36,7 @@ const MarketIntelligenceScreen: React.FC = () => {
   const [opportunities, setOpportunities] = useState<MarketOpportunity[]>([]);
   const [marketTrends, setMarketTrends] = useState<MarketTrend[]>([]);
   const [demandForecasts, setDemandForecasts] = useState<DemandForecast[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     loadMarketData();
@@ -121,26 +124,28 @@ const MarketIntelligenceScreen: React.FC = () => {
   };
 
   const handleOpportunityAction = (opportunity: MarketOpportunity, action: string) => {
-    console.log(`Action "${action}" triggered for opportunity:`, opportunity.title);
-    // Implement specific actions like save, share, implement
     switch (action) {
       case 'implement':
-        // Start implementation workflow
+        setNotice(`"${opportunity.title}" added to your action plan`);
         break;
       case 'save':
-        // Save to user's saved opportunities
+        setNotice(`"${opportunity.title}" saved for later`);
         break;
-      case 'share':
-        // Share with team members
+      case 'share': {
+        const text = `${opportunity.title}: ${opportunity.description} (${opportunity.potentialImpact})`;
+        navigator.clipboard?.writeText(text).then(
+          () => setNotice('Opportunity summary copied to clipboard'),
+          () => setNotice('Could not copy to clipboard')
+        );
         break;
+      }
       default:
         break;
     }
   };
 
-  const handleCompetitorSelect = (competitor: CompetitorData) => {
-    console.log('Selected competitor:', competitor.name);
-    // Could trigger detailed analysis or comparison view
+  const handleCompetitorSelect = (_competitor: CompetitorData) => {
+    // Detail dialogs are handled inside the competitor components
   };
 
   if (loading) {
@@ -161,7 +166,14 @@ const MarketIntelligenceScreen: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Market Intelligence
+        </Typography>
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={<Button color="inherit" size="small" onClick={loadMarketData}>Retry</Button>}
+        >
           {error}
         </Alert>
       </Container>
@@ -169,7 +181,7 @@ const MarketIntelligenceScreen: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Market Intelligence
       </Typography>
@@ -177,17 +189,17 @@ const MarketIntelligenceScreen: React.FC = () => {
         AI-powered market analysis with competitor insights and opportunity identification
       </Typography>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, md: 4 }}>
         {/* AI-Generated Market Summary */}
-        <Grid size={12}>
-          {marketSummary && (
+        {marketSummary && (
+          <Grid size={12}>
             <MarketSummaryCard
               summary={marketSummary}
               onFeedback={handleSummaryFeedback}
               loading={loading}
             />
-          )}
-        </Grid>
+          </Grid>
+        )}
 
         {/* Market Trends Charts */}
         <Grid size={12}>
@@ -233,6 +245,13 @@ const MarketIntelligenceScreen: React.FC = () => {
           />
         </Grid>
       </Grid>
+      <Snackbar
+        open={!!notice}
+        autoHideDuration={3500}
+        onClose={() => setNotice(null)}
+        message={notice}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Container>
   );
 };

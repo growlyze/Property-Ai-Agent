@@ -12,11 +12,6 @@ import {
   Box,
   Grid,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
   List,
   ListItem,
   ListItemText,
@@ -54,6 +49,7 @@ import { DemandForecast, ForecastFactor } from '../../types/market-intelligence'
 import ConfidenceIndicator from '../../design-system/components/ai/ConfidenceIndicator';
 import AIGeneratedContent from '../../design-system/components/ai/AIGeneratedContent';
 import ExplanationTooltip from '../../design-system/components/ai/ExplanationTooltip';
+import { toPercent, formatSignedPercent } from './format';
 
 // Register Chart.js components
 ChartJS.register(
@@ -77,20 +73,9 @@ interface DemandForecastChartsProps {
 
 const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
   forecasts,
-  timeframe = '12months',
-  onTimeframeChange,
   loading = false,
 }) => {
-  const [selectedTimeframe, setSelectedTimeframe] = useState(timeframe);
   const [expandedFactor, setExpandedFactor] = useState<string | false>(false);
-
-  const handleTimeframeChange = (event: SelectChangeEvent) => {
-    const newTimeframe = event.target.value;
-    setSelectedTimeframe(newTimeframe);
-    if (onTimeframeChange) {
-      onTimeframeChange(newTimeframe);
-    }
-  };
 
   const getTrendIcon = (trend: 'increasing' | 'decreasing' | 'stable') => {
     switch (trend) {
@@ -126,7 +111,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
   
     const labels = forecasts.map(forecast => forecast.period);
     const demandValues = forecasts.map(forecast => forecast.predictedDemand);
-    const confidenceValues = forecasts.map(forecast => forecast.confidence.value);
+    const confidenceValues = forecasts.map(forecast => toPercent(forecast.confidence));
     
     // Calculate confidence bands (upper and lower bounds)
     const upperBound = demandValues.map((value, index) => {
@@ -145,16 +130,16 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
         {
           label: 'Predicted Demand',
           data: demandValues,
-          borderColor: 'rgb(75, 192, 192)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgb(249, 89, 4)',
+          backgroundColor: 'rgba(249, 89, 4, 0.2)',
           tension: 0.4,
           fill: false,
         },
         {
           label: 'Upper Confidence Bound',
           data: upperBound,
-          borderColor: 'rgba(75, 192, 192, 0.3)',
-          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          borderColor: 'rgba(249, 89, 4, 0.3)',
+          backgroundColor: 'rgba(249, 89, 4, 0.1)',
           tension: 0.4,
           fill: '+1',
           pointRadius: 0,
@@ -162,8 +147,8 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
         {
           label: 'Lower Confidence Bound',
           data: lowerBound,
-          borderColor: 'rgba(75, 192, 192, 0.3)',
-          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          borderColor: 'rgba(249, 89, 4, 0.3)',
+          backgroundColor: 'rgba(249, 89, 4, 0.1)',
           tension: 0.4,
           fill: false,
           pointRadius: 0,
@@ -183,7 +168,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
     }
   
     const labels = forecasts.map(forecast => forecast.period);
-    const confidenceValues = forecasts.map(forecast => forecast.confidence.value);
+    const confidenceValues = forecasts.map(forecast => toPercent(forecast.confidence));
 
     return {
       labels,
@@ -210,6 +195,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
   // Chart options
   const lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
@@ -222,7 +208,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
           afterLabel: function(context) {
             if (context.datasetIndex === 0) {
               const forecast = forecasts[context.dataIndex];
-              return `Confidence: ${forecast.confidence.value}%`;
+              return `Confidence: ${toPercent(forecast.confidence)}%`;
             }
             return '';
           },
@@ -248,6 +234,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
 
   const barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
@@ -282,7 +269,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
 
   const averageConfidence = useMemo(() => {
     if (!forecasts || forecasts.length === 0) return 0;
-    return forecasts.reduce((sum, forecast) => sum + forecast.confidence.value, 0) / forecasts.length;
+    return forecasts.reduce((sum, forecast) => sum + toPercent(forecast.confidence), 0) / forecasts.length;
   }, [forecasts]);
 
   const handleFactorExpand = (panel: string) => (
@@ -315,21 +302,6 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
         <CardHeader
           title="Demand Forecast Analysis"
           subheader={`AI-powered demand predictions with confidence indicators`}
-          action={
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Timeframe</InputLabel>
-              <Select
-                value={selectedTimeframe}
-                label="Timeframe"
-                onChange={handleTimeframeChange}
-              >
-                <MenuItem value="6months">6 Months</MenuItem>
-                <MenuItem value="12months">12 Months</MenuItem>
-                <MenuItem value="18months">18 Months</MenuItem>
-                <MenuItem value="24months">24 Months</MenuItem>
-              </Select>
-            </FormControl>
-          }
         />
         <CardContent>
           {/* Summary Cards */}
@@ -394,7 +366,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
                   subheader="Predicted demand with uncertainty ranges"
                 />
                 <CardContent>
-                  <Box height={350}>
+                  <Box height={300}>
                     <Line data={forecastChartData} options={lineChartOptions} />
                   </Box>
                 </CardContent>
@@ -409,7 +381,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
                   subheader="Prediction reliability by period"
                 />
                 <CardContent>
-                  <Box height={350}>
+                  <Box height={300}>
                     <Bar data={confidenceChartData} options={barChartOptions} />
                   </Box>
                 </CardContent>
@@ -432,7 +404,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
                   sx={{ mb: 1 }}
                 >
                   <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Box display="flex" alignItems="center" gap={2} width="100%">
+                    <Box display="flex" alignItems="center" flexWrap="wrap" gap={{ xs: 1, sm: 2 }} width="100%">
                       <Box
                         sx={{
                           width: 12,
@@ -446,7 +418,7 @@ const DemandForecastCharts: React.FC<DemandForecastChartsProps> = ({
                         {factor.name}
                       </Typography>
                       <Chip
-                        label={`Impact: ${(factor.impact || 0) > 0 ? '+' : ''}${(factor.impact || 0).toFixed(1)}%`}
+                        label={`Impact: ${formatSignedPercent(factor.impact || 0)}`}
                         size="small"
                         color={(factor.impact || 0) > 0 ? 'success' : (factor.impact || 0) < 0 ? 'error' : 'default'}
                       />

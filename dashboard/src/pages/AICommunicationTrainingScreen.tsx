@@ -3,8 +3,7 @@ import {
  Container,
  Typography,
  Box,
- GridLegacy as Grid,
- Alert,
+ Stack,
  CircularProgress
 } from '@mui/material';
 import AutomatedResponseSettings from '../components/communication-training/AutomatedResponseSettings';
@@ -134,7 +133,7 @@ const AICommunicationTrainingScreen: React.FC = () => {
 
  return (
   <Container maxWidth="lg">
-   <Box py={3}>
+   <Box py={3} sx={{ textAlign: 'left' }}>
     <Typography variant="h4" component="h1" gutterBottom>
      AI Communication Training
     </Typography>
@@ -143,32 +142,20 @@ const AICommunicationTrainingScreen: React.FC = () => {
      review scenarios, and customize the communication style.
     </Typography>
 
-    <Grid container spacing={3}>
-     <Grid xs={12}>
-      <AutomatedResponseSettings
-       settings={state.responseSettings}
-       onSettingsChange={handleResponseSettingsChange}
-       isLoading={state.isLoading}
-      />
-     </Grid>
+    <Stack spacing={3}>
+     <AutomatedResponseSettings
+      settings={state.responseSettings}
+      onSettingsChange={handleResponseSettingsChange}
+      isLoading={state.isLoading}
+     />
 
-     {/* Template Approval Workflow */}
-     <Grid xs={12}>
-      <TemplateApprovalWorkflow
-       pendingTemplates={state.pendingTemplates}
-       onTemplateUpdate={handleTemplateUpdate}
-       isLoading={state.isLoading}
-      />
-     </Grid>
-
-     {/* Placeholder for other components */}
-     <Grid xs={12}>
-      <Alert severity="info">
-       Additional components (Scenario Review, Tone & Style Configuration) 
-       will be implemented in the next subtasks.
-      </Alert>
-     </Grid>
-    </Grid>
+     {/* Template Approval Workflow (sample AI-drafted templates) */}
+     <TemplateApprovalWorkflow
+      pendingTemplates={state.pendingTemplates}
+      onTemplateUpdate={handleTemplateUpdate}
+      isLoading={state.isLoading}
+     />
+    </Stack>
    </Box>
   </Container>
  );

@@ -50,6 +50,10 @@ import {
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
 import { asArray } from '../utils/safeData';
+import { EmptyPanel, NotConnectedNotice, TableEmptyRow } from '../components/empty/EmptyStates';
+import HubIcon from '@mui/icons-material/Hub';
+import HistoryIcon from '@mui/icons-material/History';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 interface Integration {
  id: string;
@@ -111,7 +115,7 @@ function TabPanel(props: TabPanelProps) {
    aria-labelledby={`integration-tab-${index}`}
    {...other}
   >
-   {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+   {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
   </div>
  );
 }
@@ -131,6 +135,8 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
   enabled: true,
  });
 
+ const [unavailable, setUnavailable] = useState(false);
+
  useEffect(() => {
   loadData();
  }, []);
@@ -145,6 +151,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
    ]);
    // apiService resolves failed calls to { error }; the integrations module has
    // no backend routes yet, so fall back to empty lists.
+   setUnavailable(Boolean((integrationsData as any)?.error));
    setIntegrations(asArray<Integration>(integrationsData?.data));
    setSyncLogs(asArray<SyncLog>(logsData?.data));
    setErrorReports(asArray<ErrorReport>(errorsData?.data));
@@ -157,7 +164,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleSyncNow = async (integrationId: string) => {
   try {
-   await apiService.post(`/integrations/${integrationId}/sync`);
+   await apiService.post(`/integrations/${integrationId}/sync`, {});
    loadData();
   } catch (error) {
    console.error('Error triggering sync:', error);
@@ -166,7 +173,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleSyncAll = async () => {
   try {
-   await apiService.post('/integrations/sync-all');
+   await apiService.post('/integrations/sync-all', {});
    loadData();
   } catch (error) {
    console.error('Error triggering all syncs:', error);
@@ -197,7 +204,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
  const handleResolveError = async (errorId: string) => {
   try {
-   await apiService.put(`/integrations/errors/${errorId}/resolve`);
+   await apiService.put(`/integrations/errors/${errorId}/resolve`, {});
    loadData();
   } catch (error) {
    console.error('Error resolving error:', error);
@@ -268,17 +275,18 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
  };
 
  return (
-  <Box sx={{ p: 3 }}>
-   <Typography variant="h4" gutterBottom>
-    External Systems Integration
-   </Typography>
-
-   <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <Typography variant="h6" color="text.secondary">
-     Monitor and manage third-party integrations
-    </Typography>
+  <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', width: '100%' }}>
+   <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+    <Box>
+     <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
+      External Integrations
+     </Typography>
+     <Typography sx={{ color: 'text.secondary' }}>
+      Monitor and manage connections to accounting, listing and payment systems.
+     </Typography>
+    </Box>
     <Button
-     variant="contained"
+     variant="outlined"
      startIcon={<RefreshIcon />}
      onClick={loadData}
      disabled={loading}
@@ -287,8 +295,14 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
     </Button>
    </Box>
 
+   {unavailable && (
+    <NotConnectedNotice>
+     The integrations service isn't connected to the server yet. Connected systems, sync logs and error reports will appear here once it is enabled.
+    </NotConnectedNotice>
+   )}
+
    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-    <Tabs value={tabValue} onChange={handleTabChange} aria-label="integration tabs">
+    <Tabs value={tabValue} onChange={handleTabChange} aria-label="integration tabs" variant="scrollable" allowScrollButtonsMobile>
      <Tab label="Integrations" />
      <Tab label="Sync Logs" />
      <Tab label="Error Reports" />
@@ -298,15 +312,16 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
    <TabPanel value={tabValue} index={0}>
     <Grid container spacing={3}>
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Card>
        <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-         <Typography variant="h6">Integration Status Overview</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+         <Typography variant="h6" sx={{ fontWeight: 800 }}>Integration Status Overview</Typography>
          <Button
           variant="contained"
           startIcon={<SyncIcon />}
           onClick={handleSyncAll}
+          disabled={integrations.length === 0}
          >
           Sync All Now
          </Button>
@@ -314,12 +329,12 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
 
         <Grid container spacing={2}>
          {integrations.length === 0 && (
-          <Grid xs={12}>
-           <Typography color="text.secondary">No integrations configured yet.</Typography>
+          <Grid item xs={12}>
+           <EmptyPanel icon={<HubIcon />} title="No integrations configured" text="Connected systems such as accounting, listing portals and payment providers will show their sync status here." />
           </Grid>
          )}
          {integrations.map((integration) => (
-          <Grid xs={12} md={6} lg={4} key={integration.id}>
+          <Grid item xs={12} md={6} lg={4} key={integration.id}>
            <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
              {getStatusIcon(integration.status)}
@@ -393,7 +408,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
       </TableHead>
       <TableBody>
        {syncLogs.length === 0 && (
-        <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No sync logs yet.</TableCell></TableRow>
+        <TableEmptyRow colSpan={6} icon={<HistoryIcon />} title="No sync logs yet" text="Each sync run will be logged here with its duration and record counts." />
        )}
        {syncLogs.map((log) => (
         <TableRow key={log.id}>
@@ -441,7 +456,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
       </TableHead>
       <TableBody>
        {errorReports.length === 0 && (
-        <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No errors reported.</TableCell></TableRow>
+        <TableEmptyRow colSpan={6} icon={<TaskAltIcon />} title="No errors reported" text="Integration failures will be listed here so you can resolve them." />
        )}
        {errorReports.map((error) => (
         <TableRow key={error.id}>
@@ -482,7 +497,7 @@ const ExternalSystemsIntegrationDashboard: React.FC = () => {
    <TabPanel value={tabValue} index={3}>
     <List>
      {integrations.length === 0 && (
-      <ListItem><ListItemText secondary="No integrations configured yet." /></ListItem>
+      <EmptyPanel icon={<SettingsIcon />} title="Nothing to configure yet" text="Endpoints, API keys and sync frequency can be set here once an integration is added." />
      )}
      {integrations.map((integration) => (
       <ListItem key={integration.id} divider>

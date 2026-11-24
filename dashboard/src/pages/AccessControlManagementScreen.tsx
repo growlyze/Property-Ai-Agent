@@ -48,6 +48,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
+import { NotConnectedNotice, TableEmptyRow } from '../components/empty/EmptyStates';
 import { asArray } from '../utils/safeData';
 
 interface Role {
@@ -116,7 +117,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`access-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
     </div>
   );
 }
@@ -153,6 +154,8 @@ const AccessControlManagementScreen: React.FC = () => {
     endDate: '',
   });
 
+  const [unavailable, setUnavailable] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -171,7 +174,9 @@ const AccessControlManagementScreen: React.FC = () => {
       setUsers(asArray(usersData?.data));
       setTempAccess(asArray(tempAccessData?.data));
       setAccessLogs(asArray(logsData?.data));
+      setUnavailable(Boolean((rolesData as any)?.error));
     } catch (error) {
+      setUnavailable(true);
       console.error('Error loading access control data:', error);
       // Set empty arrays to prevent undefined errors
       setRoles([]);
@@ -235,7 +240,7 @@ const AccessControlManagementScreen: React.FC = () => {
 
   const handleRevokeTempAccess = async (accessId: string) => {
     try {
-      await apiService.put(`/api/access-control/temporary-access/${accessId}/revoke`);
+      await apiService.put(`/api/access-control/temporary-access/${accessId}/revoke`, {});
       loadData();
     } catch (error) {
       console.error('Error revoking temporary access:', error);
@@ -266,13 +271,22 @@ const AccessControlManagementScreen: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Access Control Management
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', width: '100%' }}>
+      <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.125rem' } }}>
+        Access Control
+      </Typography>
+      <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+        Custom roles, staff accounts, temporary access grants and the access log.
       </Typography>
 
+      {unavailable && (
+        <NotConnectedNotice>
+          Access control isn't connected to the server yet. Roles, users, temporary access and logs will appear here once the service is enabled.
+        </NotConnectedNotice>
+      )}
+
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="access control tabs">
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="access control tabs" variant="scrollable" allowScrollButtonsMobile>
           <Tab label="Roles" icon={<SecurityIcon />} />
           <Tab label="Users" icon={<PersonIcon />} />
           <Tab label="Temporary Access" icon={<ScheduleIcon />} />
@@ -281,12 +295,13 @@ const AccessControlManagementScreen: React.FC = () => {
       </Box>
 
       <TabPanel value={tabValue} index={0}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5">Role Management</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Role Management</Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setShowRoleForm(true)}
+            disabled={unavailable}
           >
             Create Role
           </Button>
@@ -306,7 +321,7 @@ const AccessControlManagementScreen: React.FC = () => {
             </TableHead>
             <TableBody>
               {roles.length === 0 && (
-                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No roles yet.</TableCell></TableRow>
+                <TableEmptyRow colSpan={6} icon={<SecurityIcon />} title="No custom roles yet" text="Create a role to group permissions for your staff." />
               )}
               {roles.map((role) => (
                 <TableRow key={role.id}>
@@ -351,12 +366,13 @@ const AccessControlManagementScreen: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5">User Management</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>User Management</Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setShowUserForm(true)}
+            disabled={unavailable}
           >
             Add User
           </Button>
@@ -376,7 +392,7 @@ const AccessControlManagementScreen: React.FC = () => {
             </TableHead>
             <TableBody>
               {users.length === 0 && (
-                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No users yet.</TableCell></TableRow>
+                <TableEmptyRow colSpan={6} icon={<PersonIcon />} title="No users with custom roles" text="Add a user and assign them one of your roles." />
               )}
               {users.map((user) => (
                 <TableRow key={user.id}>
@@ -409,12 +425,13 @@ const AccessControlManagementScreen: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5">Temporary Access</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Temporary Access</Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setShowTempAccessForm(true)}
+            disabled={unavailable}
           >
             Grant Access
           </Button>
@@ -434,7 +451,7 @@ const AccessControlManagementScreen: React.FC = () => {
             </TableHead>
             <TableBody>
               {tempAccess.length === 0 && (
-                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No temporary access grants yet.</TableCell></TableRow>
+                <TableEmptyRow colSpan={6} icon={<ScheduleIcon />} title="No temporary access" text="Grant time-limited access, for example to a contractor, and it will be listed here." />
               )}
               {tempAccess.map((access) => (
                 <TableRow key={access.id}>
@@ -467,7 +484,7 @@ const AccessControlManagementScreen: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={3}>
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
           Access Logs
         </Typography>
         <TableContainer component={Paper}>
@@ -484,7 +501,7 @@ const AccessControlManagementScreen: React.FC = () => {
             </TableHead>
             <TableBody>
               {accessLogs.length === 0 && (
-                <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No access logs yet.</TableCell></TableRow>
+                <TableEmptyRow colSpan={6} icon={<HistoryIcon />} title="No access events yet" text="Sign-ins and permission checks will be logged here." />
               )}
               {accessLogs.map((log) => (
                 <TableRow key={log.id}>

@@ -168,7 +168,7 @@ const PaymentApproval: React.FC = () => {
                       {transaction.description}
                     </Typography>
                     <Typography color="text.secondary" gutterBottom>
-                      {transaction.lease.unit.property.name} • Unit {transaction.lease.unit.unitNumber}
+                      {transaction.lease.unit.property.name}{!String(transaction.lease.unit.property.name ?? "").includes(`Unit ${transaction.lease.unit.unitNumber}`) && ` • Unit ${transaction.lease.unit.unitNumber}`}
                     </Typography>
                     <Typography color="text.secondary">
                       Tenant: {transaction.lease.tenant.firstName} {transaction.lease.tenant.lastName}
@@ -181,7 +181,7 @@ const PaymentApproval: React.FC = () => {
                     <Typography variant="h5" color="primary">
                       {formatCurrency(transaction.amount)}
                     </Typography>
-                    <Chip label={transaction.type} size="small" />
+                    <Chip label={String(transaction.type ?? '').replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c: string) => c.toUpperCase())} size="small" />
                   </Box>
                 </Box>
                 <Box display="flex" gap={1} sx={{ mt: 2 }}>

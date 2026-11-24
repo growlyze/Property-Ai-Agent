@@ -217,13 +217,18 @@ const AutomatedResponseSettings: React.FC<AutomatedResponseSettingsProps> = ({
             max={240}
             step={5}
             marks={[
-              { value: 0, label: 'Immediate' },
+              { value: 0, label: 'Now' },
               { value: 30, label: '30m' },
               { value: 60, label: '1h' },
               { value: 120, label: '2h' },
               { value: 240, label: '4h' }
             ]}
-            sx={{ mt: 2 }}
+            sx={{
+              mt: 2,
+              // Keep the first/last mark labels inside the card.
+              '& .MuiSlider-markLabel[data-index="0"]': { transform: 'translateX(0%)' },
+              '& .MuiSlider-markLabel[data-index="4"]': { transform: 'translateX(-100%)' },
+            }}
           />
           <Typography variant="caption" color="text.secondary">
             How long to wait before sending an automated response

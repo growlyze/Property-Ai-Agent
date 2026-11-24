@@ -59,6 +59,8 @@ import marketingRoutes from './marketing.routes';
 import marketIntelligenceRoutes from './marketIntelligence.routes';
 import alertGroupsRoutes from './alertGroups.routes';
 import templatesRoutes from './templates.routes';
+import { threadsRouter as messageThreadRoutes, messagesRouter as messageRoutes } from './messages.routes';
+import announcementRoutes from './announcements.routes';
 // import approvalWorkflowRoutes from './approvalWorkflow.routes';
 // import workflowAutomationRoutes from './workflowAutomation.routes';
 
@@ -152,6 +154,12 @@ router.use(`${API_PREFIX}/market-intelligence`, marketIntelligenceRoutes);
 // Epic 23: Alert Groups and User Templates API routes
 router.use(`${API_PREFIX}/alert-groups`, alertGroupsRoutes);
 router.use(`${API_PREFIX}/templates`, templatesRoutes);
+
+// Direct messages between users (staff inbox, /communications)
+router.use(`${API_PREFIX}/message-threads`, messageThreadRoutes);
+router.use(`${API_PREFIX}/messages`, messageRoutes);
+// Staff announcements, delivered as notifications (/notifications/compose, emergency alerts)
+router.use(`${API_PREFIX}/announcements`, announcementRoutes);
 
 // router.use(`${API_PREFIX}/workflows/automation`, workflowAutomationRoutes);
 

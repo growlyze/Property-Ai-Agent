@@ -1,715 +1,476 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
+  Alert,
   Box,
-  Container,
-  Typography,
-  GridLegacy as Grid,
+  Button,
   Card,
   CardContent,
-  Button,
+  Checkbox,
   Chip,
-  LinearProgress,
-  Alert,
-  AlertTitle,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
+  CircularProgress,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   IconButton,
-  Tooltip,
-  Divider,
-  Paper,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  CircularProgress,
-  Badge,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import {
-  Assessment as AssessmentIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Compare as CompareIcon,
-  Visibility as VisibilityIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  Error as ErrorIcon,
-  Refresh as RefreshIcon,
-  FilterList as FilterListIcon,
-  Download as DownloadIcon,
-  Gavel as OverrideIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  ChevronRight as ChevronRightIcon,
+  Groups as GroupsIcon,
+  Speed as SpeedIcon,
+  ReportProblem as ReportProblemIcon,
+  HourglassTop as HourglassIcon,
+  CompareArrows as CompareIcon,
 } from '@mui/icons-material';
-import { DashboardCard } from '../components/shared';
-import { RiskFactorBreakdown } from '../components/risk-assessment/RiskFactorBreakdown';
-import { ApplicantComparison } from '../components/risk-assessment/ApplicantComparison';
-import { 
-  RiskAssessment, 
-  RiskAssessmentMetrics, 
-  Applicant, 
+import {
+  ScreeningApplication,
   RiskLevel,
-  ApplicantComparison as ApplicantComparisonType 
-} from '../types/risk-assessment';
+  STATUS_COLOR,
+  RISK_COLOR,
+  RISK_LABEL,
+  applicantName,
+  confidencePct,
+  creditColor,
+  fetchApplications,
+  money,
+  pretty,
+  recommendationLabel,
+  relativeDate,
+  rentalLabel,
+  riskLevel,
+} from '../services/screeningApplications';
 
 /**
- * Property AI Agent Dashboard - AI Risk Assessment Dashboard
- * Main dashboard for AI-powered risk assessment with visualization and comparison features
+ * AI risk assessment: the stored RiskAssessment for each rental application
+ * (GET /api/applications, scoped server-side). Scores are 0–100, higher =
+ * riskier. Decisions are made on the application page.
  */
-const AIRiskAssessmentDashboard: React.FC = () => {
-  // State management
-  const [metrics, setMetrics] = useState<RiskAssessmentMetrics | null>(null);
-  const [applicants, setApplicants] = useState<Applicant[]>([]);
-  const [selectedApplicant, setSelectedApplicant] = useState<RiskAssessment | null>(null);
-  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
-  const [comparison, setComparison] = useState<ApplicantComparisonType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const [showComparison, setShowComparison] = useState(false);
-  const [showOverrideDialog, setShowOverrideDialog] = useState(false);
-  const [overrideReason, setOverrideReason] = useState('');
-  const [filterRisk, setFilterRisk] = useState<RiskLevel | 'all'>('all');
 
-  // Mock data for demonstration
-  const mockMetrics: RiskAssessmentMetrics = {
-    totalApplicants: 24,
-    riskCategories: {
-      low: 12,
-      medium: 8,
-      high: 4,
-    },
-    averageScore: 75,
-    pendingReviews: 6,
-    lastUpdated: new Date(),
-  };
+const BAR_COLOR: Record<RiskLevel, string> = { low: '#0db664', medium: '#ffb900', high: '#e5484d' };
 
-  const mockApplicants: Applicant[] = [
+function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label: string; value: React.ReactNode; sub: React.ReactNode; accent: string }) {
+  return (
+    <Card sx={{ height: '100%' }}>
+      <CardContent sx={{ p: { xs: 1.75, sm: 2.5 } }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: 1.5 }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '8px',
+              bgcolor: accent,
+              color: '#fff',
+              display: 'grid',
+              placeItems: 'center',
+              border: '1.5px solid #140827',
+              flexShrink: 0,
+            }}
+          >
+            {icon}
+          </Box>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+            {label}
+          </Typography>
+        </Stack>
+        <Typography component="div" sx={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1.1 }}>
+          {value}
+        </Typography>
+        <Typography component="div" variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+          {sub}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ScoreBars({ apps }: { apps: ScreeningApplication[] }) {
+  return (
+    <Stack spacing={1.5}>
+      {apps.map((a) => {
+        const level = riskLevel(a)!;
+        const score = Math.round(a.RiskAssessment!.score);
+        return (
+          <Box key={a.id}>
+            <Stack direction="row" justifyContent="space-between" spacing={1} sx={{ mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 0 }} noWrap>
+                {applicantName(a)}
+                <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 400 }}>
+                  {' '}· {pretty(a.status)}
+                </Typography>
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700, flexShrink: 0 }}>
+                {score}
+              </Typography>
+            </Stack>
+            <Box sx={{ height: 12, bgcolor: 'rgba(20,8,39,0.08)', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(20,8,39,0.2)' }}>
+              <Box
+                title={`${applicantName(a)}: ${score} (${RISK_LABEL[level]})`}
+                sx={{ width: `${Math.max(2, Math.min(100, score))}%`, height: '100%', bgcolor: BAR_COLOR[level] }}
+              />
+            </Box>
+          </Box>
+        );
+      })}
+      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap sx={{ pt: 0.5 }}>
+        {(['low', 'medium', 'high'] as RiskLevel[]).map((l) => (
+          <Stack key={l} direction="row" spacing={0.75} alignItems="center">
+            <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: BAR_COLOR[l] }} />
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {RISK_LABEL[l]} ({l === 'low' ? '0–34' : l === 'medium' ? '35–59' : '60–100'})
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
+    </Stack>
+  );
+}
+
+function Comparison({ apps }: { apps: ScreeningApplication[] }) {
+  const rows: { label: string; render: (a: ScreeningApplication) => React.ReactNode }[] = [
     {
-      id: '1',
-      name: 'John Smith',
-      email: 'john.smith@email.com',
-      phone: '(555) 123-4567',
-      applicationDate: new Date('2024-01-15'),
-      status: 'under_review',
-      riskAssessment: {
-        id: 'ra1',
-        applicantId: '1',
-        applicantName: 'John Smith',
-        overallScore: 85,
-        riskLevel: 'low',
-        factors: [
-          {
-            id: 'f1',
-            name: 'Credit Score',
-            value: 750,
-            weight: 0.3,
-            impact: 'positive',
-            description: 'Excellent credit history with consistent payments',
-            category: 'Financial'
-          },
-          {
-            id: 'f2',
-            name: 'Income to Rent Ratio',
-            value: 3.2,
-            weight: 0.25,
-            impact: 'positive',
-            description: 'Income is 3.2x the monthly rent',
-            category: 'Financial'
-          },
-          {
-            id: 'f3',
-            name: 'Employment History',
-            value: '5 years',
-            weight: 0.2,
-            impact: 'positive',
-            description: 'Stable employment for 5+ years',
-            category: 'Employment'
-          }
-        ],
-        explanation: 'Strong financial profile with excellent credit and stable income',
-        confidence: 92,
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-15'),
-        status: 'pending'
-      }
+      label: 'Risk',
+      render: (a) => {
+        const l = riskLevel(a);
+        return l ? <Chip size="small" color={RISK_COLOR[l]} label={`${RISK_LABEL[l]} · ${Math.round(a.RiskAssessment!.score)}`} /> : '—';
+      },
+    },
+    { label: 'Recommendation', render: (a) => recommendationLabel(a.RiskAssessment?.details?.recommendation) },
+    {
+      label: 'Credit score',
+      render: (a) => (
+        <Typography component="span" variant="body2" sx={{ fontWeight: 700, color: creditColor(a.RiskAssessment?.details?.creditScore) }}>
+          {a.RiskAssessment?.details?.creditScore ?? '—'}
+        </Typography>
+      ),
     },
     {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phone: '(555) 234-5678',
-      applicationDate: new Date('2024-01-14'),
-      status: 'under_review',
-      riskAssessment: {
-        id: 'ra2',
-        applicantId: '2',
-        applicantName: 'Sarah Johnson',
-        overallScore: 65,
-        riskLevel: 'medium',
-        factors: [
-          {
-            id: 'f4',
-            name: 'Credit Score',
-            value: 680,
-            weight: 0.3,
-            impact: 'neutral',
-            description: 'Good credit score with minor late payments',
-            category: 'Financial'
-          },
-          {
-            id: 'f5',
-            name: 'Income to Rent Ratio',
-            value: 2.8,
-            weight: 0.25,
-            impact: 'neutral',
-            description: 'Income is 2.8x the monthly rent',
-            category: 'Financial'
-          }
-        ],
-        explanation: 'Moderate risk profile with good financial standing',
-        confidence: 78,
-        createdAt: new Date('2024-01-14'),
-        updatedAt: new Date('2024-01-14'),
-        status: 'pending'
-      }
+      label: 'Income',
+      render: (a) => money(a.RiskAssessment?.details?.monthlyIncome),
     },
+    { label: 'Rental', render: (a) => rentalLabel(a) },
     {
-      id: '3',
-      name: 'Mike Davis',
-      email: 'mike.davis@email.com',
-      phone: '(555) 345-6789',
-      applicationDate: new Date('2024-01-13'),
-      status: 'under_review',
-      riskAssessment: {
-        id: 'ra3',
-        applicantId: '3',
-        applicantName: 'Mike Davis',
-        overallScore: 45,
-        riskLevel: 'high',
-        factors: [
-          {
-            id: 'f6',
-            name: 'Credit Score',
-            value: 580,
-            weight: 0.3,
-            impact: 'negative',
-            description: 'Below average credit with recent late payments',
-            category: 'Financial'
-          },
-          {
-            id: 'f7',
-            name: 'Income to Rent Ratio',
-            value: 2.1,
-            weight: 0.25,
-            impact: 'negative',
-            description: 'Income is only 2.1x the monthly rent',
-            category: 'Financial'
-          }
-        ],
-        explanation: 'Higher risk profile requiring additional review',
-        confidence: 85,
-        createdAt: new Date('2024-01-13'),
-        updatedAt: new Date('2024-01-13'),
-        status: 'pending'
-      }
-    }
+      label: 'Key factors',
+      render: (a) => (
+        <Box component="ul" sx={{ m: 0, pl: 2 }}>
+          {(a.RiskAssessment?.details?.factors ?? []).map((f) => (
+            <li key={f}>
+              <Typography variant="body2">{f}</Typography>
+            </li>
+          ))}
+        </Box>
+      ),
+    },
   ];
+  return (
+    <TableContainer sx={{ overflowX: 'auto' }}>
+      <Table size="small" sx={{ minWidth: 240 + apps.length * 220 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ width: 140 }} />
+            {apps.map((a) => (
+              <TableCell key={a.id} sx={{ fontWeight: 800 }}>
+                {applicantName(a)}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.label}>
+              <TableCell sx={{ color: 'text.secondary', fontWeight: 600, verticalAlign: 'top' }}>{r.label}</TableCell>
+              {apps.map((a) => (
+                <TableCell key={a.id} sx={{ verticalAlign: 'top' }}>
+                  {r.render(a)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
 
-  // Load data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setMetrics(mockMetrics);
-        setApplicants(mockApplicants);
-      } catch (err) {
-        setError('Failed to load risk assessment data');
-      } finally {
-        setLoading(false);
-      }
-    };
+const AIRiskAssessmentDashboard: React.FC = () => {
+  const [filter, setFilter] = useState<RiskLevel | 'all'>('all');
+  const [selected, setSelected] = useState<string[]>([]);
 
-    loadData();
-  }, []);
-
-  // Event handlers
-  const handleViewDetails = useCallback((applicant: Applicant) => {
-    if (applicant.riskAssessment) {
-      setSelectedApplicant(applicant.riskAssessment);
-      setShowBreakdown(true);
-    }
-  }, []);
-
-  const handleCompareApplicants = useCallback(() => {
-    if (selectedApplicants.length >= 2) {
-      const selectedAssessments = applicants
-        .filter(a => selectedApplicants.includes(a.id) && a.riskAssessment)
-        .map(a => a.riskAssessment!);
-      
-      setComparison({
-        applicants: selectedAssessments,
-        comparisonFactors: ['Credit Score', 'Income to Rent Ratio', 'Employment History'],
-        recommendations: [
-          'Consider John Smith as the primary candidate based on superior financial metrics',
-          'Sarah Johnson presents moderate risk but acceptable for approval',
-          'Mike Davis requires additional documentation and review'
-        ]
-      });
-      setShowComparison(true);
-    }
-  }, [selectedApplicants, applicants]);
-
-  const handleApplicantSelect = useCallback((applicantId: string) => {
-    setSelectedApplicants(prev => 
-      prev.includes(applicantId) 
-        ? prev.filter(id => id !== applicantId)
-        : [...prev, applicantId]
-    );
-  }, []);
-
-  const handleOverrideDecision = useCallback(() => {
-    if (overrideReason.trim()) {
-      // Handle override logic here
-      console.log('Override submitted:', overrideReason);
-      setShowOverrideDialog(false);
-      setOverrideReason('');
-    }
-  }, [overrideReason]);
-
-  const getRiskLevelColor = (level: RiskLevel): 'success' | 'warning' | 'error' => {
-    switch (level) {
-      case 'low': return 'success';
-      case 'medium': return 'warning';
-      case 'high': return 'error';
-      default: return 'success';
-    }
-  };
-
-  const getRiskLevelIcon = (level: RiskLevel) => {
-    switch (level) {
-      case 'low': return <CheckCircleIcon color="success" />;
-      case 'medium': return <WarningIcon color="warning" />;
-      case 'high': return <ErrorIcon color="error" />;
-      default: return <CheckCircleIcon color="success" />;
-    }
-  };
-
-  const filteredApplicants = applicants.filter(applicant => {
-    if (filterRisk === 'all') return true;
-    return applicant.riskAssessment?.riskLevel === filterRisk;
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['screening-applications'],
+    queryFn: fetchApplications,
   });
 
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
-    );
-  }
+  const assessed = useMemo(() => (data ?? []).filter((a) => a.RiskAssessment), [data]);
+  const filtered = assessed.filter((a) => filter === 'all' || riskLevel(a) === filter);
+  const counts = { low: 0, medium: 0, high: 0 } as Record<RiskLevel, number>;
+  assessed.forEach((a) => {
+    const l = riskLevel(a);
+    if (l) counts[l] += 1;
+  });
+  const avg = assessed.length ? Math.round(assessed.reduce((s, a) => s + a.RiskAssessment!.score, 0) / assessed.length) : 0;
+  const pending = assessed.filter((a) => a.status === 'PENDING');
+  const pendingHigh = pending.filter((a) => riskLevel(a) === 'high').length;
+  const confidences = assessed.map((a) => confidencePct(a.RiskAssessment?.details?.confidence)).filter((c): c is number => c !== null);
+  const avgConfidence = confidences.length ? Math.round(confidences.reduce((s, c) => s + c, 0) / confidences.length) : null;
+  // Pending first, then most recent.
+  const barApps = [...assessed].sort((a, b) => Number(b.status === 'PENDING') - Number(a.status === 'PENDING') || b.RiskAssessment!.score - a.RiskAssessment!.score);
+  const compared = assessed.filter((a) => selected.includes(a.id));
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : prev.length >= 3 ? [...prev.slice(1), id] : [...prev, id]));
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box mb={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Property AI Agent Dashboard
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: 'auto', textAlign: 'left' }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+          AI risk assessment
         </Typography>
-        <Typography variant="h5" component="h2" color="primary" gutterBottom>
-          AI Risk Assessment Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Comprehensive risk analysis and applicant comparison powered by artificial intelligence
+        <Typography sx={{ color: 'text.secondary' }}>
+          Risk scores for rental applicants, with the factors behind each score. Compare applicants side by side before you decide.
         </Typography>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+      {isLoading ? (
+        <Box sx={{ display: 'grid', placeItems: 'center', py: 10 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              Retry
+            </Button>
+          }
+        >
+          Could not load risk assessments. Check that the API is running, then try again.
         </Alert>
-      )}
+      ) : assessed.length === 0 ? (
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              No risk assessments yet
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+              Applicants are scored automatically once their application has been screened.
+            </Typography>
+            <Button variant="outlined" component={RouterLink} to="/tenant-screening">
+              Go to tenant screening
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <Box sx={{ display: 'grid', gap: { xs: 1.5, sm: 2.5 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, mb: 2.5 }}>
+            <Kpi icon={<GroupsIcon fontSize="small" />} label="Assessed applicants" value={assessed.length} sub={`${pending.length} awaiting a decision`} accent="#397ae7" />
+            <Kpi
+              icon={<SpeedIcon fontSize="small" />}
+              label="Average risk score"
+              value={avg}
+              sub={avgConfidence !== null ? `Out of 100 · ${avgConfidence}% average confidence` : 'Out of 100, higher is riskier'}
+              accent="#f55809"
+            />
+            <Kpi
+              icon={<AutoAwesomeIcon fontSize="small" />}
+              label="Risk mix"
+              value={
+                <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap sx={{ pt: 0.5 }}>
+                  <Chip size="small" color="success" label={`${counts.low} low`} />
+                  <Chip size="small" color="warning" label={`${counts.medium} med`} />
+                  <Chip size="small" color="error" label={`${counts.high} high`} />
+                </Stack>
+              }
+              sub="Across all assessed applicants"
+              accent="#9a57ff"
+            />
+            <Kpi
+              icon={pendingHigh ? <ReportProblemIcon fontSize="small" /> : <HourglassIcon fontSize="small" />}
+              label="Needs attention"
+              value={pendingHigh}
+              sub="Pending applicants with high risk"
+              accent={pendingHigh ? '#e5484d' : '#ffb900'}
+            />
+          </Box>
 
-      {/* Summary Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <DashboardCard title="Total Applicants" aiGenerated>
-            <Typography variant="h3" color="primary">
-              {metrics?.totalApplicants || 0}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Applications under review
-            </Typography>
-          </DashboardCard>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <DashboardCard title="Risk Score" aiGenerated>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Typography variant="h3" color="success.main">
-                {metrics?.averageScore || 0}
-              </Typography>
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Overall Risk Score
+          <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', lg: '3fr 2fr' }, mb: 2.5, alignItems: 'start' }}>
+            <Card>
+              <CardContent sx={{ p: 2.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  Risk score by applicant
                 </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={metrics?.averageScore || 0} 
-                  color="success"
-                  sx={{ mt: 1, height: 6, borderRadius: 3 }}
-                />
-              </Box>
-            </Box>
-          </DashboardCard>
-        </Grid>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                  Pending applicants first. Higher scores mean higher risk.
+                </Typography>
+                <ScoreBars apps={barApps} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ p: 2.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  How the score works
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                  Each applicant gets a 0–100 risk score built from three groups of signals.
+                </Typography>
+                <Stack spacing={1.5}>
+                  {[
+                    ['Financial · 60%', 'Credit score, income-to-rent multiple, debts and payment history.'],
+                    ['Employment · 25%', 'Stability of employment and verified income.'],
+                    ['Rental history · 15%', 'Previous landlord references, balances and evictions.'],
+                  ].map(([title, text]) => (
+                    <Box key={title} sx={{ p: 1.5, border: '1.5px solid rgba(20,8,39,0.15)', borderRadius: '8px' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        {title}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {text}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+                <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mt: 1.5 }}>
+                  The score is advice. You make the final decision on the application page.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <DashboardCard title="Risk Distribution">
-            <Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="body2">Low Risk</Typography>
-                <Chip 
-                  label={metrics?.riskCategories.low || 0} 
-                  color="success" 
-                  size="small" 
-                />
-              </Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="body2">Medium Risk</Typography>
-                <Chip 
-                  label={metrics?.riskCategories.medium || 0} 
-                  color="warning" 
-                  size="small" 
-                />
-              </Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Typography variant="body2">High Risk</Typography>
-                <Chip 
-                  label={metrics?.riskCategories.high || 0} 
-                  color="error" 
-                  size="small" 
-                />
-              </Box>
-            </Box>
-          </DashboardCard>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <DashboardCard title="Pending Reviews">
-            <Typography variant="h3" color="warning.main">
-              {metrics?.pendingReviews || 0}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Awaiting manual review
-            </Typography>
-          </DashboardCard>
-        </Grid>
-      </Grid>
-
-      {/* Risk Factor Visualization */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} lg={8}>
-          <DashboardCard 
-            title="Risk Factor Visualization" 
-            subtitle="Risk factor visualizations will be implemented here."
-            aiGenerated
-          >
-            <Box sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.50', borderRadius: 2 }}>
-              <AssessmentIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Risk Factor Charts
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Interactive visualizations showing risk factor distributions, trends, and correlations
-              </Typography>
-            </Box>
-          </DashboardCard>
-        </Grid>
-
-        <Grid item xs={12} lg={4}>
-          <DashboardCard title="Comparative Analysis" aiGenerated>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Side-by-side applicant comparison will be implemented here.
-              </Typography>
-              <Button
-                variant="outlined"
-                startIcon={<CompareIcon />}
-                onClick={handleCompareApplicants}
-                disabled={selectedApplicants.length < 2}
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                Compare Selected ({selectedApplicants.length})
-              </Button>
-            </Box>
-          </DashboardCard>
-        </Grid>
-      </Grid>
-
-      {/* AI Scoring Factors */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12}>
-          <DashboardCard 
-            title="AI Scoring Factors" 
-            subtitle="Detailed explanation of AI scoring factors will be implemented here."
-            aiGenerated
-          >
-            <Box sx={{ p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Scoring Methodology
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Financial Factors (60%)
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Credit score, income ratio, debt-to-income, payment history
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Employment (25%)
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Employment stability, income verification, job history
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Rental History (15%)
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Previous rental performance, references, eviction history
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          </DashboardCard>
-        </Grid>
-      </Grid>
-
-      {/* Applicant List */}
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <DashboardCard 
-            title="Applicant Risk Assessment"
-            actions={
-              <Box display="flex" gap={1}>
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <InputLabel>Filter by Risk</InputLabel>
-                  <Select
-                    value={filterRisk}
-                    label="Filter by Risk"
-                    onChange={(e) => setFilterRisk(e.target.value as RiskLevel | 'all')}
-                  >
-                    <MenuItem value="all">All</MenuItem>
-                    <MenuItem value="low">Low Risk</MenuItem>
-                    <MenuItem value="medium">Medium Risk</MenuItem>
-                    <MenuItem value="high">High Risk</MenuItem>
+          <Card sx={{ mb: 2.5 }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2} sx={{ mb: 2 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    Applicants
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Tick up to three applicants to compare them.
+                  </Typography>
+                </Box>
+                <FormControl size="small" sx={{ minWidth: 160 }}>
+                  <InputLabel id="risk-filter-label">Risk level</InputLabel>
+                  <Select labelId="risk-filter-label" value={filter} label="Risk level" onChange={(e) => setFilter(e.target.value as RiskLevel | 'all')}>
+                    <MenuItem value="all">All levels</MenuItem>
+                    <MenuItem value="low">Low risk</MenuItem>
+                    <MenuItem value="medium">Medium risk</MenuItem>
+                    <MenuItem value="high">High risk</MenuItem>
                   </Select>
                 </FormControl>
-                <Button
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={() => window.location.reload()}
-                >
-                  Refresh
-                </Button>
-              </Box>
-            }
-          >
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell padding="checkbox">
-                      <Typography variant="subtitle2">Select</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">Applicant</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">Risk Level</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">Score</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">Application Date</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">Status</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">Actions</Typography>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredApplicants.map((applicant) => (
-                    <TableRow key={applicant.id} hover>
-                      <TableCell padding="checkbox">
-                        <input
-                          type="checkbox"
-                          checked={selectedApplicants.includes(applicant.id)}
-                          onChange={() => handleApplicantSelect(applicant.id)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {applicant.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {applicant.email}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          {applicant.riskAssessment && getRiskLevelIcon(applicant.riskAssessment.riskLevel)}
-                          <Chip
-                            label={applicant.riskAssessment?.riskLevel || 'N/A'}
-                            color={applicant.riskAssessment ? getRiskLevelColor(applicant.riskAssessment.riskLevel) : 'default'}
-                            size="small"
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
-                          {applicant.riskAssessment?.overallScore || 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {applicant.applicationDate.toLocaleDateString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={applicant.status.replace('_', ' ')}
-                          variant="outlined"
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" gap={1}>
-                          <Tooltip title="View Details">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewDetails(applicant)}
-                              disabled={!applicant.riskAssessment}
-                            >
-                              <VisibilityIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DashboardCard>
-        </Grid>
-      </Grid>
+              </Stack>
 
-      {/* Override AI Decision */}
-      <Box sx={{ mt: 4, p: 3, bgcolor: 'warning.light', borderRadius: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Override AI Decision
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Manual override allows authorized personnel to approve or reject applications regardless of AI recommendation
-        </Typography>
-        <Button
-          variant="contained"
-          color="warning"
-          startIcon={<OverrideIcon />}
-          onClick={() => setShowOverrideDialog(true)}
-          disabled={selectedApplicants.length !== 1}
-        >
-          Submit Override
-        </Button>
-      </Box>
+              {filtered.length === 0 ? (
+                <Typography variant="body2" sx={{ color: 'text.secondary', py: 3 }}>
+                  No applicants at this risk level.
+                </Typography>
+              ) : (
+                <TableContainer sx={{ overflowX: 'auto' }}>
+                  <Table size="small" sx={{ minWidth: 900 }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell padding="checkbox" />
+                        <TableCell>Applicant</TableCell>
+                        <TableCell>Risk</TableCell>
+                        <TableCell align="right">Credit</TableCell>
+                        <TableCell>Recommendation</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Applied</TableCell>
+                        <TableCell />
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filtered.map((a) => {
+                        const level = riskLevel(a)!;
+                        const credit = a.RiskAssessment?.details?.creditScore;
+                        return (
+                          <TableRow key={a.id} hover selected={selected.includes(a.id)}>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selected.includes(a.id)}
+                                onChange={() => toggle(a.id)}
+                                inputProps={{ 'aria-label': `Compare ${applicantName(a)}` }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                {applicantName(a)}
+                              </Typography>
+                              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                {rentalLabel(a)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                              <Chip size="small" color={RISK_COLOR[level]} label={`${RISK_LABEL[level]} · ${Math.round(a.RiskAssessment!.score)}`} />
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: creditColor(credit) }}>
+                                {typeof credit === 'number' ? credit : '—'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>{recommendationLabel(a.RiskAssessment?.details?.recommendation)}</TableCell>
+                            <TableCell>
+                              <Chip size="small" variant="outlined" color={STATUS_COLOR[a.status] ?? 'default'} label={pretty(a.status)} />
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>{relativeDate(a.appliedDate)}</TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="Open application">
+                                <IconButton
+                                  component={RouterLink}
+                                  to={`/tenant-screening/applications/${a.id}`}
+                                  size="small"
+                                  aria-label={`Open application from ${applicantName(a)}`}
+                                >
+                                  <ChevronRightIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Risk Factor Breakdown Modal */}
-      {selectedApplicant && (
-        <RiskFactorBreakdown
-          assessment={selectedApplicant}
-          open={showBreakdown}
-          onClose={() => setShowBreakdown(false)}
-          onApprove={(id) => console.log('Approved:', id)}
-          onReject={(id, reason) => console.log('Rejected:', id, reason)}
-        />
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                <CompareIcon color="primary" fontSize="small" />
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  Side-by-side comparison
+                </Typography>
+                {compared.length > 0 && (
+                  <Button size="small" onClick={() => setSelected([])} sx={{ ml: 'auto !important' }}>
+                    Clear
+                  </Button>
+                )}
+              </Stack>
+              {compared.length < 2 ? (
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  {compared.length === 1
+                    ? `${applicantName(compared[0])} selected. Tick one or two more applicants to compare.`
+                    : 'Tick two or three applicants in the table above to compare their risk, credit, income and key factors.'}
+                </Typography>
+              ) : (
+                <Comparison apps={compared} />
+              )}
+            </CardContent>
+          </Card>
+        </>
       )}
-
-      {/* Applicant Comparison Modal */}
-      {comparison && (
-        <ApplicantComparison
-          comparison={comparison}
-          onClose={() => setShowComparison(false)}
-          onViewDetails={(id) => console.log('View details:', id)}
-        />
-      )}
-
-      {/* Override Decision Dialog */}
-      <Dialog
-        open={showOverrideDialog}
-        onClose={() => setShowOverrideDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Override AI Decision</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            <AlertTitle>Manual Override</AlertTitle>
-            This action will override the AI recommendation. Please provide a detailed reason.
-          </Alert>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            label="Override Reason"
-            value={overrideReason}
-            onChange={(e) => setOverrideReason(e.target.value)}
-            placeholder="Explain the reason for overriding the AI decision..."
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowOverrideDialog(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={handleOverrideDecision}
-            disabled={!overrideReason.trim()}
-          >
-            Submit Override
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+    </Box>
   );
 };
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Tabs,
   Tab,
-  Badge,
-  GridLegacy as Grid,
+  Chip,
+  CircularProgress,
+  Alert,
+  Button,
 } from '@mui/material';
 import {
   Insights as InsightsIcon,
@@ -15,7 +16,7 @@ import {
   People as PeopleIcon,
 } from '@mui/icons-material';
 import { aiInsightsService } from '../services/aiInsightsService';
-import { InsightsDashboardState, InsightCategoryGroup, Insight } from '../types/ai-insights';
+import { InsightsDashboardState, InsightCategoryGroup, Insight, InsightCategory } from '../types/ai-insights';
 import CategorySection from '../components/ai-insights/CategorySection';
 import InsightCard from '../components/ai-insights/InsightCard';
 import { InsightDetailModal } from '../components/ai-insights/InsightDetailModal';
@@ -52,8 +53,7 @@ const AIInsightsDashboard: React.FC = () => {
       try {
         setState(prev => ({ ...prev, loading: true, error: null }));
         const insightsResponse = await aiInsightsService.getInsights(state.filters);
-        console.log("API Response Data:", insightsResponse);
-        
+
         // Add null check to prevent undefined access
         if (insightsResponse && insightsResponse.data) {
           // Group insights by category for display
@@ -71,6 +71,9 @@ const AIInsightsDashboard: React.FC = () => {
             category: category as InsightCategory,
             insights: groupedInsights[category],
             totalCount: groupedInsights[category].length,
+            priority: 0,
+            icon: category,
+            color: '',
           }));
 
           setState(prev => ({
@@ -137,38 +140,49 @@ const AIInsightsDashboard: React.FC = () => {
     }
   }, [state.categories]);
 
-  console.log("Current State:", state);
 
   if (state.loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Typography>Loading AI insights...</Typography>
-      </Container>
+      <Box sx={{ display: 'grid', placeItems: 'center', py: 10 }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (state.error) {
     return (
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Typography color="error">{state.error}</Typography>
-      </Container>
+      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: 'auto', textAlign: 'left' }}>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          }
+        >
+          {state.error}
+        </Alert>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <InsightsIcon sx={{ mr: 2, fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-            AI Insights Dashboard
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: 'auto', textAlign: 'left' }}>
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <InsightsIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 800 }}>
+            AI insights
           </Typography>
         </Box>
+        <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+          What the AI has spotted across tenant satisfaction, finances and operations, with recommended actions.
+        </Typography>
       </Box>
 
       {/* Category Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange}>
+        <Tabs value={activeTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile>
           <Tab label="All Insights" />
           {state.categories.map((category: InsightCategoryGroup, index: number) => {
             const IconComponent = categoryIcons[category.category];
@@ -179,11 +193,7 @@ const AIInsightsDashboard: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <IconComponent sx={{ fontSize: 18 }} />
                     {category.name}
-                    <Badge 
-                      badgeContent={category.totalCount} 
-                      color="primary" 
-                      sx={{ ml: 1 }}
-                    />
+                    <Chip size="small" color="primary" label={category.totalCount} sx={{ height: 20, minWidth: 20, '& .MuiChip-label': { px: 0.75 } }} />
                   </Box>
                 }
               />
@@ -193,9 +203,17 @@ const AIInsightsDashboard: React.FC = () => {
       </Box>
 
       {/* Main Content */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={9}>
-          {activeTab === 0 ? (
+      <Box>
+          {state.categories.length === 0 ? (
+            <Box sx={{ py: 5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                No insights yet
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Insights appear here as the AI analyses your rent, maintenance and tenant activity.
+              </Typography>
+            </Box>
+          ) : activeTab === 0 ? (
             // All categories view
             <Box>
               {state.categories.map((category: InsightCategoryGroup) => (
@@ -210,7 +228,13 @@ const AIInsightsDashboard: React.FC = () => {
             </Box>
           ) : (
             // Single category view
-            <Grid container spacing={3}>
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 2.5,
+                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' },
+              }}
+            >
               {state.categories
                 .filter((category: InsightCategoryGroup) => activeTab > 0 && state.categories[activeTab - 1]?.id === category.id)
                 .flatMap((category: InsightCategoryGroup) => category.insights)
@@ -237,22 +261,20 @@ const AIInsightsDashboard: React.FC = () => {
                   }
                 })
                 .map((insight: Insight) => {
-                  console.log("Rendering InsightCard for insight:", insight);
                   if (!insight) return null; // Defensive check
                   return (
-                    <Grid item xs={12} md={6} lg={4} key={insight.id}>
+                    <Box key={insight.id} sx={{ minWidth: 0 }}>
                       <InsightCard
                         insight={insight}
                         onClick={handleInsightClick}
                         showCategory={false}
                       />
-                    </Grid>
+                    </Box>
                   );
                 })}
-            </Grid>
+            </Box>
           )}
-        </Grid>
-      </Grid>
+      </Box>
 
       {/* Insight Detail Modal */}
       {state.selectedInsight && (
@@ -262,7 +284,7 @@ const AIInsightsDashboard: React.FC = () => {
           onClose={handleCloseModal}
         />
       )}
-    </Container>
+    </Box>
   );
 };
 

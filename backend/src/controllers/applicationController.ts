@@ -51,14 +51,73 @@ const OWNERSHIP_INCLUDE = {
   Rental: { select: { managerId: true, ownerId: true, createdById: true } },
 } as const;
 
+/**
+ * Read shape for the screening screens: the applicant's contact details, the
+ * rental, and the screening / risk / background-check rows. Only display-safe
+ * fields are selected (no password hashes, tokens, etc.). The Rental ownership
+ * ids are still needed by `canAccessApplication` and are stripped by
+ * `toReadShape` before the row is returned.
+ */
+const READ_INCLUDE = {
+  User: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+  Rental: {
+    select: {
+      id: true,
+      title: true,
+      address: true,
+      city: true,
+      state: true,
+      unitNumber: true,
+      rent: true,
+      managerId: true,
+      ownerId: true,
+      createdById: true,
+    },
+  },
+  Screening: { select: { status: true, reportUrl: true, createdAt: true, updatedAt: true } },
+  RiskAssessment: { select: { score: true, details: true, createdAt: true, updatedAt: true } },
+  BackgroundCheck: { select: { status: true, reportUrl: true, createdAt: true, updatedAt: true } },
+} as const;
+
+/** Risk `details` keys that are safe and useful to show in the UI. */
+const RISK_DETAIL_KEYS = [
+  'riskLevel',
+  'creditScore',
+  'monthlyIncome',
+  'recommendation',
+  'confidence',
+  'factors',
+] as const;
+
+function toReadShape(row: any) {
+  if (!row) return row;
+  const { Rental, RiskAssessment, ...rest } = row;
+  let risk = RiskAssessment ?? null;
+  if (risk) {
+    const raw = (risk.details && typeof risk.details === 'object' ? risk.details : {}) as Record<string, unknown>;
+    const details: Record<string, unknown> = {};
+    for (const key of RISK_DETAIL_KEYS) {
+      if (raw[key] !== undefined) details[key] = raw[key];
+    }
+    risk = { ...risk, details };
+  }
+  let rental = Rental ?? null;
+  if (rental) {
+    const { managerId: _m, ownerId: _o, createdById: _c, ...safeRental } = rental;
+    rental = safeRental;
+  }
+  return { ...rest, Rental: rental, RiskAssessment: risk };
+}
+
 class ApplicationController {
   async getAllApplications(req: Request, res: Response) {
     try {
       const applications = await prisma.application.findMany({
         where: applicationScopeFilter(req),
-        include: OWNERSHIP_INCLUDE,
+        include: READ_INCLUDE,
+        orderBy: { appliedDate: 'desc' },
       });
-      res.status(200).json(applications);
+      res.status(200).json(applications.map(toReadShape));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -175,7 +234,7 @@ class ApplicationController {
     try {
       const application = await prisma.application.findUnique({
         where: { id: req.params.id },
-        include: OWNERSHIP_INCLUDE,
+        include: READ_INCLUDE,
       });
       if (!application) {
         res.status(404).json({ message: 'Application not found' });
@@ -185,7 +244,7 @@ class ApplicationController {
         res.status(403).json({ error: 'You do not have access to this application' });
         return;
       }
-      res.status(200).json(application);
+      res.status(200).json(toReadShape(application));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

@@ -1,446 +1,241 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
- Box,
- Typography,
- Paper,
- Button,
- TextField,
- Select,
- MenuItem,
- FormControl,
- InputLabel,
- Table,
- TableBody,
- TableCell,
- TableContainer,
- TableHead,
- TableRow,
- Chip,
- Dialog,
- DialogTitle,
- DialogContent,
- DialogActions,
- GridLegacy as Grid,
- Card,
- CardContent,
- IconButton,
- Tooltip,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
 } from '@mui/material';
-import {
- Add as AddIcon,
- Compare as CompareIcon,
- Description as DocumentIcon,
- Message as MessageIcon,
- CheckCircle as CheckCircleIcon,
- Cancel as CancelIcon,
-} from '@mui/icons-material';
-import { apiService } from '../services/api';
-import { asArray } from '../utils/safeData';
+import AddIcon from '@mui/icons-material/Add';
+import GavelIcon from '@mui/icons-material/Gavel';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import SavingsIcon from '@mui/icons-material/Savings';
+import api from '../services/api';
+import workOrderService, { apiErrorMessage, WorkOrderItem } from '../services/workOrderService';
+import { EmptyState, ErrorNote, INK, Loading, PageHeader, StatCard, StatusChip, fmtDate, money } from '../components/portal/PortalUI';
 
-interface RFQ {
- id: string;
- title: string;
- description: string;
- category: string;
- deadline: string;
- status: 'draft' | 'published' | 'closed';
- vendorCount: number;
- budgetRange: {
-  min: number;
-  max: number;
- };
-}
+const isPending = (s: string) => String(s).toUpperCase() === 'PENDING';
+const isAccepted = (s: string) => String(s).toUpperCase() === 'ACCEPTED';
 
-interface Bid {
- id: string;
- vendorId: string;
- vendorName: string;
- amount: number;
- duration: string;
- status: 'submitted' | 'review' | 'accepted' | 'rejected';
- submittedAt: string;
- documents: string[];
- rating: number;
-}
-
-interface Vendor {
- id: string;
- name: string;
- category: string;
- rating: number;
- certifications: string[];
- verified: boolean;
-}
-
+/**
+ * Vendor bidding: every work order that collects vendor quotes is a request for quote,
+ * and each quote is a bid (GET /api/work-orders; decisions via PATCH /api/work-orders/quotes/:id).
+ */
 const VendorBiddingPlatformScreen: React.FC = () => {
- const [rfqs, setRfqs] = useState<RFQ[]>([]);
- const [bids, setBids] = useState<Bid[]>([]);
- const [vendors, setVendors] = useState<Vendor[]>([]);
- const [showRFQForm, setShowRFQForm] = useState(false);
- const [selectedRFQ, setSelectedRFQ] = useState<string | null>(null);
- const [showBidComparison, setShowBidComparison] = useState(false);
- const [newRFQ, setNewRFQ] = useState({
-  title: '',
-  description: '',
-  category: '',
-  deadline: '',
-  budgetMin: 0,
-  budgetMax: 0,
- });
+  const qc = useQueryClient();
+  const [selected, setSelected] = useState<string | null>(null);
 
- useEffect(() => {
-  loadData();
- }, []);
+  const orders = useQuery({
+    queryKey: ['vendor-bidding', 'work-orders'],
+    queryFn: async () => (await workOrderService.list({ page: 1, limit: 100 })).data,
+  });
+  const vendors = useQuery({
+    queryKey: ['vendor-bidding', 'vendors'],
+    queryFn: async () => {
+      const body = (await api.get('/vendors', { params: { limit: 100 } })).data;
+      return (Array.isArray(body?.data) ? body.data : []) as any[];
+    },
+  });
 
- const loadData = async () => {
-  try {
-   const [rfqsData, bidsData, vendorsData] = await Promise.all([
-    apiService.get('/vendor-bidding/rfqs'),
-    apiService.get('/vendor-bidding/bids'),
-    apiService.get('/vendor-bidding/vendors'),
-   ]);
-   setRfqs(asArray(rfqsData?.data));
-   setBids(asArray(bidsData?.data));
-   setVendors(asArray(vendorsData?.data));
-  } catch (error) {
-   console.error('Error loading data:', error);
-   // Set empty arrays to prevent filter errors
-   setRfqs([]);
-   setBids([]);
-   setVendors([]);
-  }
-};
+  const decide = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) => workOrderService.decideQuote(id, status),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['vendor-bidding', 'work-orders'] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
+    },
+  });
 
- const handleCreateRFQ = async () => {
-  try {
-   await apiService.post('/api/vendor-bidding/rfqs', newRFQ);
-   setShowRFQForm(false);
-   setNewRFQ({
-    title: '',
-    description: '',
-    category: '',
-    deadline: '',
-    budgetMin: 0,
-    budgetMax: 0,
-   });
-   loadData();
-  } catch (error) {
-   console.error('Error creating RFQ:', error);
-  }
- };
+  const rfqs = useMemo(
+    () =>
+      (orders.data ?? [])
+        .filter((w) => (w.quotes ?? []).length > 0)
+        .map((w) => {
+          const amounts = (w.quotes ?? []).map((q) => Number(q.amount) || 0);
+          const accepted = (w.quotes ?? []).find((q) => isAccepted(q.status));
+          return {
+            wo: w,
+            bids: (w.quotes ?? []).length,
+            pending: (w.quotes ?? []).filter((q) => isPending(q.status)).length,
+            low: Math.min(...amounts),
+            high: Math.max(...amounts),
+            accepted,
+            saving: accepted ? Math.max(...amounts) - Number(accepted.amount) : 0,
+          };
+        })
+        .sort((a, b) => b.pending - a.pending || new Date(b.wo.createdAt).getTime() - new Date(a.wo.createdAt).getTime()),
+    [orders.data]
+  );
 
- const handleAcceptBid = async (bidId: string) => {
-  try {
-   await apiService.put(`/api/vendor-bidding/bids/${bidId}/accept`);
-   loadData();
-  } catch (error) {
-   console.error('Error accepting bid:', error);
-  }
- };
+  const openCount = rfqs.filter((r) => !r.accepted).length;
+  const pendingBids = rfqs.reduce((s, r) => s + r.pending, 0);
+  const savings = rfqs.reduce((s, r) => s + r.saving, 0);
+  const current: WorkOrderItem | undefined = rfqs.find((r) => r.wo.id === selected)?.wo;
+  const currentQuotes = [...(current?.quotes ?? [])].sort((a, b) => Number(a.amount) - Number(b.amount));
 
- const handleRejectBid = async (bidId: string) => {
-  try {
-   await apiService.put(`/api/vendor-bidding/bids/${bidId}/reject`);
-   loadData();
-  } catch (error) {
-   console.error('Error rejecting bid:', error);
-  }
- };
-
- const getStatusColor = (status: string) => {
-  switch (status) {
-   case 'published': return 'success';
-   case 'draft': return 'warning';
-   case 'closed': return 'error';
-   case 'accepted': return 'success';
-   case 'rejected': return 'error';
-   case 'submitted': return 'info';
-   default: return 'default';
-  }
- };
-
- const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-   style: 'currency',
-   currency: 'USD',
-  }).format(amount);
- };
-
- return (
-  <Box sx={{ p: 3 }}>
-   <Typography variant="h4" gutterBottom>
-    Vendor Bidding Platform
-   </Typography>
-
-   <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <Typography variant="h6" color="text.secondary">
-     Manage RFQs and vendor bids efficiently
-    </Typography>
-    <Button
-     variant="contained"
-     startIcon={<AddIcon />}
-     onClick={() => setShowRFQForm(true)}
-    >
-     Create RFQ
-    </Button>
-   </Box>
-
-   <Grid container spacing={3} sx={{ mb: 3 }}>
-    <Grid xs={12} md={3}>
-     <Card>
-      <CardContent>
-       <Typography variant="h6" color="primary">
-        Active RFQs
-       </Typography>
-       <Typography variant="h3">
-        {(rfqs || []).filter(r => r.status === 'published').length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-    <Grid xs={12} md={3}>
-     <Card>
-      <CardContent>
-       <Typography variant="h6" color="secondary">
-        Open Bids
-       </Typography>
-       <Typography variant="h3">
-        {(bids || []).filter(b => b.status === 'submitted').length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-    <Grid xs={12} md={3}>
-     <Card>
-      <CardContent>
-       <Typography variant="h6" color="success">
-        Verified Vendors
-       </Typography>
-       <Typography variant="h3">
-        {(vendors || []).filter(v => v.verified).length}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-    <Grid xs={12} md={3}>
-     <Card>
-      <CardContent>
-       <Typography variant="h6" color="info">
-        Total Savings
-       </Typography>
-       <Typography variant="h3">
-        {formatCurrency(12500)}
-       </Typography>
-      </CardContent>
-     </Card>
-    </Grid>
-   </Grid>
-
-   <Paper sx={{ mb: 3 }}>
-    <Typography variant="h6" sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-     Active RFQs
-    </Typography>
-    <TableContainer>
-     <Table>
-      <TableHead>
-       <TableRow>
-        <TableCell>Title</TableCell>
-        <TableCell>Category</TableCell>
-        <TableCell>Deadline</TableCell>
-        <TableCell>Budget Range</TableCell>
-        <TableCell>Vendors</TableCell>
-        <TableCell>Status</TableCell>
-        <TableCell>Actions</TableCell>
-       </TableRow>
-      </TableHead>
-      <TableBody>
-       {rfqs.length === 0 && (
-         <TableRow><TableCell colSpan={7} sx={{ color: 'text.secondary' }}>No RFQs yet.</TableCell></TableRow>
-       )}
-       {rfqs.map((rfq) => (
-        <TableRow key={rfq.id}>
-         <TableCell>{rfq.title}</TableCell>
-         <TableCell>{rfq.category}</TableCell>
-         <TableCell>{new Date(rfq.deadline).toLocaleDateString()}</TableCell>
-         <TableCell>{formatCurrency(rfq.budgetRange.min)} - {formatCurrency(rfq.budgetRange.max)}</TableCell>
-         <TableCell>{rfq.vendorCount}</TableCell>
-         <TableCell>
-          <Chip label={rfq.status} color={getStatusColor(rfq.status) as any} size="small" />
-         </TableCell>
-         <TableCell>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-           <Tooltip title="View Bids">
-            <IconButton
-             onClick={() => {
-              setSelectedRFQ(rfq.id);
-              setShowBidComparison(true);
-             }}
-            >
-             <CompareIcon />
-            </IconButton>
-           </Tooltip>
-           <Tooltip title="Generate Contract">
-            <IconButton>
-             <DocumentIcon />
-            </IconButton>
-           </Tooltip>
-          </Box>
-         </TableCell>
-        </TableRow>
-       ))}
-      </TableBody>
-     </Table>
-    </TableContainer>
-   </Paper>
-
-   <Dialog open={showRFQForm} onClose={() => setShowRFQForm(false)} maxWidth="md" fullWidth>
-    <DialogTitle>Create New RFQ</DialogTitle>
-    <DialogContent>
-     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-      <TextField
-       label="Title"
-       value={newRFQ.title}
-       onChange={(e) => setNewRFQ({ ...newRFQ, title: e.target.value })}
-       fullWidth
+  return (
+    <Box sx={{ textAlign: 'left' }}>
+      <PageHeader
+        title="Vendor bidding"
+        subtitle="Compare vendor quotes on each job and award the work."
+        action={
+          <Button variant="contained" startIcon={<AddIcon />} component={RouterLink} to="/work-orders">
+            Request quotes
+          </Button>
+        }
       />
-      <TextField
-       label="Description"
-       value={newRFQ.description}
-       onChange={(e) => setNewRFQ({ ...newRFQ, description: e.target.value })}
-       fullWidth
-       multiline
-       rows={4}
-      />
-      <FormControl fullWidth>
-       <InputLabel>Category</InputLabel>
-       <Select
-        value={newRFQ.category}
-        onChange={(e) => setNewRFQ({ ...newRFQ, category: e.target.value })}
-       >
-        <MenuItem value="electrical">Electrical</MenuItem>
-        <MenuItem value="plumbing">Plumbing</MenuItem>
-        <MenuItem value="hvac">HVAC</MenuItem>
-        <MenuItem value="landscaping">Landscaping</MenuItem>
-        <MenuItem value="painting">Painting</MenuItem>
-        <MenuItem value="general">General Maintenance</MenuItem>
-       </Select>
-      </FormControl>
-      <TextField
-       label="Deadline"
-       type="date"
-       value={newRFQ.deadline}
-       onChange={(e) => setNewRFQ({ ...newRFQ, deadline: e.target.value })}
-       fullWidth
-       InputLabelProps={{ shrink: true }}
-      />
-      <Box sx={{ display: 'flex', gap: 2 }}>
-       <TextField
-        label="Minimum Budget"
-        type="number"
-        value={newRFQ.budgetMin}
-        onChange={(e) => setNewRFQ({ ...newRFQ, budgetMin: Number(e.target.value) })}
-        fullWidth
-       />
-       <TextField
-        label="Maximum Budget"
-        type="number"
-        value={newRFQ.budgetMax}
-        onChange={(e) => setNewRFQ({ ...newRFQ, budgetMax: Number(e.target.value) })}
-        fullWidth
-       />
+
+      {(orders.isError || vendors.isError) && (
+        <Box sx={{ mb: 2 }}>
+          <ErrorNote text="Bidding data could not be loaded." onRetry={() => orders.refetch()} />
+        </Box>
+      )}
+
+      <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, mb: 3 }}>
+        <StatCard icon={<GavelIcon fontSize="small" />} label="Open for bids" value={orders.isLoading ? '…' : openCount} sub="Jobs not yet awarded" accent="#F25C05" />
+        <StatCard icon={<RequestQuoteIcon fontSize="small" />} label="Bids to review" value={orders.isLoading ? '…' : pendingBids} sub="Waiting for a decision" accent="#2E6BE6" />
+        <StatCard
+          icon={<EngineeringIcon fontSize="small" />}
+          label="Vendors"
+          value={vendors.isLoading ? '…' : (vendors.data ?? []).length}
+          sub="On your vendor list"
+          accent="#12A150"
+          to="/vendor-performance"
+        />
+        <StatCard icon={<SavingsIcon fontSize="small" />} label="Saved vs highest bid" value={money(savings)} sub="On awarded jobs" accent="#F5A524" />
       </Box>
-     </Box>
-    </DialogContent>
-    <DialogActions>
-     <Button onClick={() => setShowRFQForm(false)}>Cancel</Button>
-     <Button onClick={handleCreateRFQ} variant="contained">Create RFQ</Button>
-    </DialogActions>
-   </Dialog>
 
-   <Dialog
-    open={showBidComparison}
-    onClose={() => {
-     setShowBidComparison(false);
-     setSelectedRFQ(null);
-    }}
-    maxWidth="lg"
-    fullWidth
-   >
-    <DialogTitle>Bid Comparison</DialogTitle>
-    <DialogContent>
-     <TableContainer>
-      <Table>
-       <TableHead>
-        <TableRow>
-         <TableCell>Vendor</TableCell>
-         <TableCell>Amount</TableCell>
-         <TableCell>Duration</TableCell>
-         <TableCell>Rating</TableCell>
-         <TableCell>Status</TableCell>
-         <TableCell>Actions</TableCell>
-        </TableRow>
-       </TableHead>
-       <TableBody>
-        {bids.length === 0 && (
-         <TableRow><TableCell colSpan={6} sx={{ color: 'text.secondary' }}>No bids yet.</TableCell></TableRow>
+      <Paper sx={{ border: `2px solid ${INK}` }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, p: 2, borderBottom: `2px solid ${INK}` }}>
+          Jobs with bids
+        </Typography>
+        {orders.isLoading ? (
+          <Loading />
+        ) : rfqs.length === 0 ? (
+          <EmptyState title="No bids yet" text="When vendors quote on a work order, the bids appear here for comparison." />
+        ) : (
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 760 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Job</TableCell>
+                  <TableCell>Property</TableCell>
+                  <TableCell align="right">Bids</TableCell>
+                  <TableCell align="right">Range</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rfqs.map((r) => (
+                  <TableRow key={r.wo.id} hover>
+                    <TableCell>
+                      <Typography sx={{ fontWeight: 700 }}>{r.wo.title.replace(/^WO:\s*/, '')}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        Opened {fmtDate(r.wo.createdAt)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>{r.wo.rental?.title ?? '—'}</TableCell>
+                    <TableCell align="right">{r.bids}</TableCell>
+                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                      {r.low === r.high ? money(r.low) : `${money(r.low)} – ${money(r.high)}`}
+                    </TableCell>
+                    <TableCell>
+                      {r.accepted ? (
+                        <Chip size="small" color="success" label={`Awarded · ${money(Number(r.accepted.amount))}`} />
+                      ) : r.pending ? (
+                        <Chip size="small" color="warning" label={`${r.pending} to review`} />
+                      ) : (
+                        <Chip size="small" label="All bids declined" />
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Button size="small" variant="outlined" onClick={() => setSelected(r.wo.id)}>
+                        Compare bids
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-        {bids
-         .filter(b => selectedRFQ ? b.vendorId === selectedRFQ : true)
-         .map((bid) => (
-          <TableRow key={bid.id}>
-           <TableCell>{bid.vendorName}</TableCell>
-           <TableCell>{formatCurrency(bid.amount)}</TableCell>
-           <TableCell>{bid.duration}</TableCell>
-           <TableCell>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-             <Typography>{bid.rating}/5</Typography>
-            </Box>
-           </TableCell>
-           <TableCell>
-            <Chip label={bid.status} color={getStatusColor(bid.status) as any} size="small" />
-           </TableCell>
-           <TableCell>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-             <Tooltip title="Accept Bid">
-              <IconButton
-               onClick={() => handleAcceptBid(bid.id)}
-               color="success"
-               disabled={bid.status !== 'submitted'}
-              >
-               <CheckCircleIcon />
-              </IconButton>
-             </Tooltip>
-             <Tooltip title="Reject Bid">
-              <IconButton
-               onClick={() => handleRejectBid(bid.id)}
-               color="error"
-               disabled={bid.status !== 'submitted'}
-              >
-               <CancelIcon />
-              </IconButton>
-             </Tooltip>
-             <Tooltip title="Message Vendor">
-              <IconButton>
-               <MessageIcon />
-              </IconButton>
-             </Tooltip>
-            </Box>
-           </TableCell>
-          </TableRow>
-         ))}
-       </TableBody>
-      </Table>
-     </TableContainer>
-    </DialogContent>
-    <DialogActions>
-     <Button onClick={() => {
-      setShowBidComparison(false);
-      setSelectedRFQ(null);
-     }}>Close</Button>
-    </DialogActions>
-   </Dialog>
-  </Box>
- );
+      </Paper>
+
+      <Dialog open={Boolean(current)} onClose={() => setSelected(null)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800 }}>
+          {current?.title.replace(/^WO:\s*/, '')}
+          <Typography variant="body2" component="div" sx={{ color: 'text.secondary', mt: 0.5 }}>
+            {current?.rental?.title} · <StatusChip status={current?.status} />
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          {decide.isError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {apiErrorMessage(decide.error, 'Could not update the bid.')}
+            </Alert>
+          )}
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table size="small" sx={{ minWidth: 560 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Vendor</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell>Details</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {currentQuotes.map((q, k) => (
+                  <TableRow key={q.id}>
+                    <TableCell sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
+                      {q.vendorName ?? 'Vendor'}
+                      {k === 0 && currentQuotes.length > 1 && <Chip size="small" label="Lowest" sx={{ ml: 1 }} color="success" variant="outlined" />}
+                    </TableCell>
+                    <TableCell align="right">{money(Number(q.amount), 2)}</TableCell>
+                    <TableCell sx={{ color: 'text.secondary' }}>{q.details || '—'}</TableCell>
+                    <TableCell>
+                      <StatusChip status={q.status} />
+                    </TableCell>
+                    <TableCell align="right">
+                      {isPending(q.status) && (
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          <Button size="small" variant="contained" color="success" disabled={decide.isPending} onClick={() => decide.mutate({ id: q.id, status: 'ACCEPTED' })}>
+                            Accept
+                          </Button>
+                          <Button size="small" variant="outlined" disabled={decide.isPending} onClick={() => decide.mutate({ id: q.id, status: 'REJECTED' })}>
+                            Reject
+                          </Button>
+                        </Stack>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelected(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
 };
 
 export default VendorBiddingPlatformScreen;

@@ -27,6 +27,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dashboardService, Tenant } from '../services/dashboardService';
+import { StatusChip } from '../components/portal/PortalUI';
 
 import TenantForm from '../components/TenantForm';
 import AssignmentModal from '../components/AssignmentModal';
@@ -267,13 +268,15 @@ const TenantList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell>{tenant.name}</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{tenant.name}</TableCell>
                 <TableCell>{tenant.email}</TableCell>
-                <TableCell>{tenant.phone || 'N/A'}</TableCell>
-                <TableCell>{new Date(tenant.leaseStart).toLocaleDateString()}</TableCell>
-                <TableCell>{tenant.leaseEnd ? new Date(tenant.leaseEnd).toLocaleDateString() : 'N/A'}</TableCell>
-                <TableCell>{tenant.status}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{tenant.phone || '—'}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{tenant.leaseStart ? new Date(tenant.leaseStart).toLocaleDateString() : '—'}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{tenant.leaseEnd ? new Date(tenant.leaseEnd).toLocaleDateString() : '—'}</TableCell>
                 <TableCell>
+                  <StatusChip status={tenant.status} />
+                </TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
                   <IconButton onClick={() => handleOpenForm(true, tenant)} aria-label="Edit tenant">
                     <EditIcon />
                   </IconButton>

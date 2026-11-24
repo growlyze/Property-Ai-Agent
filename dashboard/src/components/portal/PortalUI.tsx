@@ -232,7 +232,7 @@ export function ListRow({ primary, secondary, right }: { primary: React.ReactNod
         )}
       </Box>
       {right && (
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0, flexWrap: 'wrap', rowGap: 1 }}>
+        <Stack direction="row" spacing={1} useFlexGap alignItems="center" sx={{ flexShrink: 0, flexWrap: 'wrap' }}>
           {right}
         </Stack>
       )}

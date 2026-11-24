@@ -62,33 +62,28 @@ const DocumentSearch: React.FC = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedDocumentForShare, setSelectedDocumentForShare] = useState<Document | null>(null);
 
-  // Mock data for folders and users - in real app, these would come from API
-  const mockFolders: Folder[] = [
-    { id: '1', name: 'Lease Agreements', createdBy: 'user1', createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-    { id: '2', name: 'Maintenance Records', createdBy: 'user1', createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-    { id: '3', name: 'Financial Documents', createdBy: 'user1', createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-  ];
-
-  const mockUsers = [
-    { id: 'user1', name: 'John Smith' },
-    { id: 'user2', name: 'Sarah Johnson' },
-    { id: 'user3', name: 'Mike Davis' },
-  ];
+  // People a document can be shared with (tenants on file).
+  const { data: shareUsers = [] } = useQuery({
+    queryKey: ['document-search', 'share-users'],
+    queryFn: async () => {
+      const res: any = await dashboardService.getTenants(1, 100);
+      const rows: any[] = Array.isArray(res?.data) ? res.data : [];
+      return rows.map((t) => ({ id: String(t.id), name: String(t.name || [t.firstName, t.lastName].filter(Boolean).join(' ') || t.email) }));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: searchResults, isLoading, error, refetch } = useQuery({
     queryKey: ['documents', { search: searchQuery, ...filters, page, rowsPerPage }],
-    queryFn: () => {
-      if (searchQuery.trim()) {
-        return dashboardService.searchDocuments(searchQuery, filters);
-      }
-      return dashboardService.getDocuments(page + 1, rowsPerPage, filters);
-    },
-    enabled: searchQuery.trim().length > 0 || Object.keys(filters).length > 0,
+    // GET /api/documents handles free-text search itself; it lists everything when the box is empty.
+    queryFn: () =>
+      dashboardService.getDocuments(page + 1, rowsPerPage, { ...filters, ...(searchQuery.trim() ? { search: searchQuery.trim() } : {}) }),
   });
 
   const { data: folders } = useQuery({
     queryKey: ['folders'],
     queryFn: () => dashboardService.getFolders(),
+    retry: false,
   });
 
   const documents = searchResults?.data || [];
@@ -274,7 +269,10 @@ const DocumentSearch: React.FC = () => {
               fullWidth
               label="Search documents"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(0);
+              }}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               InputProps={{
                 startAdornment: (
@@ -289,13 +287,14 @@ const DocumentSearch: React.FC = () => {
                 variant="outlined"
                 startIcon={<FilterIcon />}
                 onClick={() => setShowFilters(!showFilters)}
+                sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
               >
                 {showFilters ? 'Hide Filters' : 'Show Filters'}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleSearch}
-                disabled={!searchQuery.trim() && Object.keys(filters).length === 0}
+                sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
               >
                 Search
               </Button>
@@ -314,7 +313,7 @@ const DocumentSearch: React.FC = () => {
                   <MenuItem value="">
                     <em>All Folders</em>
                   </MenuItem>
-                  {(folders || mockFolders).map((folder) => (
+                  {(Array.isArray(folders) ? folders : []).map((folder) => (
                     <MenuItem key={folder.id} value={folder.id}>
                       {folder.name}
                     </MenuItem>
@@ -369,7 +368,7 @@ const DocumentSearch: React.FC = () => {
                   onChange={(e) => handleBulkMove(e.target.value)}
                   label="Move to Folder"
                 >
-                  {(folders || mockFolders).map((folder) => (
+                  {(Array.isArray(folders) ? folders : []).map((folder) => (
                     <MenuItem key={folder.id} value={folder.id}>
                       {folder.name}
                     </MenuItem>
@@ -524,7 +523,7 @@ const DocumentSearch: React.FC = () => {
             </Typography>
             <Autocomplete
               multiple
-              options={mockUsers}
+              options={shareUsers}
               getOptionLabel={(option) => option.name}
               renderInput={(params) => (
                 <TextField {...params} label="Select users" placeholder="Search users..." />

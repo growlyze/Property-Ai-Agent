@@ -157,7 +157,19 @@ export async function listRentals(req: Request, res: Response): Promise<Response
 
     // Tenancy: without a scope this listed EVERY rental in the database to any
     // authenticated caller. Same policy as /api/rentals (utils/rentalAccess.ts).
-    const scope = rentalScopeFilter(req);
+    const tenancyScope = rentalScopeFilter(req) as Record<string, unknown> | undefined;
+
+    // Free-text search over a fixed set of descriptive fields (never ids or owner data).
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 100) : '';
+    const searchClause = search
+      ? {
+          OR: ['title', 'address', 'city', 'state', 'zipCode', 'unitNumber'].map((field) => ({
+            [field]: { contains: search, mode: 'insensitive' },
+          })),
+        }
+      : undefined;
+    const scope =
+      tenancyScope && searchClause ? { AND: [tenancyScope, searchClause] } : (tenancyScope ?? searchClause);
 
     const result = await rentalService.getRentals(
       filters,

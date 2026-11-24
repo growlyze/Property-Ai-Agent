@@ -333,11 +333,12 @@ const PaymentList: React.FC = () => {
               <TableRow key={payment.id}>
                 <TableCell>{payment.tenantName || 'N/A'}</TableCell>
                 <TableCell>{payment.leaseDetails || 'N/A'}</TableCell>
-                <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{Number(payment.amount ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                 <TableCell>
                   <Chip
                     label={payment.paymentMethod.replace('_', ' ')}
                     color={getMethodColor(payment.paymentMethod) as any}
+                    variant="outlined"
                     size="small"
                   />
                 </TableCell>

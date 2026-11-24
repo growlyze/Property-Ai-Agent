@@ -40,6 +40,7 @@ import { MaintenanceHeatmap, PredictiveMaintenanceAlerts } from '../components/b
 import { BuildingHealthService } from '../services/buildingHealthService';
 import { BuildingHealth, HealthCategory, BuildingSystem } from '../types/building-health';
 import { AIFeedback } from '../types/ai';
+import BuildingHealthSetupState from '../components/building-health/BuildingHealthSetupState';
 
 // Register Chart.js components
 ChartJS.register(
@@ -220,21 +221,13 @@ const BuildingHealthMonitorScreen: React.FC = () => {
   );
  }
 
- if (error) {
-  return (
-   <Container maxWidth="xl" sx={{ py: 4 }}>
-    <Alert severity="error">{error}</Alert>
-   </Container>
-  );
+ // No monitoring backend answers (or it has no buildings yet): show the setup state,
+ // not a bare error, so the page reads as intentional.
+ if (error || !buildingHealth) {
+  return <BuildingHealthSetupState />;
  }
 
- if (!buildingHealth) {
-  return (
-   <Container maxWidth="xl" sx={{ py: 4 }}>
-    <Alert severity="info">No building health data available</Alert>
-   </Container>
-  );
- }
+
 
  return (
   <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -261,7 +254,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
     />
     <CardContent>
      <Grid container spacing={3}>
-      <Grid xs={12} md={8}>
+      <Grid item xs={12} md={8}>
        <Box sx={{ mb: 2 }}>
         <LinearProgress
          variant="determinate"
@@ -279,7 +272,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
        </Box>
        <Grid container spacing={2}>
         {buildingHealth.categories.map((category) => (
-         <Grid xs={12} sm={6} md={4} key={category.name}>
+         <Grid item xs={12} sm={6} md={4} key={category.name}>
           <Card variant="outlined">
            <CardContent sx={{ p: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
@@ -305,7 +298,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
         ))}
        </Grid>
       </Grid>
-      <Grid xs={12} md={4}>
+      <Grid item xs={12} md={4}>
        {healthMetrics && (
         <Box sx={{ height: 300 }}>
          <Doughnut 
@@ -337,7 +330,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
     <CardContent>
      <Grid container spacing={2}>
       {buildingSystems.map((system) => (
-       <Grid xs={12} sm={6} md={4} key={system.id}>
+       <Grid item xs={12} sm={6} md={4} key={system.id}>
         <Card variant="outlined">
          <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>

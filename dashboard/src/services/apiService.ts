@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleAuthError } from './authRefresh';
 
 // Rate limiting configuration
 const RATE_LIMIT_DELAY = 100; // 100ms between requests
@@ -46,6 +47,12 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// 401: renew the session and retry once (see services/authRefresh.ts).
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => handleAuthError(error, (config) => apiClient(config))
+);
 
 // Enhanced error handling with retry logic
 const makeRequestWithRetry = async <T>(

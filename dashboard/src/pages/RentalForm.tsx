@@ -205,23 +205,23 @@ const RentalForm: React.FC = () => {
    <form onSubmit={handleSubmit}>
     <Grid container spacing={3}>
      {/* Basic Information */}
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Card>
        <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ mb: 3 }}>
          Basic Information
         </Typography>
         <Grid container spacing={2}>
-         <Grid xs={12}>
+         <Grid item xs={12}>
           <TextField
            fullWidth
-           label="Title *"
+           label="Title"
            value={formData.title}
            onChange={(e) => handleChange('title', e.target.value)}
            required
           />
          </Grid>
-         <Grid xs={12}>
+         <Grid item xs={12}>
           <TextField
            fullWidth
            label="Description"
@@ -231,7 +231,7 @@ const RentalForm: React.FC = () => {
            rows={4}
           />
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <FormControl fullWidth required>
            <InputLabel>Property Type</InputLabel>
            <Select
@@ -247,7 +247,7 @@ const RentalForm: React.FC = () => {
            </Select>
           </FormControl>
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
            <InputLabel>Status</InputLabel>
            <Select
@@ -269,50 +269,50 @@ const RentalForm: React.FC = () => {
      </Grid>
 
      {/* Address Information */}
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Card>
        <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ mb: 3 }}>
          Address Information
         </Typography>
         <Grid container spacing={2}>
-         <Grid xs={12}>
+         <Grid item xs={12}>
           <TextField
            fullWidth
-           label="Address *"
+           label="Address"
            value={formData.address}
            onChange={(e) => handleChange('address', e.target.value)}
            required
           />
          </Grid>
-         <Grid xs={12} sm={4}>
+         <Grid item xs={12} sm={4}>
           <TextField
            fullWidth
-           label="City *"
+           label="City"
            value={formData.city}
            onChange={(e) => handleChange('city', e.target.value)}
            required
           />
          </Grid>
-         <Grid xs={12} sm={4}>
+         <Grid item xs={12} sm={4}>
           <TextField
            fullWidth
-           label="State *"
+           label="State"
            value={formData.state}
            onChange={(e) => handleChange('state', e.target.value)}
            required
           />
          </Grid>
-         <Grid xs={12} sm={4}>
+         <Grid item xs={12} sm={4}>
           <TextField
            fullWidth
-           label="ZIP Code *"
+           label="ZIP Code"
            value={formData.zipCode}
            onChange={(e) => handleChange('zipCode', e.target.value)}
            required
           />
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <TextField
            fullWidth
            label="Country"
@@ -326,14 +326,14 @@ const RentalForm: React.FC = () => {
      </Grid>
 
      {/* Property Details */}
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Card>
        <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ mb: 3 }}>
          Property Details
         </Typography>
         <Grid container spacing={2}>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Bedrooms"
@@ -342,17 +342,17 @@ const RentalForm: React.FC = () => {
            onChange={(e) => handleChange('bedrooms', e.target.value ? Number(e.target.value) : undefined)}
           />
          </Grid>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Bathrooms"
            type="number"
-           step="0.5"
+           inputProps={{ step: 0.5 }}
            value={formData.bathrooms || ''}
            onChange={(e) => handleChange('bathrooms', e.target.value ? Number(e.target.value) : undefined)}
           />
          </Grid>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Square Footage"
@@ -361,7 +361,7 @@ const RentalForm: React.FC = () => {
            onChange={(e) => handleChange('size', e.target.value ? Number(e.target.value) : undefined)}
           />
          </Grid>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Year Built"
@@ -370,7 +370,7 @@ const RentalForm: React.FC = () => {
            onChange={(e) => handleChange('yearBuilt', e.target.value ? Number(e.target.value) : undefined)}
          />
          </Grid>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Unit Number"
@@ -378,7 +378,7 @@ const RentalForm: React.FC = () => {
            onChange={(e) => handleChange('unitNumber', e.target.value)}
          />
          </Grid>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Floor Number"
@@ -387,7 +387,7 @@ const RentalForm: React.FC = () => {
            onChange={(e) => handleChange('floorNumber', e.target.value ? Number(e.target.value) : undefined)}
          />
          </Grid>
-         <Grid xs={12} sm={6} md={3}>
+         <Grid item xs={12} sm={6} md={3}>
           <TextField
            fullWidth
            label="Total Units"
@@ -403,17 +403,17 @@ const RentalForm: React.FC = () => {
      </Grid>
 
      {/* Financial Information */}
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Card>
        <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ mb: 3 }}>
          Financial Information
         </Typography>
         <Grid container spacing={2}>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <TextField
            fullWidth
-           label="Monthly Rent *"
+           label="Monthly Rent"
            type="number"
            value={formData.rent}
            onChange={(e) => handleChange('rent', Number(e.target.value))}
@@ -423,7 +423,7 @@ const RentalForm: React.FC = () => {
            }}
           />
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <TextField
            fullWidth
            label="Security Deposit"
@@ -435,7 +435,7 @@ const RentalForm: React.FC = () => {
            }}
           />
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <TextField
            fullWidth
            label="Available Date"
@@ -453,14 +453,14 @@ const RentalForm: React.FC = () => {
      </Grid>
 
      {/* Additional Information */}
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Card>
        <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ mb: 3 }}>
          Additional Information
         </Typography>
         <Grid container spacing={2}>
-         <Grid xs={12}>
+         <Grid item xs={12}>
           <TextField
            fullWidth
            label="Lease Terms"
@@ -470,7 +470,7 @@ const RentalForm: React.FC = () => {
            rows={3}
           />
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <FormControlLabel
            control={
             <Switch
@@ -481,7 +481,7 @@ const RentalForm: React.FC = () => {
            label="Available for Rent"
           />
          </Grid>
-         <Grid xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
           <FormControlLabel
            control={
             <Switch
@@ -498,7 +498,7 @@ const RentalForm: React.FC = () => {
      </Grid>
 
      {/* Submit Button */}
-     <Grid xs={12}>
+     <Grid item xs={12}>
       <Box display="flex" justifyContent="flex-end" gap={2}>
        <Button
         variant="outlined"

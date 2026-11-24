@@ -36,7 +36,7 @@ const PortalNotifications: React.FC = () => {
     <PageShell>
       <PageHeader
         title="Notifications"
-        subtitle={q.data?.unread != null ? `${q.data.unread} unread` : 'Updates about your home and requests.'}
+        subtitle={q.data?.unread ? `${q.data.unread} unread` : q.data ? 'You are all caught up.' : 'Updates about your home and requests.'}
       />
       <Card>
         <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>

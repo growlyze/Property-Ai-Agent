@@ -25,6 +25,8 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 import tenantScreeningService from '../services/tenantScreeningService';
 import { ApplicationFormData, ApplicantFormData, Employment, Reference } from '../types/tenantScreening';
 
@@ -38,7 +40,15 @@ const ApplicationForm: React.FC = () => {
   const [loading, setLoading] = useState(isEditMode);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
+  const { data: rentals = [] } = useQuery({
+    queryKey: ['application-form-rentals'],
+    queryFn: async () => {
+      const res = await api.get<{ data?: { id: string; title: string }[] }>('/rentals', { params: { limit: 100 } });
+      return (res.data?.data ?? []).map((r) => ({ id: r.id, title: r.title }));
+    },
+  });
+
   const [formData, setFormData] = useState<ApplicationFormData>({
     propertyId: '',
     applicants: [
@@ -72,11 +82,11 @@ const ApplicationForm: React.FC = () => {
   useEffect(() => {
     const fetchApplication = async () => {
       if (!isEditMode) return;
-      
+
       try {
         setLoading(true);
         const data = await tenantScreeningService.getApplicationById(id!);
-        
+
         // Transform application data to form data format
         // This would be more complex in a real application
         setFormData({
@@ -111,7 +121,7 @@ const ApplicationForm: React.FC = () => {
           ],
           notes: data.notes,
         });
-        
+
         setError(null);
       } catch (err) {
         console.error(`Failed to fetch application ${id}:`, err);
@@ -136,32 +146,50 @@ const ApplicationForm: React.FC = () => {
     try {
       setSubmitting(true);
       setError(null);
-      
+
       // Basic validation
       if (!formData.propertyId) {
-        setError('Property ID is required');
+        setError('Choose the rental this application is for.');
         return;
       }
-      
+
       const applicant = formData.applicants[0];
       if (!applicant.firstName || !applicant.lastName || !applicant.email) {
         setError('Applicant name and email are required');
         return;
       }
-      
+
       if (isEditMode) {
         await tenantScreeningService.updateApplication(id!, formData);
       } else {
-        await tenantScreeningService.createApplication(formData);
+        // The API files an application for an existing user account: find the
+        // applicant by email among the tenants the caller can see.
+        const tenantsRes = await api.get<{ data?: { id: string; email: string }[] }>('/tenants');
+        const email = applicant.email.trim().toLowerCase();
+        const match = (tenantsRes.data?.data ?? []).find((t) => t.email?.toLowerCase() === email);
+        if (!match) {
+          setError(`No tenant account uses ${applicant.email}. Add the person on the Tenants page first, then file the application.`);
+          return;
+        }
+        const job = applicant.employmentHistory?.[0];
+        const notes = [
+          formData.moveInDate ? `Desired move-in: ${formData.moveInDate}` : '',
+          formData.leaseTermMonths ? `Lease term: ${formData.leaseTermMonths} months` : '',
+          job?.employer ? `Employer: ${job.employer}${job.position ? ` (${job.position})` : ''}` : '',
+          job?.monthlyIncome ? `Stated monthly income: $${Number(job.monthlyIncome).toLocaleString()}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n');
+        await api.post('/applications', { rentalId: formData.propertyId, applicantId: match.id, notes: notes || undefined });
       }
-      
+
       navigate('/tenant-screening');
     } catch (err: any) {
       console.error('Failed to submit application:', err);
-      
+
       // More detailed error message
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
+      const errorMessage = err.response?.data?.message ||
+                          err.message ||
                           'Failed to submit application. Please try again later.';
       setError(errorMessage);
     } finally {
@@ -176,7 +204,7 @@ const ApplicationForm: React.FC = () => {
   const updateApplicant = (index: number, field: keyof ApplicantFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === index ? { ...applicant, [field]: value } : applicant
       )
     }));
@@ -185,7 +213,7 @@ const ApplicationForm: React.FC = () => {
   const updateApplicantAddress = (applicantIndex: number, field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           currentAddress: { ...applicant.currentAddress, [field]: value }
@@ -202,10 +230,10 @@ const ApplicationForm: React.FC = () => {
       currentEmployer: false,
       monthlyIncome: 0,
     };
-    
+
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           employmentHistory: [...applicant.employmentHistory, newEmployment]
@@ -217,7 +245,7 @@ const ApplicationForm: React.FC = () => {
   const updateEmployment = (applicantIndex: number, employmentIndex: number, field: keyof Employment, value: any) => {
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           employmentHistory: applicant.employmentHistory.map((emp, j) =>
@@ -231,7 +259,7 @@ const ApplicationForm: React.FC = () => {
   const removeEmployment = (applicantIndex: number, employmentIndex: number) => {
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           employmentHistory: applicant.employmentHistory.filter((_, j) => j !== employmentIndex)
@@ -248,10 +276,10 @@ const ApplicationForm: React.FC = () => {
       email: '',
       years: 0,
     };
-    
+
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           references: [...(applicant.references || []), newReference]
@@ -263,7 +291,7 @@ const ApplicationForm: React.FC = () => {
   const updateReference = (applicantIndex: number, referenceIndex: number, field: keyof Reference, value: any) => {
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           references: (applicant.references || []).map((ref, j) =>
@@ -277,7 +305,7 @@ const ApplicationForm: React.FC = () => {
   const removeReference = (applicantIndex: number, referenceIndex: number) => {
     setFormData(prev => ({
       ...prev,
-      applicants: prev.applicants.map((applicant, i) => 
+      applicants: prev.applicants.map((applicant, i) =>
         i === applicantIndex ? {
           ...applicant,
           references: (applicant.references || []).filter((_, j) => j !== referenceIndex)
@@ -299,13 +327,26 @@ const ApplicationForm: React.FC = () => {
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Property ID"
-                value={formData.propertyId}
-                onChange={(e) => updateFormData('propertyId', e.target.value)}
-                required
-              />
+              <FormControl fullWidth required>
+                <InputLabel id="application-rental-label">Rental</InputLabel>
+                <Select
+                  labelId="application-rental-label"
+                  label="Rental"
+                  value={rentals.some((r) => r.id === formData.propertyId) ? formData.propertyId : ''}
+                  onChange={(e) => updateFormData('propertyId', String(e.target.value))}
+                >
+                  {rentals.length === 0 && (
+                    <MenuItem value="" disabled>
+                      No rentals available
+                    </MenuItem>
+                  )}
+                  {rentals.map((r) => (
+                    <MenuItem key={r.id} value={r.id}>
+                      {r.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
@@ -385,7 +426,7 @@ const ApplicationForm: React.FC = () => {
                 required
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                 Current Address
@@ -618,13 +659,13 @@ const ApplicationForm: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Application Review
             </Typography>
-            
+
             <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Property Details
                 </Typography>
-                <Typography variant="body2">Property ID: {formData.propertyId}</Typography>
+                <Typography variant="body2">Rental: {rentals.find((r) => r.id === formData.propertyId)?.title ?? 'Not selected'}</Typography>
                 <Typography variant="body2">Move-in Date: {formData.moveInDate || 'Not specified'}</Typography>
                 <Typography variant="body2">Lease Term: {formData.leaseTermMonths || 'Not specified'} months</Typography>
               </CardContent>
@@ -699,21 +740,21 @@ const ApplicationForm: React.FC = () => {
   // const handleNext = () => {
   //   setActiveStep((prevActiveStep) => prevActiveStep + 1);
   // };
-  
+
   // const handleBack = () => {
   //   setActiveStep((prevActiveStep) => prevActiveStep - 1);
   // };
-  
+
   // const handleSubmit = async () => {
   //   try {
   //     setSubmitting(true);
-  //     
+  //
   //     if (isEditMode) {
   //       await tenantScreeningService.updateApplication(id!, formData);
   //     } else {
   //       await tenantScreeningService.createApplication(formData);
   //     }
-  //     
+  //
   //     navigate('/tenant-screening');
   //   } catch (err) {
   //     console.error('Failed to submit application:', err);
@@ -753,8 +794,11 @@ const ApplicationForm: React.FC = () => {
         </Typography>
       )}
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+        <Typography variant="subtitle2" sx={{ display: { xs: 'block', md: 'none' }, mb: 3, color: 'text.secondary' }}>
+          Step {activeStep + 1} of {steps.length}: {steps[activeStep]}
+        </Typography>
+        <Stepper activeStep={activeStep} sx={{ mb: 4, display: { xs: 'none', md: 'flex' } }}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>

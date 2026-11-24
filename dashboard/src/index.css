@@ -92,6 +92,13 @@ textarea,
   touch-action: manipulation;
 }
 
+/* MUI text fields already size their own touch target (the input root is 40-56px);
+   the rule above added 44px on top of MUI's padding and made every field ~76px tall. */
+.MuiInputBase-input {
+  min-height: 0;
+  min-width: 0;
+}
+
 /* Focus indicators for accessibility */
 button:focus,
 a:focus,

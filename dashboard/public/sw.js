@@ -1,63 +1,23 @@
-// Service Worker for Growlyze Property AI Agent Mobile Optimization
-// Caches key API responses for offline access
+// Retired service worker.
+//
+// The previous worker served every request cache-first, including index.html,
+// the JS bundles and GET /api responses, so browsers that had visited once kept
+// showing old screens and old data after every deploy. This version deletes all
+// caches it created, unregisters itself and reloads open tabs so they fetch the
+// current app from the network. The app no longer registers a service worker.
+self.addEventListener('install', () => self.skipWaiting());
 
-const CACHE_NAME = 'growlyze-cache-v1';
-const urlsToCache = [
-  '/',
-  '/static/js/bundle.js', // Adjust for actual bundle
-  '/api/predictive-maintenance',
-  '/api/properties'
-];
-
-// Install event - cache core assets
-self.addEventListener('install', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const names = await caches.keys();
+      await Promise.all(names.map((name) => caches.delete(name)));
+      await self.registration.unregister();
+      const tabs = await self.clients.matchAll({ type: 'window' });
+      tabs.forEach((tab) => tab.navigate(tab.url));
+    })()
   );
 });
 
-// Fetch event - serve from cache or fetch and cache
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch new
-        if (response) {
-          return response;
-        }
-        return fetch(event.request)
-          .then(networkResponse => {
-            // Cache successful responses (except redirects)
-            if (networkResponse && networkResponse.status === 200) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(event.request, responseClone));
-            }
-            return networkResponse;
-          });
-      })
-      .catch(() => {
-        // Offline fallback for API requests
-        if (event.request.url.includes('/api/')) {
-          return caches.match('/'); // Or custom offline page
-        }
-      })
-  );
-});
-
-// Activate event - clean up old caches
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
+// Never answer from cache: let every request go straight to the network.
+self.addEventListener('fetch', () => {});

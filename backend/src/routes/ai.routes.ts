@@ -729,7 +729,7 @@ router.get('/competitors', async (req: Request, res: Response) => {
         id: 'comp-1',
         name: 'Downtown Luxury Rentals',
         location: [-122.4194, 37.7749], // [longitude, latitude]
-        address: '123 Main St, Downtown, CA 94102',
+        address: '88 Howard St, San Francisco, CA 94105',
         rentRange: [2400, 3200], // [min, max]
         occupancyRate: 0.94,
         amenities: ['Gym', 'Pool', 'Parking', 'Rooftop Deck'],
@@ -751,7 +751,7 @@ router.get('/competitors', async (req: Request, res: Response) => {
         id: 'comp-2',
         name: 'Riverside Properties',
         location: [-122.4213, 37.7730],
-        address: '456 River Ave, Riverside District, CA 94103',
+        address: '201 Harrison St, San Francisco, CA 94105',
         rentRange: [2200, 3000],
         occupancyRate: 0.89,
         amenities: ['Laundry', 'Parking', 'Pet Friendly'],
@@ -773,7 +773,7 @@ router.get('/competitors', async (req: Request, res: Response) => {
         id: 'comp-3',
         name: 'City View Apartments',
         location: [-122.4185, 37.7765],
-        address: '789 View St, Midtown, CA 94104',
+        address: '650 Townsend St, San Francisco, CA 94103',
         rentRange: [2000, 2800],
         occupancyRate: 0.91,
         amenities: ['Gym', 'Laundry', 'Pet Friendly', 'Parking'],
@@ -913,9 +913,9 @@ router.get('/forecasts', async (req: Request, res: Response) => {
     const forecasts = [
       {
         id: 'forecast-1',
-        period: 'Q4 2025',
-        predictedDemand: 108,
-        confidence: { value: 82, level: 'high' },
+        period: 'Next 3 Months',
+        predictedDemand: 102,
+        confidence: { value: 86, level: 'high' },
         factors: [
           { name: 'Economic Growth', impact: 0.25, description: 'Positive GDP indicators', weight: 0.4 },
           { name: 'Job Market', impact: 0.20, description: 'Employment rate improvements', weight: 0.3 },
@@ -939,16 +939,16 @@ router.get('/forecasts', async (req: Request, res: Response) => {
       },
       {
         id: 'forecast-3',
-        period: 'Next 4 Months',
-        predictedDemand: 100.2,
-        confidence: { value: 86, level: 'high' },
+        period: 'Next 12 Months',
+        predictedDemand: 108,
+        confidence: { value: 74, level: 'medium' },
         factors: [
           { name: 'Market Stability', impact: 0.10, description: 'Consistent demand patterns', weight: 0.4 },
           { name: 'Competitive Positioning', impact: 0.05, description: 'Strong market presence', weight: 0.3 },
           { name: 'Economic Conditions', impact: 0.02, description: 'Stable employment rates', weight: 0.3 }
         ],
         seasonalAdjustment: 1.01,
-        trendDirection: 'stable'
+        trendDirection: 'increasing'
       }
     ];
 

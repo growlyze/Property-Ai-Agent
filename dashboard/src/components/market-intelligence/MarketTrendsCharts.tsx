@@ -12,11 +12,6 @@ import {
   Box,
   Grid,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
 } from '@mui/material';
 import {
   Chart as ChartJS,
@@ -30,7 +25,7 @@ import {
   Legend,
   ChartOptions,
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import {
   TrendingUp,
   TrendingDown,
@@ -60,20 +55,8 @@ interface MarketTrendsChartsProps {
 
 const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
   trends,
-  timeframe = '6months',
-  onTimeframeChange,
   loading = false,
 }) => {
-  const [selectedTimeframe, setSelectedTimeframe] = React.useState(timeframe);
-
-  const handleTimeframeChange = (event: SelectChangeEvent) => {
-    const newTimeframe = event.target.value;
-    setSelectedTimeframe(newTimeframe);
-    if (onTimeframeChange) {
-      onTimeframeChange(newTimeframe);
-    }
-  };
-
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
       case 'up':
@@ -96,137 +79,80 @@ const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
     }
   };
 
-  // Group trends by category
-  const trendsByCategory = useMemo(() => {
-    // Add null check for trends
-    if (!trends || !Array.isArray(trends) || trends.length === 0) {
-      return {};
-    }
-    
-    return trends.reduce((acc, trend) => {
-      if (!trend || !trend.category) return acc; // Skip invalid trend objects
-      
-      if (!acc[trend.category]) {
-        acc[trend.category] = [];
-      }
-      acc[trend.category].push(trend);
-      return acc;
-    }, {} as Record<string, MarketTrend[]>);
-  }, [trends]);
+  const validTrends = useMemo(
+    () => (Array.isArray(trends) ? trends.filter((t) => t && t.metric) : []),
+    [trends]
+  );
 
-  // Prepare chart data for rent trends
-  const rentTrendsData = useMemo(() => {
-    const rentTrends = trendsByCategory.rent || [];
-    if (rentTrends.length === 0) {
-      return {
-        labels: [],
-        datasets: []
-      };
-    }
+  const formatValue = (value: number, unit?: string) => {
+    if (!Number.isFinite(value)) return '—';
+    const u = (unit || '').trim();
+    if (u === '$' || u.toUpperCase() === 'USD') return '$' + Math.round(value).toLocaleString();
+    if (u === '%') return `${value.toFixed(value % 1 === 0 ? 0 : 1)}%`;
+    return `${value.toLocaleString()}${u ? ' ' + u : ''}`;
+  };
 
-    const labels = rentTrends.map(trend => trend.timeframe || 'Unknown');
-    const currentValues = rentTrends.map(trend => trend.currentValue || 0);
-    const previousValues = rentTrends.map(trend => trend.previousValue || 0);
+  // Rent: previous vs current period (USD)
+  const rentTrends = validTrends.filter((t) => t.category === 'rent');
+  const otherTrends = validTrends.filter((t) => t.category !== 'rent');
 
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Current Period',
-          data: currentValues,
-          borderColor: 'rgb(75, 192, 192)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          tension: 0.1,
-        },
-        {
-          label: 'Previous Period',
-          data: previousValues,
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          tension: 0.1,
-        },
-      ],
-    };
-  }, [trendsByCategory]);
+  const rentChartData = useMemo(() => ({
+    labels: rentTrends.map((t) => t.metric),
+    datasets: [
+      {
+        label: 'Previous period',
+        data: rentTrends.map((t) => t.previousValue ?? 0),
+        backgroundColor: 'rgba(28, 20, 40, 0.25)',
+        borderColor: 'rgba(28, 20, 40, 0.8)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Current period',
+        data: rentTrends.map((t) => t.currentValue ?? 0),
+        backgroundColor: 'rgba(249, 89, 4, 0.75)',
+        borderColor: 'rgb(249, 89, 4)',
+        borderWidth: 1,
+      },
+    ],
+  }), [rentTrends]);
 
-  // Prepare chart data for vacancy rates
-  const vacancyRatesData = useMemo(() => {
-    const vacancyTrends = trendsByCategory.vacancy || [];
-    if (vacancyTrends.length === 0) {
-      return {
-        labels: [],
-        datasets: []
-      };
-    }
+  const otherChartData = useMemo(() => ({
+    labels: otherTrends.map((t) => t.metric),
+    datasets: [
+      {
+        label: 'Previous period',
+        data: otherTrends.map((t) => t.previousValue ?? 0),
+        backgroundColor: 'rgba(28, 20, 40, 0.25)',
+        borderColor: 'rgba(28, 20, 40, 0.8)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Current period',
+        data: otherTrends.map((t) => t.currentValue ?? 0),
+        backgroundColor: 'rgba(249, 89, 4, 0.75)',
+        borderColor: 'rgb(249, 89, 4)',
+        borderWidth: 1,
+      },
+    ],
+  }), [otherTrends]);
 
-    const labels = vacancyTrends.map(trend => trend.timeframe || 'Unknown');
-    const values = vacancyTrends.map(trend => trend.currentValue || 0);
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Vacancy Rate (%)',
-          data: values,
-          backgroundColor: values.map(value => 
-            value > 10 ? 'rgba(255, 99, 132, 0.8)' : 
-            value > 5 ? 'rgba(255, 206, 86, 0.8)' : 
-            'rgba(75, 192, 192, 0.8)'
-          ),
-          borderColor: values.map(value => 
-            value > 10 ? 'rgb(255, 99, 132)' : 
-            value > 5 ? 'rgb(255, 206, 86)' : 
-            'rgb(75, 192, 192)'
-          ),
-          borderWidth: 1,
-        },
-      ],
-    };
-  }, [trendsByCategory]);
-
-  // Chart options
-  const lineChartOptions: ChartOptions<'line'> = {
+  const rentChartOptions: ChartOptions<'bar'> = {
     responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: false,
-      },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' as const }, title: { display: false } },
     scales: {
       y: {
-        beginAtZero: false,
-        ticks: {
-          callback: function(value) {
-            return '$' + value.toLocaleString();
-          },
-        },
+        beginAtZero: true,
+        ticks: { callback: (value) => '$' + Number(value).toLocaleString() },
       },
     },
   };
 
-  const barChartOptions: ChartOptions<'bar'> = {
+  const otherChartOptions: ChartOptions<'bar'> = {
     responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            return value + '%';
-          },
-        },
-      },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' as const }, title: { display: false } },
+    scales: { y: { beginAtZero: true, title: { display: true, text: '% / index' } } },
   };
 
   if (loading) {
@@ -242,8 +168,7 @@ const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
     );
   }
 
-  // Add check for empty trends data
-  if (!trends || !Array.isArray(trends) || trends.length === 0) {
+  if (validTrends.length === 0) {
     return (
       <Card elevation={2}>
         <CardHeader
@@ -251,11 +176,9 @@ const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
           subheader="No trend data available"
         />
         <CardContent>
-          <Box display="flex" justifyContent="center" p={4}>
-            <Typography color="textSecondary">
-              No market trends data available at this time.
-            </Typography>
-          </Box>
+          <Typography color="textSecondary">
+            No market trends data available at this time.
+          </Typography>
         </CardContent>
       </Card>
     );
@@ -265,143 +188,61 @@ const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
     <Card elevation={2}>
       <CardHeader
         title="Market Trends Analysis"
-        subheader="Real-time market data with trend analysis"
-        action={
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Timeframe</InputLabel>
-            <Select
-              value={selectedTimeframe}
-              label="Timeframe"
-              onChange={handleTimeframeChange}
-            >
-              <MenuItem value="1month">1 Month</MenuItem>
-              <MenuItem value="3months">3 Months</MenuItem>
-              <MenuItem value="6months">6 Months</MenuItem>
-              <MenuItem value="1year">1 Year</MenuItem>
-            </Select>
-          </FormControl>
-        }
+        subheader="Current period compared with the previous period"
       />
       <CardContent>
-        {/* Trend Summary Cards */}
+        {/* Trend Summary Cards: one per metric */}
         <Grid container spacing={2} mb={3}>
-          {Object.entries(trendsByCategory).map(([category, categoryTrends]) => {
-            const latestTrend = categoryTrends[categoryTrends.length - 1];
-            if (!latestTrend) return null;
-
-            return (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={category}>
-                <Card variant="outlined">
-                  <CardContent sx={{ textAlign: 'center' }}>
-                    <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={1}>
-                      {getTrendIcon(latestTrend.trend)}
-                      <Typography variant="h6" component="h3">
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </Typography>
-                    </Box>
-                    <Typography variant="h4" color="primary" gutterBottom>
-                      {latestTrend.unit === '$' 
-                        ? `$${latestTrend.currentValue.toLocaleString()}`
-                        : `${latestTrend.currentValue}${latestTrend.unit}`
-                      }
+          {validTrends.map((t) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={t.id}>
+              <Card variant="outlined" sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={1}>
+                    {getTrendIcon(t.trend)}
+                    <Typography variant="subtitle1" component="h3" fontWeight={600}>
+                      {t.metric}
                     </Typography>
-                    <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                      <Chip
-                        label={`${latestTrend.change > 0 ? '+' : ''}${latestTrend.changePercent.toFixed(1)}%`}
-                        color={getTrendColor(latestTrend.trend) as any}
-                        size="small"
-                      />
-                      <Typography variant="caption" color="textSecondary">
-                        vs {latestTrend.timeframe}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
+                  </Box>
+                  <Typography variant="h4" color="primary" gutterBottom>
+                    {formatValue(t.currentValue, t.unit)}
+                  </Typography>
+                  <Box display="flex" alignItems="center" flexWrap="wrap" gap={1}>
+                    <Chip
+                      label={`${t.changePercent > 0 ? '+' : ''}${Number(t.changePercent || 0).toFixed(1)}%`}
+                      color={getTrendColor(t.trend) as any}
+                      size="small"
+                    />
+                    <Typography variant="caption" color="textSecondary">
+                      vs {formatValue(t.previousValue, t.unit)}, {t.timeframe} ago
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
 
         {/* Charts */}
         <Grid container spacing={3}>
-          {/* Rent Prices Chart */}
-          {trendsByCategory.rent && trendsByCategory.rent.length > 0 && (
-            <Grid size={{ xs: 12, md: 6 }}>
+          {rentTrends.length > 0 && (
+            <Grid size={{ xs: 12, md: otherTrends.length > 0 ? 6 : 12 }}>
               <Card variant="outlined">
-                <CardHeader
-                  title="Average Rent Prices"
-                  subheader="Monthly rent price trends"
-                />
+                <CardHeader title="Average Rent" subheader="Previous vs current period (USD)" />
                 <CardContent>
-                  <Box height={300}>
-                    <Line data={rentTrendsData} options={lineChartOptions} />
+                  <Box height={280}>
+                    <Bar data={rentChartData} options={rentChartOptions} />
                   </Box>
                 </CardContent>
               </Card>
             </Grid>
           )}
-
-          {/* Vacancy Rates Chart */}
-          {trendsByCategory.vacancy && trendsByCategory.vacancy.length > 0 && (
-            <Grid size={{ xs: 12, md: 6 }}>
+          {otherTrends.length > 0 && (
+            <Grid size={{ xs: 12, md: rentTrends.length > 0 ? 6 : 12 }}>
               <Card variant="outlined">
-                <CardHeader
-                  title="Vacancy Rates"
-                  subheader="Market vacancy percentage over time"
-                />
+                <CardHeader title="Supply & Demand" subheader="Occupancy (%) and demand index" />
                 <CardContent>
-                  <Box height={300}>
-                    <Bar data={vacancyRatesData} options={barChartOptions} />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
-
-          {/* Demand/Supply Chart */}
-          {(trendsByCategory.demand || trendsByCategory.supply) && (
-            <Grid xs={12}>
-              <Card variant="outlined">
-                <CardHeader
-                  title="Supply & Demand Analysis"
-                  subheader="Market balance indicators"
-                />
-                <CardContent>
-                  <Box height={300}>
-                    <Line 
-                      data={{
-                        labels: trendsByCategory.demand?.[0]?.timeframe ? 
-                          [trendsByCategory.demand[0].timeframe] : ['Current'],
-                        datasets: [
-                          ...(trendsByCategory.demand ? [{
-                            label: 'Demand Index',
-                            data: trendsByCategory.demand.map(t => t.currentValue),
-                            borderColor: 'rgb(75, 192, 192)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            tension: 0.1,
-                          }] : []),
-                          ...(trendsByCategory.supply ? [{
-                            label: 'Supply Index',
-                            data: trendsByCategory.supply.map(t => t.currentValue),
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            tension: 0.1,
-                          }] : []),
-                        ],
-                      }}
-                      options={{
-                        ...lineChartOptions,
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                            title: {
-                              display: true,
-                              text: 'Index Value',
-                            },
-                          },
-                        },
-                      }}
-                    />
+                  <Box height={280}>
+                    <Bar data={otherChartData} options={otherChartOptions} />
                   </Box>
                 </CardContent>
               </Card>
@@ -410,7 +251,7 @@ const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
         </Grid>
 
         {/* AI Confidence Indicator */}
-        <Box mt={3} display="flex" alignItems="center" justifyContent="center">
+        <Box mt={3} display="flex" alignItems="center" flexWrap="wrap" gap={2}>
           <ConfidenceIndicator
             confidence={85}
             showTooltip
@@ -420,7 +261,7 @@ const MarketTrendsCharts: React.FC<MarketTrendsChartsProps> = ({
             colorCoded
             showNumericalScore
           />
-          <Typography variant="caption" color="textSecondary" ml={2}>
+          <Typography variant="caption" color="textSecondary">
             AI Analysis Confidence
           </Typography>
         </Box>

@@ -216,12 +216,11 @@ const AIPersonalizationDashboard: React.FC<PersonalizationDashboardProps> = ({
   // Track click analytics
   console.log('CTA clicked:', { itemId, url });
   
-  // Open URL in new tab
-  window.open(url, '_blank', 'noopener,noreferrer');
-  
+  // These are sample recommendations; their partner links are placeholders,
+  // so don't send people to unrelated external sites.
   setSnackbar({
    open: true,
-   message: 'Opening recommendation...',
+   message: 'Booking through partners is not connected yet. This is a sample recommendation.',
    severity: 'info',
   });
  }, []);
@@ -256,7 +255,7 @@ const AIPersonalizationDashboard: React.FC<PersonalizationDashboardProps> = ({
  }
 
  return (
-  <Container maxWidth="lg" className={className} sx={{ py: 4 }}>
+  <Container maxWidth="lg" className={className} sx={{ py: 4, textAlign: 'left' }}>
    {/* Header */}
    <Box sx={{ mb: 4 }}>
     <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
@@ -272,7 +271,7 @@ const AIPersonalizationDashboard: React.FC<PersonalizationDashboardProps> = ({
       <Grid xs={12} sm={6} md={3}>
        <Box sx={{ textAlign: 'center' }}>
         <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-         {state.categories.reduce((total, cat) => total + cat.totalItems, 0)}
+         {state.categories.reduce((total, cat) => total + cat.items.length, 0)}
         </Typography>
         <Typography variant="body2" color="text.secondary">
          Total Recommendations

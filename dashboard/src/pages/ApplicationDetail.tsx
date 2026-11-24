@@ -1,346 +1,343 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
- Box,
- Typography,
- Paper,
- GridLegacy as Grid,
- Button,
- Chip,
- CircularProgress,
- Divider,
- Card,
- CardContent,
- List,
- ListItem,
- ListItemText,
- Dialog,
- DialogActions,
- DialogContent,
- DialogContentText,
- DialogTitle,
- TextField,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  LinearProgress,
+  Link,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import tenantScreeningService from '../services/tenantScreeningService';
-import { Application } from '../types/tenantScreening';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import {
+  STATUS_COLOR,
+  RISK_COLOR,
+  RISK_LABEL,
+  applicantName,
+  checkColor,
+  confidencePct,
+  creditColor,
+  fetchApplication,
+  formatDate,
+  money,
+  pretty,
+  recommendationLabel,
+  relativeDate,
+  rentalAddress,
+  rentalLabel,
+  riskLevel,
+  updateApplicationStatus,
+} from '../services/screeningApplications';
 
-const statusColors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
- pending: 'warning',
- approved: 'success',
- rejected: 'error',
- review: 'info',
- incomplete: 'default',
-};
+/** One rental application: applicant, rental, screening checks and AI risk. */
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        {label}
+      </Typography>
+      <Box sx={{ mt: 0.25, overflowWrap: 'anywhere' }}>{children}</Box>
+    </Box>
+  );
+}
+
+const fieldGrid = { display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' } } as const;
 
 const ApplicationDetail: React.FC = () => {
- const { id } = useParams<{ id: string }>();
- const navigate = useNavigate();
- const [application, setApplication] = useState<Application | null>(null);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState<string | null>(null);
- const [openRejectDialog, setOpenRejectDialog] = useState(false);
- const [rejectionReason, setRejectionReason] = useState('');
- const [actionLoading, setActionLoading] = useState(false);
+  const { id = '' } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [reason, setReason] = useState('');
 
- useEffect(() => {
-  const fetchApplication = async () => {
-   if (!id) return;
-   
-   try {
-    setLoading(true);
-    const data = await tenantScreeningService.getApplicationById(id);
-    setApplication(data);
-    setError(null);
-   } catch (err) {
-    console.error(`Failed to fetch application ${id}:`, err);
-    setError('Failed to load application details. Please try again later.');
-    
-    // For development: Add mock data when API fails
-    if (process.env.NODE_ENV === 'development') {
-     setApplication({
-      id: id,
-      propertyId: 'prop123',
-      propertyName: 'Sunset Apartments',
-      applicantName: 'John Doe',
-      applicantEmail: 'john.doe@example.com',
-      status: 'pending',
-      submittedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      moveInDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-      leaseTermMonths: 12,
-      monthlyRent: 1500,
-      securityDeposit: 1500,
-      creditScore: 720,
-      notes: 'Applicant has a pet cat.',
-     });
-    }
-   } finally {
-    setLoading(false);
-   }
+  const { data: app, isLoading, error, refetch } = useQuery({
+    queryKey: ['screening-application', id],
+    queryFn: () => fetchApplication(id),
+    enabled: !!id,
+    retry: (count, err: any) => err?.response?.status !== 404 && err?.response?.status !== 403 && count < 2,
+  });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['screening-application', id] });
+    queryClient.invalidateQueries({ queryKey: ['screening-applications'] });
   };
 
-  fetchApplication();
- }, [id]);
-
- const handleApprove = async () => {
-  if (!id) return;
-  
-  try {
-   setActionLoading(true);
-   const updatedApplication = await tenantScreeningService.approveApplication(id);
-   setApplication(updatedApplication);
-  } catch (err) {
-   console.error(`Failed to approve application ${id}:`, err);
-   setError('Failed to approve application. Please try again later.');
-  } finally {
-   setActionLoading(false);
-  }
- };
-
- const handleOpenRejectDialog = () => {
-  setOpenRejectDialog(true);
- };
-
- const handleCloseRejectDialog = () => {
-  setOpenRejectDialog(false);
- };
-
- const handleReject = async () => {
-  if (!id) return;
-  
-  try {
-   setActionLoading(true);
-   const updatedApplication = await tenantScreeningService.rejectApplication(id, rejectionReason);
-   setApplication(updatedApplication);
-   handleCloseRejectDialog();
-  } catch (err) {
-   console.error(`Failed to reject application ${id}:`, err);
-   setError('Failed to reject application. Please try again later.');
-  } finally {
-   setActionLoading(false);
-  }
- };
-
- const handleDelete = async () => {
-  if (!id) return;
-  
-  try {
-   setActionLoading(true);
-   await tenantScreeningService.deleteApplication(id);
-   navigate('/tenant-screening');
-  } catch (err) {
-   console.error(`Failed to delete application ${id}:`, err);
-   setError('Failed to delete application. Please try again later.');
-  } finally {
-   setActionLoading(false);
-  }
- };
-
- const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-   year: 'numeric',
-   month: 'long',
-   day: 'numeric',
+  const decide = useMutation({
+    mutationFn: ({ status, note }: { status: 'APPROVED' | 'REJECTED'; note?: string }) => {
+      const notes = note ? [app?.notes, `Decision note: ${note}`].filter(Boolean).join('\n\n') : undefined;
+      return updateApplicationStatus(id, status, notes);
+    },
+    onSuccess: () => {
+      setRejectOpen(false);
+      setReason('');
+      invalidate();
+    },
   });
- };
 
- if (loading) {
-  return (
-   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-    <CircularProgress />
-   </Box>
-  );
- }
-
- if (!application) {
-  return (
-   <Box>
-    <Typography variant="h5" color="error">
-     Application not found
-    </Typography>
-    <Button
-     component={RouterLink}
-     to="/tenant-screening"
-     variant="contained"
-     sx={{ mt: 2 }}
-    >
-     Back to Applications
+  const back = (
+    <Button component={RouterLink} to="/tenant-screening" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
+      All applications
     </Button>
-   </Box>
   );
- }
 
- return (
-  <Box>
-   {error && (
-    <Typography color="error" sx={{ mb: 2 }}>
-     {error}
-    </Typography>
-   )}
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'grid', placeItems: 'center', py: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-    <Typography variant="h4" component="h1">
-     Application Details
-    </Typography>
-    <Box>
-     <Button
-      variant="outlined"
-      startIcon={<EditIcon />}
-      component={RouterLink}
-      to={`/tenant-screening/applications/${id}/edit`}
-      sx={{ mr: 1 }}
-     >
-      Edit
-     </Button>
-     <Button
-      variant="outlined"
-      color="error"
-      startIcon={<DeleteIcon />}
-      onClick={handleDelete}
-      disabled={actionLoading}
-     >
-      Delete
-     </Button>
+  if (error || !app) {
+    const status = (error as any)?.response?.status;
+    return (
+      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto', textAlign: 'left' }}>
+        {back}
+        <Alert
+          severity={status === 404 || status === 403 ? 'warning' : 'error'}
+          action={
+            status === 404 || status === 403 ? undefined : (
+              <Button color="inherit" size="small" onClick={() => refetch()}>
+                Retry
+              </Button>
+            )
+          }
+        >
+          {status === 404
+            ? 'This application does not exist or has been deleted.'
+            : status === 403
+              ? 'You do not have access to this application.'
+              : 'Could not load this application. Check that the API is running, then try again.'}
+        </Alert>
+      </Box>
+    );
+  }
+
+  const risk = app.RiskAssessment;
+  const level = riskLevel(app);
+  const details = risk?.details ?? {};
+  const confidence = confidencePct(details.confidence);
+  const actionError = decide.error as any;
+
+  return (
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto', textAlign: 'left' }}>
+      {back}
+
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2} sx={{ mb: 3 }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Typography variant="h4" sx={{ fontWeight: 800 }}>
+              {applicantName(app)}
+            </Typography>
+            <Chip label={pretty(app.status)} color={STATUS_COLOR[app.status] ?? 'default'} />
+          </Stack>
+          <Typography sx={{ color: 'text.secondary' }}>
+            Applied {relativeDate(app.appliedDate).toLowerCase()} for {rentalLabel(app)}
+          </Typography>
+        </Box>
+        {app.status === 'PENDING' && (
+          <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<CheckCircleIcon />}
+              disabled={decide.isPending}
+              onClick={() => decide.mutate({ status: 'APPROVED' })}
+            >
+              Approve
+            </Button>
+            <Button variant="outlined" color="error" startIcon={<CancelIcon />} disabled={decide.isPending} onClick={() => setRejectOpen(true)}>
+              Reject
+            </Button>
+          </Stack>
+        )}
+      </Stack>
+
+      {actionError && (
+        <Alert severity="error" sx={{ mb: 2.5 }}>
+          {actionError?.response?.status === 403
+            ? 'You do not have permission to change this application.'
+            : 'The change could not be saved. Please try again.'}
+        </Alert>
+      )}
+
+      <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, alignItems: 'start' }}>
+        <Stack spacing={2.5}>
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
+                Applicant and rental
+              </Typography>
+              <Box sx={fieldGrid}>
+                <Field label="Email">
+                  {app.User?.email ? <Link href={`mailto:${app.User.email}`}>{app.User.email}</Link> : '—'}
+                </Field>
+                <Field label="Phone">{app.User?.phone || '—'}</Field>
+                <Field label="Rental">{rentalLabel(app)}</Field>
+                <Field label="Address">{rentalAddress(app) || '—'}</Field>
+                <Field label="Monthly rent">{money(app.Rental?.rent)}</Field>
+                <Field label="Applied on">{formatDate(app.appliedDate)}</Field>
+              </Box>
+              {app.notes && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Field label="Notes">
+                    <Typography sx={{ whiteSpace: 'pre-line' }}>{app.notes}</Typography>
+                  </Field>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
+                Screening checks
+              </Typography>
+              <Box sx={fieldGrid}>
+                <Field label="Tenant screening">
+                  {app.Screening ? (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip size="small" variant="outlined" label={pretty(app.Screening.status)} color={checkColor(app.Screening.status)} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        updated {relativeDate(app.Screening.updatedAt).toLowerCase()}
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Not started
+                    </Typography>
+                  )}
+                </Field>
+                <Field label="Background check">
+                  {app.BackgroundCheck ? (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip size="small" variant="outlined" label={pretty(app.BackgroundCheck.status)} color={checkColor(app.BackgroundCheck.status)} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        updated {relativeDate(app.BackgroundCheck.updatedAt).toLowerCase()}
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Not requested
+                    </Typography>
+                  )}
+                </Field>
+                <Field label="Credit score">
+                  <Typography sx={{ fontWeight: 700, color: creditColor(details.creditScore) }}>
+                    {typeof details.creditScore === 'number' ? details.creditScore : '—'}
+                  </Typography>
+                </Field>
+                <Field label="Monthly income">
+                  <Typography>
+                    {money(details.monthlyIncome)}
+                  </Typography>
+                </Field>
+              </Box>
+            </CardContent>
+          </Card>
+        </Stack>
+
+        <Card>
+          <CardContent sx={{ p: 2.5 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <AutoAwesomeIcon color="primary" fontSize="small" />
+              <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                AI risk assessment
+              </Typography>
+            </Stack>
+            {risk && level ? (
+              <>
+                <Stack direction="row" alignItems="baseline" spacing={1}>
+                  <Typography sx={{ fontSize: '2.4rem', fontWeight: 800, lineHeight: 1 }}>{Math.round(risk.score)}</Typography>
+                  <Typography sx={{ color: 'text.secondary' }}>/ 100 risk score</Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(100, Math.max(0, risk.score))}
+                  color={RISK_COLOR[level]}
+                  sx={{ height: 8, borderRadius: 4, my: 1.5 }}
+                  aria-label="Risk score"
+                />
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+                  <Chip size="small" label={RISK_LABEL[level]} color={RISK_COLOR[level]} />
+                  {confidence !== null && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={`${confidence}% confidence · ${confidence >= 80 ? 'High' : confidence >= 60 ? 'Medium' : 'Low'}`}
+                    />
+                  )}
+                </Stack>
+                <Field label="Recommendation">
+                  <Typography sx={{ fontWeight: 700 }}>{recommendationLabel(details.recommendation)}</Typography>
+                </Field>
+                {Array.isArray(details.factors) && details.factors.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                      Key factors
+                    </Typography>
+                    <Box component="ul" sx={{ pl: 2.5, mt: 0.5, mb: 0 }}>
+                      {details.factors.map((f) => (
+                        <li key={f}>
+                          <Typography variant="body2">{f}</Typography>
+                        </li>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mt: 2 }}>
+                  Higher scores mean higher risk. Assessed {relativeDate(risk.updatedAt).toLowerCase()}. The final decision is yours.
+                </Typography>
+              </>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                No AI risk assessment has been run for this application yet.
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+
+      <Dialog open={rejectOpen} onClose={() => setRejectOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Reject application</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            The reason is saved to the application notes so your team can see why it was declined.
+          </DialogContentText>
+          <TextField autoFocus fullWidth multiline minRows={3} label="Reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRejectOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={!reason.trim() || decide.isPending}
+            onClick={() => decide.mutate({ status: 'REJECTED', note: reason.trim() })}
+          >
+            Reject
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Box>
-   </Box>
-
-   <Paper sx={{ p: 3, mb: 3 }}>
-    <Grid container spacing={2}>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Application ID</Typography>
-      <Typography variant="body1" gutterBottom>{application.id}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Status</Typography>
-      <Chip
-       label={application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-       color={statusColors[application.status] || 'default'}
-       sx={{ fontWeight: 'bold' }}
-      />
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Property</Typography>
-      <Typography variant="body1" gutterBottom>{application.propertyName || 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Applicant</Typography>
-      <Typography variant="body1" gutterBottom>{application.applicantName || 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Email</Typography>
-      <Typography variant="body1" gutterBottom>{application.applicantEmail || 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Credit Score</Typography>
-      <Typography variant="body1" gutterBottom>{application.creditScore || 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Submitted Date</Typography>
-      <Typography variant="body1" gutterBottom>{formatDate(application.submittedAt)}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Move-in Date</Typography>
-      <Typography variant="body1" gutterBottom>{application.moveInDate ? formatDate(application.moveInDate) : 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Lease Term</Typography>
-      <Typography variant="body1" gutterBottom>{application.leaseTermMonths ? `${application.leaseTermMonths} months` : 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Monthly Rent</Typography>
-      <Typography variant="body1" gutterBottom>{application.monthlyRent ? `$${application.monthlyRent.toLocaleString()}` : 'N/A'}</Typography>
-     </Grid>
-     <Grid xs={12} sm={6}>
-      <Typography variant="subtitle1">Security Deposit</Typography>
-      <Typography variant="body1" gutterBottom>{application.securityDeposit ? `$${application.securityDeposit.toLocaleString()}` : 'N/A'}</Typography>
-     </Grid>
-    </Grid>
-
-    {application.notes && (
-     <>
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="subtitle1">Notes</Typography>
-      <Typography variant="body1" paragraph>{application.notes}</Typography>
-     </>
-    )}
-
-    {application.rejectionReason && (
-     <>
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="subtitle1" color="error">Rejection Reason</Typography>
-      <Typography variant="body1" paragraph>{application.rejectionReason}</Typography>
-     </>
-    )}
-
-    <Divider sx={{ my: 2 }} />
-    
-    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-     {application.status === 'pending' && (
-      <>
-       <Button
-        variant="contained"
-        color="success"
-        startIcon={<CheckCircleIcon />}
-        onClick={handleApprove}
-        disabled={actionLoading}
-       >
-        Approve
-       </Button>
-       <Button
-        variant="contained"
-        color="error"
-        startIcon={<CancelIcon />}
-        onClick={handleOpenRejectDialog}
-        disabled={actionLoading}
-       >
-        Reject
-       </Button>
-       <Button
-        variant="contained"
-        color="primary"
-        startIcon={<VerifiedUserIcon />}
-        disabled={actionLoading}
-       >
-        Run Background Check
-       </Button>
-      </>
-     )}
-    </Box>
-   </Paper>
-
-   <Dialog open={openRejectDialog} onClose={handleCloseRejectDialog}>
-    <DialogTitle>Reject Application</DialogTitle>
-    <DialogContent>
-     <DialogContentText>
-      Please provide a reason for rejecting this application.
-     </DialogContentText>
-     <TextField
-      autoFocus
-      margin="dense"
-      id="rejectionReason"
-      label="Rejection Reason"
-      type="text"
-      fullWidth
-      multiline
-      rows={4}
-      value={rejectionReason}
-      onChange={(e) => setRejectionReason(e.target.value)}
-     />
-    </DialogContent>
-    <DialogActions>
-     <Button onClick={handleCloseRejectDialog}>Cancel</Button>
-     <Button onClick={handleReject} color="error" disabled={!rejectionReason.trim()}>
-      Reject
-     </Button>
-    </DialogActions>
-   </Dialog>
-  </Box>
- );
+  );
 };
 
 export default ApplicationDetail;

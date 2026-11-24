@@ -2,10 +2,9 @@ import React from 'react';
 import {
  Box,
  Typography,
- GridLegacy as Grid,
+ Chip,
  Collapse,
  IconButton,
- Badge,
  Divider
 } from '@mui/material';
 import {
@@ -52,10 +51,10 @@ const CategorySection: React.FC<CategorySectionProps> = ({
  return (
   <Box sx={{ mb: 4 }}>
    {/* Category Header */}
-   <Box 
-    sx={{ 
-     display: 'flex', 
-     alignItems: 'center', 
+   <Box
+    sx={{
+     display: 'flex',
+     alignItems: 'center',
      mb: 2,
      cursor: onToggleExpanded ? 'pointer' : 'default',
      p: 1,
@@ -66,9 +65,9 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     }}
     onClick={onToggleExpanded}
    >
-    <Box 
-     sx={{ 
-      display: 'flex', 
+    <Box
+     sx={{
+      display: 'flex',
       alignItems: 'center',
       backgroundColor: categoryColor,
       color: 'white',
@@ -81,7 +80,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     >
      <IconComponent sx={{ fontSize: 20 }} />
     </Box>
-    
+
     <Box sx={{ flexGrow: 1 }}>
      <Typography variant="h6" component="h2" sx={{ mb: 0.5 }}>
       {category.name}
@@ -91,21 +90,13 @@ const CategorySection: React.FC<CategorySectionProps> = ({
        {category.totalCount} insight{category.totalCount !== 1 ? 's' : ''}
       </Typography>
       {highPriorityCount > 0 && (
-       <Badge 
-        badgeContent={highPriorityCount} 
+       <Chip
+        size="small"
         color="error"
-        sx={{
-         '& .MuiBadge-badge': {
-          fontSize: '0.7rem',
-          height: 16,
-          minWidth: 16
-         }
-        }}
-       >
-        <Typography variant="body2" color="text.secondary">
-         high priority
-        </Typography>
-       </Badge>
+        variant="outlined"
+        label={`${highPriorityCount} high priority`}
+        sx={{ height: 22, fontSize: '0.75rem' }}
+       />
       )}
      </Box>
     </Box>
@@ -120,26 +111,31 @@ const CategorySection: React.FC<CategorySectionProps> = ({
    {/* Category Content */}
    <Collapse in={expanded}>
     {category.insights.length > 0 ? (
-     <Grid container spacing={3}>
+     <Box
+      sx={{
+       display: 'grid',
+       gap: 2.5,
+       gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' },
+      }}
+     >
       {category.insights.map((insight) => (
-       <Grid xs={12} md={6} lg={4} key={insight.id}>
+       <Box key={insight.id} sx={{ minWidth: 0 }}>
         <InsightCard
          insight={insight}
          onClick={onInsightClick}
          showCategory={false}
         />
-       </Grid>
+       </Box>
       ))}
-     </Grid>
+     </Box>
     ) : (
-     <Box 
-      sx={{ 
-       textAlign: 'center', 
+     <Box
+      sx={{
        py: 4,
-       backgroundColor: 'grey.50',
+       px: 2,
        borderRadius: 1,
-       border: '1px dashed',
-       borderColor: 'grey.300'
+       border: '1.5px dashed',
+       borderColor: 'divider'
       }}
      >
       <IconComponent sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />

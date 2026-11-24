@@ -68,9 +68,6 @@ const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) => {
   // Caching logic (from previous)
   const handleCache = async (data: any) => {
     if (isMobile) {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
-      }
       // Basic caching with Cache API
       caches.open('growlyze-cache').then(cache => {
         // Cache example API response (integrate with actual fetches in children)

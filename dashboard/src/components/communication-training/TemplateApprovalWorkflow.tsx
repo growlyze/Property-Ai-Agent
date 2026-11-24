@@ -42,7 +42,8 @@ const TemplateApprovalWorkflow: React.FC<TemplateApprovalWorkflowProps> = ({
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   // Check if user has approver role
-  const hasApproverRole = user?.role === 'admin' || user?.role === 'manager' || user?.role === 'approver';
+  const role = String(user?.role ?? '').toLowerCase();
+  const hasApproverRole = ['admin', 'manager', 'property_manager', 'approver'].includes(role);
 
   // Don't render if user doesn't have approver role
   if (!hasApproverRole) {

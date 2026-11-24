@@ -67,7 +67,7 @@ function ProfileCard({ me }: { me: VendorProfile }) {
           )}
         </Stack>
         {(areas.length > 0 || certs.length > 0) && (
-          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
             {areas.map((a) => (
               <Chip key={`a-${a}`} size="small" label={a} variant="outlined" />
             ))}

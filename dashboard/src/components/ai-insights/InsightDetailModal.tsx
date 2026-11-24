@@ -132,23 +132,47 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
   }
  };
 
+ // The API sends confidence and impact as 0–1 fractions (e.g. 0.92); older
+ // data may already be 0–100. Normalise both to whole percentages.
+ const toPercent = (value: number | undefined | null) => {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(Math.min(100, Math.max(0, n <= 1 ? n * 100 : n)));
+ };
+ const levelFor = (pct: number) => (pct >= 75 ? 'High' : pct >= 45 ? 'Medium' : 'Low');
+ const confidencePct = toPercent(insight.confidence);
+ const impactPct = toPercent(insight.impact);
+ const trendLabel = insight.trend === 'up' ? 'Rising' : insight.trend === 'down' ? 'Declining' : 'Stable';
+ const recommendations = Array.isArray(insight.recommendations) ? insight.recommendations : [];
+ const keyFindings = [
+  `Category: ${String(insight.category ?? 'general').replace(/_/g, ' ')}, ${String(insight.priority ?? 'medium')} priority`,
+  `Trend: ${trendLabel}`,
+  `AI confidence: ${confidencePct}% (${levelFor(confidencePct)})`,
+  `Estimated business impact: ${levelFor(impactPct)} (${impactPct}%)`,
+  recommendations.length
+   ? `${recommendations.length} recommended action${recommendations.length === 1 ? '' : 's'} available`
+   : 'No recommended actions yet',
+ ];
+ const priorityColor = (p?: string) => priorityColors[(p ?? 'medium') as InsightPriority] ?? priorityColors.medium;
+
  const renderConfidenceScore = (confidence: number) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-   <LinearProgress 
-    variant="determinate" 
-    value={confidence} 
-    sx={{ 
-     width: 100, 
-     height: 8, 
-     borderRadius: 4,
-     backgroundColor: theme.palette.grey[200],
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+   <LinearProgress
+    variant="determinate"
+    value={confidence}
+    sx={{
+     flex: 1,
+     height: 10,
+     borderRadius: 5,
+     backgroundColor: theme.palette.action.hover,
      '& .MuiLinearProgress-bar': {
-      backgroundColor: confidence > 80 ? '#4caf50' 
-       : confidence > 60 ? '#ff9800' : '#f44336'
+      borderRadius: 5,
+      backgroundColor: confidence >= 75 ? '#0db664'
+       : confidence >= 45 ? '#ffb900' : '#d92d20'
      }
-    }} 
+    }}
    />
-   <Typography variant="body2" color="text.secondary">
+   <Typography variant="h6" sx={{ fontWeight: 800, minWidth: 56, textAlign: 'right' }}>
     {confidence}%
    </Typography>
   </Box>
@@ -233,54 +257,80 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
     </Box>
    </Box>
 
-   <DialogContent dividers>
+   <DialogContent dividers sx={{ p: { xs: 2, md: 3 }, textAlign: 'left' }}>
     {activeTab === 'overview' && (
      <Box>
-      <Grid container spacing={3}>
-       <Grid xs={12} md={8}>
-        <Typography variant="body1" paragraph>
+      <Box
+       sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
+        gap: 3,
+        alignItems: 'start',
+       }}
+      >
+       <Box sx={{ minWidth: 0 }}>
+        <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+         AI summary
+        </Typography>
+        <Typography variant="body1" sx={{ fontSize: '1.05rem', lineHeight: 1.7, mb: 3 }}>
          {insight.description}
         </Typography>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
          Key Findings
         </Typography>
-        {/* Removed dataPoints rendering */}
-       </Grid>
+        <List dense disablePadding>
+         {keyFindings.map((finding) => (
+          <ListItem key={finding} disableGutters sx={{ alignItems: 'flex-start' }}>
+           <ListItemIcon sx={{ minWidth: 32, mt: 0.25 }}>
+            <CheckIcon fontSize="small" sx={{ color: 'primary.main' }} />
+           </ListItemIcon>
+           <ListItemText primary={finding} primaryTypographyProps={{ sx: { textTransform: 'none' } }} />
+          </ListItem>
+         ))}
+        </List>
+       </Box>
 
-       <Grid xs={12} md={4}>
+       <Box sx={{ display: 'grid', gap: 2, minWidth: 0 }}>
         <Card variant="outlined">
          <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1.5 }}>
            Confidence Score
           </Typography>
-          {renderConfidenceScore(insight.confidence)}
-          {/* Removed confidenceExplanation */}
+          {renderConfidenceScore(confidencePct)}
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+           {levelFor(confidencePct)} confidence in this recommendation
+          </Typography>
          </CardContent>
         </Card>
 
-        <Card variant="outlined" sx={{ mt: 2 }}>
+        <Card variant="outlined">
          <CardContent>
-          <Typography variant="h6" gutterBottom>
-           Impact
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>
+           Estimated Impact
           </Typography>
-          <Typography variant="h4" color="primary">
-           {insight.impact}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-           Estimated business impact: {insight.impact}
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+           <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
+            {levelFor(impactPct)}
+           </Typography>
+           <Typography variant="body1" color="text.secondary">
+            {impactPct}%
+           </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+           Expected effect on your portfolio if acted on
           </Typography>
          </CardContent>
         </Card>
-       </Grid>
-      </Grid>
+       </Box>
+      </Box>
 
-      {insight.recommendations && insight.recommendations.length > 0 && (
+      {recommendations.length > 0 && (
        <Box sx={{ mt: 4 }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5 }}>
          Recommendations
         </Typography>
         <Grid container spacing={2}>
-         {insight.recommendations.slice(0, 3).map((rec) => (
+         {recommendations.slice(0, 3).map((rec) => (
           <Grid item xs={12} md={6} key={rec.id}>
            <Card variant="outlined">
             <CardContent>
@@ -292,10 +342,10 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
              </Typography>
              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Chip
-               label={rec.priority.toUpperCase()}
+               label={String(rec.priority ?? 'medium').toUpperCase()}
                size="small"
                sx={{
-                bgcolor: priorityColors[rec.priority as InsightPriority],
+                bgcolor: priorityColor(rec.priority),
                 color: 'white',
                 fontWeight: 'bold'
                }}
@@ -314,23 +364,38 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
 
     {activeTab === 'data' && (
      <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
        Supporting Data
       </Typography>
-      
-      {/* Removed chartData rendering */}
-
-      {/* Removed Raw Data Points accordion */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+       {[
+        ['Category', String(insight.category ?? '—').replace(/_/g, ' ')],
+        ['Priority', String(insight.priority ?? '—')],
+        ['Trend', trendLabel],
+        ['AI confidence', `${confidencePct}%`],
+        ['Estimated impact', `${levelFor(impactPct)} (${impactPct}%)`],
+        ['Recommendations', String(recommendations.length)],
+       ].map(([label, value]) => (
+        <Card key={label} variant="outlined">
+         <CardContent>
+          <Typography variant="body2" color="text.secondary">{label}</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 800, textTransform: 'capitalize' }}>{value}</Typography>
+         </CardContent>
+        </Card>
+       ))}
+      </Box>
      </Box>
     )}
 
     {activeTab === 'recommendations' && (
      <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
        Detailed Recommendations
       </Typography>
-      
-      {insight.recommendations?.map((rec) => (
+      {recommendations.length === 0 && (
+       <Typography color="text.secondary">No recommendations for this insight yet.</Typography>
+      )}
+      {recommendations.map((rec) => (
        <Card key={rec.id} sx={{ mb: 2 }}>
         <CardContent>
          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -358,7 +423,7 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
              color: action.completed ? 'text.secondary' : 'text.primary'
             }}
            >
-            {action.text} {/* Changed from description to text */}
+            {(action as { description?: string; text?: string }).description ?? (action as { text?: string }).text}
            </Typography>
           </Box>
          ))}
@@ -370,13 +435,27 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
 
     {activeTab === 'history' && (
      <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
        Insight History
       </Typography>
-      
-      <Typography variant="body2" color="text.secondary" paragraph>
-       Generated: {new Date(insight.timestamp).toLocaleString()}
-      </Typography>
+      <List disablePadding>
+       <ListItem disableGutters>
+        <ListItemIcon sx={{ minWidth: 32 }}><TimelineIcon fontSize="small" sx={{ color: 'primary.main' }} /></ListItemIcon>
+        <ListItemText
+         primary="Insight generated by AI"
+         secondary={insight.timestamp && !Number.isNaN(new Date(insight.timestamp).getTime())
+          ? new Date(insight.timestamp).toLocaleString()
+          : 'Date not available'}
+        />
+       </ListItem>
+       <ListItem disableGutters>
+        <ListItemIcon sx={{ minWidth: 32 }}><InsightsIcon fontSize="small" sx={{ color: 'primary.main' }} /></ListItemIcon>
+        <ListItemText
+         primary={`Assessed at ${confidencePct}% confidence, ${levelFor(impactPct).toLowerCase()} impact`}
+         secondary="Use Regenerate (top right) to refresh this insight with the latest data"
+        />
+       </ListItem>
+      </List>
       
       {/* Removed updatedAt and methodology as they are not in the new Insight interface */}
      </Box>

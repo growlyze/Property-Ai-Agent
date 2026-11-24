@@ -56,6 +56,13 @@ const InsightCard: React.FC<InsightCardProps> = ({
   showCategory = true,
   compact = false
 }) => {
+  // The API sends confidence as a 0–1 fraction (e.g. 0.92); show it as a whole percentage.
+  const confidencePct = (() => {
+    const n = Number(insight?.confidence ?? 0);
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(Math.min(100, Math.max(0, n <= 1 ? n * 100 : n)));
+  })();
+
   // Priority colors
   const priorityColors = {
     critical: '#f44336',
@@ -303,10 +310,10 @@ const InsightCard: React.FC<InsightCardProps> = ({
               )}
               
               <Chip
-                label={`${insight.confidence}% confidence`}
+                label={`${confidencePct}% confidence`}
                 size="small"
                 variant="outlined"
-                color={insight.confidence >= 80 ? 'success' : insight.confidence >= 60 ? 'warning' : 'default'}
+                color={confidencePct >= 80 ? 'success' : confidencePct >= 60 ? 'warning' : 'default'}
               />
             </Box>
           </Box>
@@ -377,8 +384,8 @@ const InsightCard: React.FC<InsightCardProps> = ({
                 width: 6, 
                 height: 6, 
                 borderRadius: '50%', 
-                backgroundColor: insight.confidence >= 80 ? '#4caf50' : 
-                                insight.confidence >= 60 ? '#ff9800' : '#f44336'
+                backgroundColor: confidencePct >= 80 ? '#4caf50' : 
+                                confidencePct >= 60 ? '#ff9800' : '#f44336'
               }} />
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
                 AI Generated
@@ -394,19 +401,19 @@ const InsightCard: React.FC<InsightCardProps> = ({
               AI Confidence
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {insight.confidence}%
+              {confidencePct}%
             </Typography>
           </Box>
           <LinearProgress 
             variant="determinate" 
-            value={insight.confidence} 
+            value={confidencePct} 
             sx={{
               height: 4,
               borderRadius: 2,
               backgroundColor: 'grey.200',
               '& .MuiLinearProgress-bar': {
-                backgroundColor: insight.confidence >= 80 ? '#4caf50' : 
-                                insight.confidence >= 60 ? '#ff9800' : '#f44336'
+                backgroundColor: confidencePct >= 80 ? '#4caf50' : 
+                                confidencePct >= 60 ? '#ff9800' : '#f44336'
               }
             }}
           />

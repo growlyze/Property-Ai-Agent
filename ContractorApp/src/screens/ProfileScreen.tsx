@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginRight: 16,
-    backgroundColor: '#f55809',
+    backgroundColor: '#1e6bff',
   },
   userInfo: {
     flex: 1,

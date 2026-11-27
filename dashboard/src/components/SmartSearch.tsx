@@ -192,8 +192,8 @@ const SmartSearch: React.FC = () => {
   const getResultColor = (type: string) => {
     switch (type) {
       case 'property': return '#4caf50';
-      case 'tenant': return '#f55809';
-      case 'maintenance': return '#ff9800';
+      case 'tenant': return '#1e6bff';
+      case 'maintenance': return '#f99c00';
       case 'transaction': return '#9c27b0';
       default: return '#757575';
     }

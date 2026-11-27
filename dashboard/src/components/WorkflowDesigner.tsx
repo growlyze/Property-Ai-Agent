@@ -60,8 +60,8 @@ const ConnectionLine = styled('svg')({
 // Step types configuration
 const STEP_TYPES = {
   start: { label: 'Start', color: '#4caf50', icon: '▶️' },
-  task: { label: 'Task', color: '#f55809', icon: '⚙️' },
-  decision: { label: 'Decision', color: '#ff9800', icon: '🔀' },
+  task: { label: 'Task', color: '#1e6bff', icon: '⚙️' },
+  decision: { label: 'Decision', color: '#f99c00', icon: '🔀' },
   integration: { label: 'Integration', color: '#9c27b0', icon: '🔗' },
   timer: { label: 'Timer', color: '#607d8b', icon: '⏰' },
   end: { label: 'End', color: '#f44336', icon: '⏹️' },

@@ -35,8 +35,8 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({
   // Priority options
   const priorityOptions: { value: InsightPriority; label: string; color: string }[] = [
     { value: 'critical', label: 'Critical', color: '#f44336' },
-    { value: 'high', label: 'High', color: '#ff9800' },
-    { value: 'medium', label: 'Medium', color: '#f55809' },
+    { value: 'high', label: 'High', color: '#f99c00' },
+    { value: 'medium', label: 'Medium', color: '#1e6bff' },
     { value: 'low', label: 'Low', color: '#4caf50' }
   ];
 

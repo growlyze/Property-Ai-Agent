@@ -334,7 +334,7 @@ export const MLInsightsScreen: React.FC = () => {
       >
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#f55809" />
+            <ActivityIndicator size="large" color="#1e6bff" />
             <Text style={styles.loadingText}>Loading predictions...</Text>
           </View>
         ) : error ? (
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   activeTab: {
-    borderBottomColor: '#f55809',
+    borderBottomColor: '#1e6bff',
   },
   tabText: {
     fontSize: 14,
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     color: '#757575',
   },
   activeTabText: {
-    color: '#f55809',
+    color: '#1e6bff',
     fontWeight: '600',
   },
   content: {
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#f55809',
+    backgroundColor: '#1e6bff',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

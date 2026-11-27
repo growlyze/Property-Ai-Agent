@@ -82,7 +82,7 @@ export const generatePropertyRevenueData = (months: number = 12) => {
     series: [{
       name: 'Monthly Revenue',
       data,
-      color: '#f55809'
+      color: '#1e6bff'
     }],
     metadata: {
       title: 'Property Revenue Trend',
@@ -115,7 +115,7 @@ export const generateExpenseBreakdownData = () => {
           '#ef4444', // Red for maintenance
           '#f59e0b', // Orange for utilities
           '#10b981', // Green for insurance
-          '#f55809', // Blue for tax
+          '#1e6bff', // Blue for tax
           '#8b5cf6', // Purple for management
           '#06b6d4', // Cyan for marketing
           '#6b7280', // Gray for other
@@ -199,8 +199,8 @@ export const generateMaintenanceMetricsData = () => {
 export const CHART_THEMES = {
   growlyze: {
     colors: [
-      '#f55809', '#10b981', '#f59e0b', '#ef4444', 
-      '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
+      '#1e6bff', '#10b981', '#f59e0b', '#ef4444', 
+      '#8b5cf6', '#06b6d4', '#84cc16', '#f99c00'
     ],
     grid: { strokeDasharray: '3 3', opacity: 0.3 },
     background: 'var(--color-background-paper)',

@@ -80,10 +80,10 @@ const RiskAssessmentDashboard: React.FC<RiskAssessmentDashboardProps> = ({ onRef
   const getRiskColor = (level: string) => {
     switch (level) {
       case 'critical': return '#d32f2f';
-      case 'high': return '#f57c00';
+      case 'high': return '#dd7400';
       case 'medium': return '#fbc02d';
       case 'low': return '#388e3c';
-      case 'minimal': return '#f55809';
+      case 'minimal': return '#1e6bff';
       default: return '#757575';
     }
   };
@@ -91,10 +91,10 @@ const RiskAssessmentDashboard: React.FC<RiskAssessmentDashboardProps> = ({ onRef
   const getRiskIcon = (level: string) => {
     switch (level) {
       case 'critical': return <ErrorIcon sx={{ color: '#d32f2f' }} />;
-      case 'high': return <WarningIcon sx={{ color: '#f57c00' }} />;
+      case 'high': return <WarningIcon sx={{ color: '#dd7400' }} />;
       case 'medium': return <WarningIcon sx={{ color: '#fbc02d' }} />;
       case 'low': return <InfoIcon sx={{ color: '#388e3c' }} />;
-      case 'minimal': return <InfoIcon sx={{ color: '#f55809' }} />;
+      case 'minimal': return <InfoIcon sx={{ color: '#1e6bff' }} />;
       default: return <InfoIcon />;
     }
   };
@@ -342,12 +342,12 @@ const RiskAssessmentDashboard: React.FC<RiskAssessmentDashboardProps> = ({ onRef
             <Card>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={1}>
-                  <WarningIcon sx={{ color: '#f57c00' }} />
+                  <WarningIcon sx={{ color: '#dd7400' }} />
                   <Typography variant="h6" sx={{ ml: 1 }}>
                     High Risks
                   </Typography>
                 </Box>
-                <Typography variant="h4" sx={{ color: '#f57c00', fontWeight: 'bold' }}>
+                <Typography variant="h4" sx={{ color: '#dd7400', fontWeight: 'bold' }}>
                   {portfolioRisk.highCount}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -361,12 +361,12 @@ const RiskAssessmentDashboard: React.FC<RiskAssessmentDashboardProps> = ({ onRef
             <Card>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={1}>
-                  <ShieldIcon sx={{ color: '#f55809' }} />
+                  <ShieldIcon sx={{ color: '#1e6bff' }} />
                   <Typography variant="h6" sx={{ ml: 1 }}>
                     Confidence
                   </Typography>
                 </Box>
-                <Typography variant="h4" sx={{ color: '#f55809', fontWeight: 'bold' }}>
+                <Typography variant="h4" sx={{ color: '#1e6bff', fontWeight: 'bold' }}>
                   {(portfolioRisk.confidence * 100).toFixed(0)}%
                 </Typography>
                 <LinearProgress

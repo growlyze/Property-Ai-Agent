@@ -32,8 +32,8 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
  const getSeverityColor = (severity: string) => {
   switch (severity) {
    case 'CRITICAL': return '#d32f2f'; // Enhanced contrast from #f44336
-   case 'HIGH': return '#f57c00';  // Enhanced contrast from #ff9800
-   case 'MEDIUM': return '#f55809'; // Enhanced contrast from #f55809
+   case 'HIGH': return '#dd7400';  // Enhanced contrast from #f99c00
+   case 'MEDIUM': return '#1e6bff'; // Enhanced contrast from #1e6bff
    case 'LOW': return '#388e3c';   // Enhanced contrast from #4caf50
    default: return '#757575';    // Enhanced contrast from #9e9e9e
   }
@@ -42,8 +42,8 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
  const getPriorityColor = (priority: string) => {
   switch (priority) {
    case 'URGENT': return '#d32f2f';
-   case 'HIGH': return '#f57c00';
-   case 'MEDIUM': return '#f55809';
+   case 'HIGH': return '#dd7400';
+   case 'MEDIUM': return '#1e6bff';
    case 'LOW': return '#388e3c';
    default: return '#757575';
   }
@@ -157,7 +157,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
           sx={{
            height: 8,
            borderRadius: 1,
-           backgroundColor: '#f5f0e6',
+           backgroundColor: '#f6f8fc',
            '& .MuiLinearProgress-bar': {
             backgroundColor: getSeverityColor(stat.severity),
            },
@@ -190,7 +190,7 @@ export const UXReviewStats: React.FC<UXReviewStatsProps> = ({ stats }) => {
           sx={{
            height: 8,
            borderRadius: 1,
-           backgroundColor: '#f5f0e6',
+           backgroundColor: '#f6f8fc',
            '& .MuiLinearProgress-bar': {
             backgroundColor: getPriorityColor(stat.priority),
            },

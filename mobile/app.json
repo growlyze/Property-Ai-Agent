@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#ffffff",
-    "primaryColor": "#f55809",
+    "primaryColor": "#1e6bff",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -72,7 +72,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",
-          "color": "#f55809",
+          "color": "#1e6bff",
           "defaultChannel": "default",
           "sounds": [
             "./assets/sounds/notification.wav"

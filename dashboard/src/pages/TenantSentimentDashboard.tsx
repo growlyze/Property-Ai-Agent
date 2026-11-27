@@ -180,7 +180,7 @@ const TenantSentimentDashboard: React.FC = () => {
           accent="#2E7D32"
         />
         <Kpi icon={<SentimentVeryDissatisfiedIcon fontSize="small" />} label="Negative messages" value={String(dist.negative)} sub={`${pct(dist.negative)} of all messages`} accent="#D32F2F" />
-        <Kpi icon={<WarningAmberIcon fontSize="small" />} label="Early warnings" value={String(warnings.length)} sub="Unhappy tenants to follow up" accent="#ED6C02" />
+        <Kpi icon={<WarningAmberIcon fontSize="small" />} label="Early warnings" value={String(warnings.length)} sub="Unhappy tenants to follow up" accent="#dd7400" />
       </Box>
 
       <Box sx={{ ...grid, gridTemplateColumns: { xs: '1fr', lg: '3fr 2fr' }, mb: 2.5 }}>

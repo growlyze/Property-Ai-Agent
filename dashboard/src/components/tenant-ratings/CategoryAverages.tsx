@@ -31,7 +31,7 @@ const CategoryAverages: React.FC<CategoryAveragesProps> = ({
 
   const getRatingColorHex = (rating: number) => {
     if (rating >= 4) return '#4caf50';
-    if (rating >= 3) return '#ff9800';
+    if (rating >= 3) return '#f99c00';
     if (rating >= 2) return '#f44336';
     return '#d32f2f';
   };

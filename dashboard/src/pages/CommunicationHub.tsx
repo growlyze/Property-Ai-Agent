@@ -95,7 +95,7 @@ const CommunicationHub: React.FC = () => {
 
   const listPane = (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Box sx={{ px: 2, py: 1.5, borderBottom: `2px solid ${INK}` }}>
+      <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid var(--color-border-default)` }}>
         <Typography sx={{ fontWeight: 800 }}>Conversations</Typography>
       </Box>
       {threads.isLoading ? (
@@ -121,7 +121,7 @@ const CommunicationHub: React.FC = () => {
                   py: 1.5,
                   borderBottom: '1px solid',
                   borderColor: 'divider',
-                  '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'rgba(242, 92, 5, 0.12)', color: 'text.primary' },
+                  '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'rgba(30, 107, 255, 0.12)', color: 'text.primary' },
                 }}
               >
                 <Badge color="primary" badgeContent={t.unreadCount} invisible={!t.unreadCount}>
@@ -160,7 +160,7 @@ const CommunicationHub: React.FC = () => {
         </Box>
       ) : (
         <>
-          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ px: 2, py: 1.5, borderBottom: `2px solid ${INK}` }}>
+          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ px: 2, py: 1.5, borderBottom: `1px solid var(--color-border-default)` }}>
             {isPhone && (
               <IconButton aria-label="Back to conversations" onClick={() => setSelected(null)} size="small">
                 <ArrowBackIcon />
@@ -198,8 +198,8 @@ const CommunicationHub: React.FC = () => {
                         px: 1.75,
                         py: 1.25,
                         borderRadius: '12px',
-                        border: `1.5px solid ${INK}`,
-                        bgcolor: right ? 'rgba(242, 92, 5, 0.12)' : 'background.paper',
+                        border: `1px solid var(--color-border-default)`,
+                        bgcolor: right ? 'rgba(30, 107, 255, 0.12)' : 'background.paper',
                         color: 'text.primary',
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
@@ -215,7 +215,7 @@ const CommunicationHub: React.FC = () => {
             )}
           </Box>
 
-          <Box component="form" onSubmit={submit} sx={{ p: 2, borderTop: `2px solid ${INK}` }}>
+          <Box component="form" onSubmit={submit} sx={{ p: 2, borderTop: `1px solid var(--color-border-default)` }}>
             {send.isError && (
               <Alert severity="error" sx={{ mb: 1.5 }}>
                 {apiErrorMessage(send.error, 'Message not sent.')}

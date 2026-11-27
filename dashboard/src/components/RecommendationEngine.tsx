@@ -171,8 +171,8 @@ const RecommendationEngine: React.FC = () => {
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
       financial: '#4caf50',
-      operational: '#f55809',
-      maintenance: '#ff9800',
+      operational: '#1e6bff',
+      maintenance: '#f99c00',
       tenant: '#9c27b0',
       marketing: '#607d8b',
     };

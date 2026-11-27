@@ -54,7 +54,7 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
   // Default thresholds if none provided
   const defaultThresholds: GaugeThreshold[] = [
     { value: 33, color: '#f44336', label: 'Low' },
-    { value: 66, color: '#ff9800', label: 'Medium' },
+    { value: 66, color: '#f99c00', label: 'Medium' },
     { value: 100, color: '#4caf50', label: 'High' }
   ];
 

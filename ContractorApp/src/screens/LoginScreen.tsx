@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#f55809',
+    color: '#1e6bff',
     marginBottom: 8,
   },
   subtitle: {
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotPasswordText: {
-    color: '#f55809',
+    color: '#1e6bff',
     fontSize: 14,
     fontWeight: '500',
   },

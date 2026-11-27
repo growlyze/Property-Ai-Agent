@@ -75,7 +75,7 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
 
   const priorityColors = {
     critical: '#f44336',
-    high: '#ff9800',
+    high: '#f99c00',
     medium: '#2196f3',
     low: '#4caf50'
   };
@@ -144,7 +144,7 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
           backgroundColor: theme.palette.grey[200],
           '& .MuiLinearProgress-bar': {
             backgroundColor: confidence > 80 ? '#4caf50' 
-              : confidence > 60 ? '#ff9800' : '#f44336'
+              : confidence > 60 ? '#f99c00' : '#f44336'
           }
         }} 
       />

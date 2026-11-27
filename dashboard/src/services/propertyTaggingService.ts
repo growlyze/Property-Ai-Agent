@@ -74,7 +74,7 @@ class PropertyTaggingService {
       id: 'condition',
       name: 'Property Condition',
       description: 'Overall property condition assessment',
-      color: '#f55809',
+      color: '#1e6bff',
       icon: '🏠',
       priority: 'high'
     },
@@ -98,7 +98,7 @@ class PropertyTaggingService {
       id: 'location',
       name: 'Location & Area',
       description: 'Location-based characteristics',
-      color: '#ff9800',
+      color: '#f99c00',
       icon: '📍',
       priority: 'medium'
     },

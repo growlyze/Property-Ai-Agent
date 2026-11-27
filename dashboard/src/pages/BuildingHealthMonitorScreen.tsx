@@ -169,7 +169,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
      data: buildingHealth.categories.map(cat => cat.score),
      backgroundColor: buildingHealth.categories.map(cat => {
       if (cat.score >= 80) return '#4caf50';
-      if (cat.score >= 60) return '#ff9800';
+      if (cat.score >= 60) return '#f99c00';
       return '#f44336';
      }),
      borderWidth: 2,
@@ -188,7 +188,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
     {
      label: 'Overall Health Score',
      data: healthMetrics.overallScore.map((item: any) => item.value),
-     borderColor: '#f55809',
+     borderColor: '#1e6bff',
      backgroundColor: 'rgba(33, 150, 243, 0.1)',
      tension: 0.4,
      fill: true
@@ -265,7 +265,7 @@ const BuildingHealthMonitorScreen: React.FC = () => {
           backgroundColor: 'grey.200',
           '& .MuiLinearProgress-bar': {
            backgroundColor: buildingHealth.overallScore >= 80 ? '#4caf50' : 
-                   buildingHealth.overallScore >= 60 ? '#ff9800' : '#f44336'
+                   buildingHealth.overallScore >= 60 ? '#f99c00' : '#f44336'
           }
          }}
         />

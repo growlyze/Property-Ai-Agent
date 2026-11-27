@@ -42,7 +42,7 @@ jest.mock('../services/propertyTaggingService', () => ({
       tags: [
         {
           id: 'tag-1',
-          category: { id: 'condition', name: 'Property Condition', color: '#f55809', icon: '🏠', priority: 'high' },
+          category: { id: 'condition', name: 'Property Condition', color: '#1e6bff', icon: '🏠', priority: 'high' },
           value: 'Condition: good',
           confidence: 0.85,
           source: 'ai_analysis',

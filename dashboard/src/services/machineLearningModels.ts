@@ -404,6 +404,6 @@ export function formatConditionScore(score: number): string {
 
 export function getConditionColor(score: number): string {
   if (score >= 80) return '#4CAF50'; // Green
-  if (score >= 60) return '#FF9800'; // Orange
+  if (score >= 60) return '#f99c00'; // Orange
   return '#F44336'; // Red
 }

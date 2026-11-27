@@ -371,7 +371,7 @@ describe('CriticalAlertsDashboard', () => {
 
     await waitFor(() => {
       const highAlert = screen.getByText('Medical Emergency').closest('button');
-      expect(highAlert).toHaveStyle('border: 1px solid #f57c00');
+      expect(highAlert).toHaveStyle('border: 1px solid #dd7400');
     });
   });
 

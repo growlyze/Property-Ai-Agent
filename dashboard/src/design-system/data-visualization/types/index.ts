@@ -250,14 +250,14 @@ export const CHART_THEMES = {
 } as const;
 
 export const DEFAULT_COLORS = [
-  '#f55809', // Primary blue
+  '#1e6bff', // Primary blue
   '#10b981', // Success green
   '#f59e0b', // Warning orange
   '#ef4444', // Error red
   '#8b5cf6', // Purple
   '#06b6d4', // Cyan
   '#84cc16', // Lime
-  '#f97316', // Orange
+  '#f99c00', // Orange
   '#ec4899', // Pink
   '#6b7280', // Gray
 ] as const;

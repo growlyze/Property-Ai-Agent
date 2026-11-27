@@ -67,7 +67,7 @@ const Marketing = () => {
       description: 'Create and manage advertising campaigns across Google Ads, Instagram, Zillow and other channels',
       icon: <CampaignIcon />,
       path: '/marketing/campaigns',
-      color: '#f55809',
+      color: '#1e6bff',
       stats: dash((x) => `${plural(x.activeCampaigns, 'active campaign')} of ${x.campaigns}`),
       features: ['Google Ads', 'Instagram', 'Zillow', 'Performance Tracking'],
     },
@@ -109,7 +109,7 @@ const Marketing = () => {
           <StatCard icon={<TrendingUp fontSize="small" />} accent="#16a34a" label="Campaign leads" value={s ? s.leads : '…'} sub="All campaigns" to="/marketing/analytics" />
         </Grid>
         <Grid item xs={6} md={3}>
-          <StatCard icon={<MonetizationOn fontSize="small" />} accent="#f97316" label="Marketing spend" value={s ? money(s.spend) : '…'} sub="Spent on campaigns" to="/marketing/campaigns" />
+          <StatCard icon={<MonetizationOn fontSize="small" />} accent="#f99c00" label="Marketing spend" value={s ? money(s.spend) : '…'} sub="Spent on campaigns" to="/marketing/campaigns" />
         </Grid>
         <Grid item xs={6} md={3}>
           <StatCard icon={<CampaignIcon fontSize="small" />} accent="#2563eb" label="Active campaigns" value={s ? s.activeCampaigns : '…'} sub={s ? `of ${s.campaigns} total` : 'Loading'} to="/marketing/campaigns" />
@@ -125,7 +125,7 @@ const Marketing = () => {
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar sx={{ bgcolor: module.color, mr: 2, border: `1.5px solid ${INK}` }}>{module.icon}</Avatar>
+                  <Avatar sx={{ bgcolor: module.color, mr: 2, border: `1px solid var(--color-border-default)` }}>{module.icon}</Avatar>
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="h6" component="h2" sx={{ fontWeight: 800 }}>
                       {module.title}

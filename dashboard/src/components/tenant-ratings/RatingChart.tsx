@@ -32,14 +32,14 @@ interface RatingChartProps {
 }
 
 const COLORS = {
-  primary: '#f55809',
+  primary: '#1e6bff',
   success: '#4caf50',
-  warning: '#ff9800',
+  warning: '#f99c00',
   error: '#f44336',
-  info: '#f55809'
+  info: '#1e6bff'
 };
 
-const RATING_COLORS = ['#f44336', '#ff5722', '#ff9800', '#4caf50', '#2e7d32'];
+const RATING_COLORS = ['#f44336', '#e5484d', '#f99c00', '#4caf50', '#2e7d32'];
 
 const RatingChart: React.FC<RatingChartProps> = ({
   analytics,

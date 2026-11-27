@@ -242,7 +242,7 @@ const VendorPerformanceAnalyticsScreen: React.FC = () => {
               {recentJobs.length === 0 ? (
                 <EmptyState title="No jobs yet" text="Work orders assigned to this vendor will appear here." />
               ) : (
-                <TableContainer component={Paper} sx={{ overflowX: 'auto', border: `1.5px solid ${INK}` }}>
+                <TableContainer component={Paper} sx={{ overflowX: 'auto', border: `1px solid var(--color-border-default)` }}>
                   <Table size="small" sx={{ minWidth: 640 }}>
                     <TableHead>
                       <TableRow>

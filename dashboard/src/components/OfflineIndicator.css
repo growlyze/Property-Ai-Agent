@@ -71,13 +71,13 @@
 
 .offline-indicator.pending-sync {
   background-color: #fff3e0;
-  border: 1px solid #ff9800;
-  color: #e65100;
+  border: 1px solid #f99c00;
+  color: #b75000;
 }
 
 .offline-indicator.syncing {
   background-color: #e3f2fd;
-  border: 1px solid #f55809;
+  border: 1px solid #1e6bff;
   color: #0d47a1;
   animation: pulse 2s infinite;
 }
@@ -133,7 +133,7 @@
 }
 
 .detail-value.warning {
-  color: #ff9800;
+  color: #f99c00;
 }
 
 .detail-value.success {
@@ -167,16 +167,16 @@
 }
 
 .sync-button.primary {
-  background-color: #f55809;
+  background-color: #1e6bff;
   color: white;
 }
 
 .sync-button.primary:hover:not(:disabled) {
-  background-color: #f55809;
+  background-color: #1e6bff;
 }
 
 .sync-button.secondary {
-  background-color: #f5f0e6;
+  background-color: #f6f8fc;
   color: #666;
   border: 1px solid #ddd;
 }

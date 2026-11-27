@@ -79,7 +79,7 @@ const WorkOrdersScreen: React.FC = () => {
       case 'OPEN':
         return '#FF9800';
       case 'ASSIGNED':
-        return '#f55809';
+        return '#1e6bff';
       case 'IN_PROGRESS':
         return '#4CAF50';
       case 'PENDING_APPROVAL':

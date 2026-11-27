@@ -119,8 +119,8 @@ const VendorBiddingPlatformScreen: React.FC = () => {
         <StatCard icon={<SavingsIcon fontSize="small" />} label="Saved vs highest bid" value={money(savings)} sub="On awarded jobs" accent="#F5A524" />
       </Box>
 
-      <Paper sx={{ border: `2px solid ${INK}` }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, p: 2, borderBottom: `2px solid ${INK}` }}>
+      <Paper sx={{ border: `1px solid var(--color-border-default)` }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, p: 2, borderBottom: `1px solid var(--color-border-default)` }}>
           Jobs with bids
         </Typography>
         {orders.isLoading ? (

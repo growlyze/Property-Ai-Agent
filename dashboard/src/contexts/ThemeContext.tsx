@@ -20,7 +20,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Initialize theme from localStorage or default to 'system'
   const [mode, setMode] = useState<ThemeMode>(() => {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    return (stored as ThemeMode) || 'system';
+    return (stored as ThemeMode) || 'light';
   });
 
   // Detect system preference
@@ -59,9 +59,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Create MUI theme based on actualMode
   const muiTheme = useMemo<Theme>(() => {
     const themeConfig = actualMode === 'dark' ? darkTheme : lightTheme;
-    // Growlyze edges: ink lines; hard shadows read as black on the dark page.
-    const ink = themeConfig.colors.border.default;
-    const shadowInk = actualMode === 'dark' ? '#000000' : '#140827';
+    // Premium (Pipory-style) surfaces: hairline borders, soft layered shadows, 16px radius.
+    const isDark = actualMode === 'dark';
+    const line = themeConfig.colors.border.default;
+    const display = '"Bricolage Grotesque", "Geist", system-ui, sans-serif';
+    const cardShadow = isDark
+      ? 'inset 0 1px rgba(255,255,255,0.05), 0 24px 50px -16px rgba(0,0,0,0.55)'
+      : 'inset 0 1px rgba(255,255,255,0.95), 0 0 0 1px rgba(5,13,31,0.02), 0 14px 36px -18px rgba(5,13,31,0.22)';
+    const brandShadow = '0 1px 0 rgba(255,255,255,0.25) inset, 0 10px 24px -12px rgba(21,84,224,0.55)';
 
     return createTheme({
       palette: {
@@ -151,30 +156,43 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           lineHeight: tokens.typography.body.small.lineHeight,
         },
       },
-      shape: { borderRadius: 10 },
-      // Growlyze neobrutalist style: ink borders and hard offset shadows, no blur.
+      shape: { borderRadius: 12 },
       components: {
         MuiCssBaseline: {
           styleOverrides: {
             body: {
               transition: 'background-color 0.3s ease, color 0.3s ease',
+              fontFeatureSettings: '"ss01", "cv11"',
             },
+          },
+        },
+        MuiTypography: {
+          styleOverrides: {
+            h1: { fontFamily: display, letterSpacing: '-0.035em' },
+            h2: { fontFamily: display, letterSpacing: '-0.03em' },
+            h3: { fontFamily: display, letterSpacing: '-0.025em' },
+            h4: { fontFamily: display, letterSpacing: '-0.02em' },
+            h5: { fontFamily: display, letterSpacing: '-0.015em' },
+            h6: { fontFamily: display, letterSpacing: '-0.01em' },
           },
         },
         MuiPaper: {
           defaultProps: { elevation: 0 },
           styleOverrides: {
             root: { backgroundImage: 'none' },
-            outlined: { border: `2px solid ${ink}` },
+            rounded: { borderRadius: 16 },
+            outlined: { border: `1px solid ${line}` },
+            elevation0: { border: `1px solid ${line}`, boxShadow: cardShadow },
           },
         },
         MuiCard: {
           defaultProps: { elevation: 0 },
           styleOverrides: {
             root: {
-              border: `2px solid ${ink}`,
-              boxShadow: `4px 4px 0 ${shadowInk}`,
-              borderRadius: 10,
+              border: `1px solid ${line}`,
+              boxShadow: cardShadow,
+              borderRadius: 16,
+              transition: 'box-shadow .2s ease, transform .2s ease, border-color .2s ease',
             },
           },
         },
@@ -183,19 +201,21 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           styleOverrides: {
             root: {
               textTransform: 'none',
-              fontWeight: 700,
+              fontWeight: 600,
               borderRadius: 10,
+              letterSpacing: '-0.005em',
+              transition: 'all .15s ease',
             },
             contained: {
-              border: `2px solid ${ink}`,
-              boxShadow: `3px 3px 0 ${shadowInk}`,
-              '&:hover': { boxShadow: `3px 3px 0 ${shadowInk}` },
-              '&:active': { transform: 'translate(2px, 2px)', boxShadow: `1px 1px 0 ${shadowInk}` },
+              '&.MuiButton-containedPrimary': { boxShadow: brandShadow },
+              '&:hover': { transform: 'translateY(-1px)' },
+              '&:active': { transform: 'translateY(0)' },
             },
             outlined: {
-              border: `2px solid ${ink}`,
+              borderColor: themeConfig.colors.border.hover,
               color: themeConfig.colors.text.primary,
-              '&:hover': { border: `2px solid ${ink}`, backgroundColor: themeConfig.colors.surface.hover },
+              backgroundColor: themeConfig.colors.background.paper,
+              '&:hover': { borderColor: themeConfig.colors.border.hover, backgroundColor: themeConfig.colors.surface.default },
             },
           },
         },
@@ -203,9 +223,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           defaultProps: { elevation: 0 },
           styleOverrides: {
             root: {
-              backgroundColor: '#140827',
-              color: '#f5f0e6',
-              borderBottom: `2px solid ${ink}`,
+              backgroundColor: isDark ? 'rgba(5,13,31,0.8)' : 'rgba(255,255,255,0.8)',
+              backdropFilter: 'saturate(180%) blur(12px)',
+              color: themeConfig.colors.text.primary,
+              borderBottom: `1px solid ${line}`,
             },
           },
         },
@@ -213,55 +234,76 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           styleOverrides: {
             paper: {
               backgroundColor: themeConfig.colors.background.paper,
-              borderRight: `2px solid ${ink}`,
+              borderRight: `1px solid ${line}`,
             },
           },
         },
         MuiListItemButton: {
           styleOverrides: {
             root: {
-              borderRadius: 8,
+              borderRadius: 10,
+              '&:hover': { backgroundColor: themeConfig.colors.surface.default },
               '&.Mui-selected': {
-                backgroundColor: themeConfig.colors.primary.main,
-                color: '#ffffff',
-                fontWeight: 700,
-                boxShadow: `inset 0 0 0 1.5px ${ink}, 2px 2px 0 ${shadowInk}`,
-                '& .MuiListItemIcon-root': { color: '#ffffff' },
-                '&:hover': { backgroundColor: themeConfig.colors.primary.dark },
+                backgroundColor: themeConfig.colors.surface.selected,
+                color: themeConfig.colors.primary.main,
+                fontWeight: 600,
+                '& .MuiListItemIcon-root': { color: themeConfig.colors.primary.main },
+                '&:hover': { backgroundColor: themeConfig.colors.surface.selected },
               },
             },
           },
         },
         MuiChip: {
           styleOverrides: {
-            root: { fontWeight: 600, border: `1.5px solid ${ink}` },
+            root: { fontWeight: 600, borderRadius: 999 },
+            outlined: { borderColor: line },
           },
         },
         MuiTableHead: {
           styleOverrides: {
             root: {
               '& .MuiTableCell-head': {
-                fontWeight: 700,
+                fontWeight: 600,
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                fontSize: '0.75rem',
-                borderBottom: `2px solid ${ink}`,
+                letterSpacing: '0.06em',
+                fontSize: '0.7rem',
+                color: themeConfig.colors.text.secondary,
+                backgroundColor: themeConfig.colors.surface.default,
+                borderBottom: `1px solid ${line}`,
               },
             },
           },
         },
+        MuiTableCell: {
+          styleOverrides: { root: { borderBottom: `1px solid ${line}` } },
+        },
         MuiOutlinedInput: {
           styleOverrides: {
-            notchedOutline: { borderColor: ink, borderWidth: 1.5 },
+            root: {
+              borderRadius: 10,
+              backgroundColor: themeConfig.colors.background.paper,
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: themeConfig.colors.border.hover },
+            },
+            notchedOutline: { borderColor: line },
           },
+        },
+        MuiAlert: {
+          styleOverrides: { root: { borderRadius: 12 } },
+        },
+        MuiTab: {
+          styleOverrides: { root: { textTransform: 'none', fontWeight: 600 } },
         },
         MuiDialog: {
           styleOverrides: {
             paper: {
-              border: `2px solid ${ink}`,
-              boxShadow: `6px 6px 0 ${shadowInk}`,
+              borderRadius: 20,
+              border: `1px solid ${line}`,
+              boxShadow: '0 28px 70px -20px rgba(5,13,31,0.32), 0 2px 8px rgba(5,13,31,0.06)',
             },
           },
+        },
+        MuiTooltip: {
+          styleOverrides: { tooltip: { backgroundColor: '#050d1f', borderRadius: 8, fontWeight: 500 } },
         },
       },
     });

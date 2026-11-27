@@ -33,7 +33,7 @@ function ProfileCard({ me }: { me: VendorProfile }) {
               color: '#fff',
               display: 'grid',
               placeItems: 'center',
-              border: `1.5px solid ${INK}`,
+              border: `1px solid var(--color-border-default)`,
               flexShrink: 0,
             }}
           >
@@ -109,7 +109,7 @@ const VendorHome: React.FC = () => {
       />
 
       {me.isError ? (
-        <Alert severity="info" sx={{ mb: 2.5, border: `2px solid ${INK}` }}>
+        <Alert severity="info" sx={{ mb: 2.5, border: `1px solid var(--color-border-default)` }}>
           Your vendor profile isn&apos;t available right now. Your jobs are still listed below.
         </Alert>
       ) : (
@@ -126,7 +126,7 @@ const VendorHome: React.FC = () => {
           label="Active jobs"
           value={stats.activeJobs ?? (active.data ? activeJobs.length : '—')}
           sub={`${stats.completedJobs ?? 0} completed`}
-          accent="#f55809"
+          accent="#1e6bff"
           to="/vendor/jobs"
         />
         <StatCard
@@ -134,7 +134,7 @@ const VendorHome: React.FC = () => {
           label="Pending quotes"
           value={stats.pendingQuotes ?? '—'}
           sub="Awaiting a decision"
-          accent="#9a57ff"
+          accent="#4d8bff"
           to="/vendor/jobs"
         />
         <StatCard

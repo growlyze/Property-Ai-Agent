@@ -57,23 +57,23 @@ const ALERT_TYPE_ICONS = {
 const ALERT_TYPE_COLORS = {
   fire: '#f44336',
   medical: '#e91e63',
-  security: '#ff9800',
-  maintenance: '#f55809',
+  security: '#f99c00',
+  maintenance: '#1e6bff',
   weather: '#9c27b0',
   other: '#607d8b'
 };
 
 const PRIORITY_COLORS = {
   critical: '#d32f2f',
-  high: '#f57c00',
+  high: '#dd7400',
   medium: '#fbc02d',
   low: '#388e3c'
 };
 
 const STATUS_COLORS = {
   active: '#d32f2f',
-  acknowledged: '#f57c00',
-  in_progress: '#f55809',
+  acknowledged: '#dd7400',
+  in_progress: '#1e6bff',
   resolved: '#388e3c'
 };
 
@@ -356,7 +356,7 @@ export const CriticalAlertsDashboard: React.FC<CriticalAlertsDashboardProps> = (
                     onClick={() => onAlertSelect?.(alert)}
                     sx={{
                       border: alert.priority === 'critical' ? '2px solid #d32f2f' : 
-                             alert.priority === 'high' ? '1px solid #f57c00' : 'none',
+                             alert.priority === 'high' ? '1px solid #dd7400' : 'none',
                       borderRadius: 1,
                       mb: 1,
                       backgroundColor: alert.priority === 'critical' ? 'rgba(211, 47, 47, 0.05)' :

@@ -187,7 +187,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #fbf8f2;
+  background: #ffffff;
   border-radius: 12px;
   transition: all 0.3s ease;
 }
@@ -232,7 +232,7 @@
 
 .alert-item.critical {
   border-left: 4px solid #f44336;
-  background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), #fbf8f2);
+  background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), #ffffff);
 }
 
 .alert-item.critical .alert-icon {
@@ -255,7 +255,7 @@
 }
 
 .property-card {
-  background: #fbf8f2;
+  background: #ffffff;
   padding: 1.5rem;
   border-radius: 15px;
   transition: all 0.3s ease;
@@ -294,7 +294,7 @@
 }
 
 .risk-badge.medium {
-  background: #ff9800;
+  background: #f99c00;
   color: white;
 }
 
@@ -369,7 +369,7 @@
 .summary-metrics .metric {
   text-align: center;
   padding: 1rem;
-  background: #fbf8f2;
+  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -403,7 +403,7 @@
 }
 
 .alerts-table {
-  background: #fbf8f2;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -429,7 +429,7 @@
 }
 
 .table-row:hover {
-  background: #fbf8f2;
+  background: #ffffff;
 }
 
 .table-row.critical {
@@ -452,7 +452,7 @@
 
 .priority-badge.high {
   background: #fff3e0;
-  color: #f57c00;
+  color: #dd7400;
 }
 
 .priority-badge.medium {
@@ -501,7 +501,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  background: #fbf8f2;
+  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -546,7 +546,7 @@
 }
 
 .chart-container {
-  background: #fbf8f2;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 15px;
 }
@@ -625,7 +625,7 @@
 }
 
 .trend-summary {
-  background: #fbf8f2;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 15px;
 }
@@ -689,7 +689,7 @@
 }
 
 .option-group {
-  background: #fbf8f2;
+  background: #ffffff;
   padding: 1.5rem;
   border-radius: 12px;
 }
@@ -749,7 +749,7 @@
 }
 
 .export-options {
-  background: #fbf8f2;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 15px;
   text-align: center;
@@ -804,7 +804,7 @@
 
 .report-preview {
   margin-top: 2rem;
-  background: #fbf8f2;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 15px;
 }

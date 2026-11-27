@@ -110,7 +110,7 @@ const DocumentVerificationStatusScreen: React.FC = () => {
   return (
    <Container maxWidth="lg" sx={{ py: 4 }}>
     <PageTitle />
-    <Alert severity="error" sx={{ mb: 3, border: '2px solid #140827' }}>
+    <Alert severity="error" sx={{ mb: 3, border: '1px solid var(--color-border-default)' }}>
      {error}
     </Alert>
    </Container>
@@ -153,7 +153,7 @@ const DocumentVerificationStatusScreen: React.FC = () => {
            width: 32,
            height: 32,
            borderRadius: '50%',
-           border: '1.5px solid #140827',
+           border: '1px solid var(--color-border-default)',
            bgcolor: 'primary.main',
            color: '#fff',
            fontWeight: 800,

@@ -61,7 +61,7 @@ const renderApp = () => {
         <button 
           onclick="window.location.reload()" 
           style="
-            background: #f55809;
+            background: #1e6bff;
             color: white;
             border: none;
             padding: 12px 24px;

@@ -64,9 +64,9 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({
       label: 'Critical'
     },
     high: {
-      color: '#f57c00',
+      color: '#dd7400',
       bgColor: '#fff3e0',
-      icon: <WarningIcon sx={{ color: '#f57c00' }} />,
+      icon: <WarningIcon sx={{ color: '#dd7400' }} />,
       label: 'High'
     },
     medium: {
@@ -82,9 +82,9 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({
       label: 'Low'
     },
     minimal: {
-      color: '#f55809',
+      color: '#1e6bff',
       bgColor: '#e3f2fd',
-      icon: <InfoIcon sx={{ color: '#f55809' }} />,
+      icon: <InfoIcon sx={{ color: '#1e6bff' }} />,
       label: 'Minimal'
     }
   }), []);
@@ -304,7 +304,7 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({
 
             <Grid item xs={12} md={4}>
               <Box textAlign="center">
-                <Typography variant="h3" sx={{ color: '#f57c00' }} fontWeight="bold">
+                <Typography variant="h3" sx={{ color: '#dd7400' }} fontWeight="bold">
                   {portfolioRisk.highCount}
                 </Typography>
                 <Typography variant="h6">

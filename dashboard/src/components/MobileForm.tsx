@@ -202,7 +202,7 @@ const MobileForm: React.FC<MobileFormProps> = ({
               width: 40,
               height: 40,
               border: '3px solid #e2e8f0',
-              borderTop: '3px solid #f55809',
+              borderTop: '3px solid #1e6bff',
               borderRadius: '50%',
               animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
             }}

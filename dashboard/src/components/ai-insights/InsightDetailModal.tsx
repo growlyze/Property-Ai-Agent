@@ -75,8 +75,8 @@ export const InsightDetailModal: React.FC<InsightDetailModalProps> = ({
 
  const priorityColors = {
   critical: '#f44336',
-  high: '#ff9800',
-  medium: '#f55809',
+  high: '#f99c00',
+  medium: '#1e6bff',
   low: '#4caf50'
  };
 

@@ -74,7 +74,7 @@ function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label
               color: '#fff',
               display: 'grid',
               placeItems: 'center',
-              border: '1.5px solid #140827',
+              border: '1px solid var(--color-border-default)',
               flexShrink: 0,
             }}
           >
@@ -280,7 +280,7 @@ const AIRiskAssessmentDashboard: React.FC = () => {
               label="Average risk score"
               value={avg}
               sub={avgConfidence !== null ? `Out of 100 · ${avgConfidence}% average confidence` : 'Out of 100, higher is riskier'}
-              accent="#f55809"
+              accent="#1e6bff"
             />
             <Kpi
               icon={<AutoAwesomeIcon fontSize="small" />}
@@ -293,7 +293,7 @@ const AIRiskAssessmentDashboard: React.FC = () => {
                 </Stack>
               }
               sub="Across all assessed applicants"
-              accent="#9a57ff"
+              accent="#4d8bff"
             />
             <Kpi
               icon={pendingHigh ? <ReportProblemIcon fontSize="small" /> : <HourglassIcon fontSize="small" />}

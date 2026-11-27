@@ -1,24 +1,24 @@
-// Growlyze palette
+// Premium palette (blue / navy)
 export const COLORS = {
-  primary: '#f55809',
-  secondary: '#9a57ff',
-  background: '#f5f0e6',
-  card: '#fbf8f2',
+  primary: '#1e6bff',
+  secondary: '#4d8bff',
+  background: '#f6f8fc',
+  card: '#ffffff',
   text: {
-    primary: '#140827',
-    secondary: '#5b5066',
-    muted: '#8e8597',
+    primary: '#050d1f',
+    secondary: '#4a5570',
+    muted: '#8090ad',
   },
-  border: '#140827',
-  notification: '#f55809',
-  success: '#0db664',
-  warning: '#ffb900',
-  error: '#d92d20',
+  border: '#dfe6f2',
+  notification: '#1e6bff',
+  success: '#00bb7f',
+  warning: '#f99c00',
+  error: '#e5484d',
   // aliases used across UI components
   white: '#FFFFFF',
-  gray: '#8e8597',
-  danger: '#d92d20',
-  surface: '#fbf8f2',
+  gray: '#8090ad',
+  danger: '#e5484d',
+  surface: '#ffffff',
 };
 
 export const FONTS = {

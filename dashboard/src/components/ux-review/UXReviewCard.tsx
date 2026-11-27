@@ -106,12 +106,12 @@ export const UXReviewCard: React.FC<UXReviewCardProps> = ({
           boxShadow: 8, // More prominent hover
         },
         '&:focus': {
-          outline: '3px solid #f55809', // More prominent focus
+          outline: '3px solid #1e6bff', // More prominent focus
           outlineOffset: '3px',
           boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.3)',
         },
         '&focus-visible': {
-          outline: '3px solid #f55809',
+          outline: '3px solid #1e6bff',
           outlineOffset: '3px',
         },
       }}

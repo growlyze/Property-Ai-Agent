@@ -268,7 +268,7 @@ const MarketingPromotions: React.FC = () => {
           <StatCard icon={<OfferIcon fontSize="small" />} accent="#16a34a" label="Active" value={counts.active} sub={`${promotions.length} promotions in total`} />
         </Grid>
         <Grid item xs={6} md={3}>
-          <StatCard icon={<RedeemIcon fontSize="small" />} accent="#f97316" label="Redemptions" value={promotions.reduce((s, p) => s + p.usageCount, 0)} sub="All time" />
+          <StatCard icon={<RedeemIcon fontSize="small" />} accent="#f99c00" label="Redemptions" value={promotions.reduce((s, p) => s + p.usageCount, 0)} sub="All time" />
         </Grid>
         <Grid item xs={6} md={3}>
           <StatCard icon={<ScheduleIcon fontSize="small" />} accent="#2563eb" label="Avg. usage" value={avgUsage === null ? '—' : `${avgUsage}%`} sub="Of each code's limit" />

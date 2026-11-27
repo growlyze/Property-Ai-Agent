@@ -78,10 +78,10 @@ export const AIGeneratedContent: React.FC<AIGeneratedContentProps> = ({
     ...(optimizedProps.variant === 'outlined' && {
       border: '2px solid',
       borderColor: 'primary.main',
-      backgroundColor: alpha('#f55809', 0.02),
+      backgroundColor: alpha('#1e6bff', 0.02),
     }),
     ...(optimizedProps.variant === 'filled' && {
-      backgroundColor: alpha('#f55809', 0.08),
+      backgroundColor: alpha('#1e6bff', 0.08),
       borderLeft: '4px solid',
       borderColor: 'primary.main',
     }),

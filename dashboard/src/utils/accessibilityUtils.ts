@@ -156,12 +156,12 @@ class AccessibilityManager {
     const style = document.createElement('style');
     style.textContent = `
       *:focus-visible {
-        outline: 2px solid #f55809;
+        outline: 2px solid #1e6bff;
         outline-offset: 2px;
       }
 
       .focus-ring {
-        outline: 2px solid #f55809;
+        outline: 2px solid #1e6bff;
         outline-offset: 2px;
       }
 

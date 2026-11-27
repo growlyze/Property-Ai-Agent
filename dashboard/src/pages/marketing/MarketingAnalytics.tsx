@@ -119,7 +119,7 @@ const MarketingAnalytics: React.FC = () => {
               <StatCard icon={<PersonAddIcon fontSize="small" />} accent="#2563eb" label="Campaign leads" value={(overview?.totalLeads ?? 0).toLocaleString()} sub={`${sourceLeads} from all sources`} />
             </Grid>
             <Grid item xs={6} md={3}>
-              <StatCard icon={<PaidIcon fontSize="small" />} accent="#f97316" label="Marketing spend" value={money(overview?.marketingSpend ?? 0)} sub="Spent on campaigns" />
+              <StatCard icon={<PaidIcon fontSize="small" />} accent="#f99c00" label="Marketing spend" value={money(overview?.marketingSpend ?? 0)} sub="Spent on campaigns" />
             </Grid>
             <Grid item xs={6} md={3}>
               <StatCard icon={<QueryStatsIcon fontSize="small" />} accent="#7c3aed" label="Cost per lead" value={overview && overview.totalLeads > 0 ? money(overview.costPerLead) : '—'} sub="Spend ÷ leads" />
@@ -145,7 +145,7 @@ const MarketingAnalytics: React.FC = () => {
                         <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} stroke="#8a8194" />
                         <YAxis type="category" dataKey="source" width={120} tick={{ fontSize: 12 }} stroke="#8a8194" />
                         <Tooltip formatter={(v: number) => [v, 'Leads']} cursor={{ fill: 'rgba(249,115,22,0.08)' }} />
-                        <Bar dataKey="leads" fill="#f97316" radius={[0, 4, 4, 0]} barSize={18} isAnimationActive={false} />
+                        <Bar dataKey="leads" fill="#f99c00" radius={[0, 4, 4, 0]} barSize={18} isAnimationActive={false} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -184,7 +184,7 @@ const MarketingAnalytics: React.FC = () => {
                             <LinearProgress
                               variant="determinate"
                               value={funnel[0].value > 0 ? Math.max(2, (step.value / funnel[0].value) * 100) : 0}
-                              sx={{ height: 10, borderRadius: 5, border: `1.5px solid ${INK}`, bgcolor: '#f3eee6' }}
+                              sx={{ height: 10, borderRadius: 5, border: `1px solid var(--color-border-default)`, bgcolor: '#eef3fb' }}
                             />
                           </Box>
                         );

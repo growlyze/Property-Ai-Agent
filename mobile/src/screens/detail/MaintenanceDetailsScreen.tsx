@@ -88,13 +88,13 @@ export function MaintenanceDetailsScreen({ route, navigation }: MaintenanceDetai
       case 'completed':
         return '#388e3c';
       case 'in_progress':
-        return '#f55809';
+        return '#1e6bff';
       case 'pending':
         return '#f57c00';
       case 'cancelled':
         return '#757575';
       default:
-        return '#f55809';
+        return '#1e6bff';
     }
   };
 

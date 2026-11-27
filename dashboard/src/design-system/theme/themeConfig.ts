@@ -62,141 +62,58 @@ export interface ThemeConfig {
   };
 }
 
-// Growlyze palette (matches growlyze.com):
-//   cream #f5f0e6 · ink #140827 · orange #f55809
-//   purple #9a57ff · blue #397ae7 · green #0db664 · yellow #ffb900
+// Premium palette (Pipory-inspired): blue-white page, deep navy ink, electric blue actions
 export const growlyzePalette = {
-  cream: '#f5f0e6',
-  creamLight: '#fbf8f2',
-  creamDark: '#ece4d4',
-  ink: '#140827',
-  orange: '#f55809',
-  orangeLight: '#ff7a33',
-  orangeDark: '#d94e07',
-  purple: '#9a57ff',
-  purpleLight: '#b78aff',
-  blue: '#397ae7',
-  blueLight: '#75a8ff',
-  green: '#0db664',
-  greenLight: '#86dbb2',
-  yellow: '#ffb900',
+  page: '#f6f8fc',
+  surface: '#ffffff',
+  surface2: '#eef3fb',
+  ink: '#050d1f',
+  muted: '#4a5570',
+  faint: '#8090ad',
+  line: '#dfe6f2',
+  lineStrong: '#cad5e6',
+  brand: '#1e6bff',
+  brandLight: '#4d8bff',
+  brandDark: '#1554e0',
+  brandSoft: '#e2ecff',
+  night: '#050d1f',
+  night2: '#0b1730',
+  night3: '#12213f',
+  nightLine: '#1c2c4d',
+  green: '#00bb7f',
+  amber: '#f99c00',
+  red: '#e5484d',
 } as const;
 
 const g = growlyzePalette;
 
-// Light theme configuration: cream page, ink text and borders, orange actions
 export const lightTheme: ThemeConfig = {
   mode: 'light',
   colors: {
-    background: {
-      default: g.cream,
-      paper: g.creamLight,
-      elevated: g.creamLight,
-    },
-    surface: {
-      default: g.creamDark,
-      hover: '#e4dac6',
-      selected: '#fde2d2',
-      disabled: g.creamDark,
-    },
-    text: {
-      primary: g.ink,
-      secondary: '#5b5066',
-      disabled: '#8e8597',
-    },
-    primary: {
-      main: g.orange,
-      light: g.orangeLight,
-      dark: g.orangeDark,
-      contrast: '#ffffff',
-    },
-    secondary: {
-      main: g.purple,
-      light: g.purpleLight,
-      dark: '#7a3be0',
-      contrast: '#ffffff',
-    },
-    success: {
-      main: g.green,
-      light: g.greenLight,
-      dark: '#07894a',
-      contrast: '#ffffff',
-    },
-    warning: {
-      main: g.yellow,
-      light: '#ffd36b',
-      dark: '#c98f00',
-      contrast: g.ink,
-    },
-    error: {
-      main: '#d92d20',
-      light: '#f07a70',
-      dark: '#9b1c1c',
-      contrast: '#ffffff',
-    },
-    border: {
-      default: g.ink,
-      hover: g.ink,
-      focus: g.orange,
-    },
+    background: { default: g.page, paper: g.surface, elevated: g.surface },
+    surface: { default: g.surface2, hover: '#e8eef9', selected: g.brandSoft, disabled: g.surface2 },
+    text: { primary: g.ink, secondary: g.muted, disabled: g.faint },
+    primary: { main: g.brand, light: g.brandLight, dark: g.brandDark, contrast: '#ffffff' },
+    secondary: { main: '#0a1730', light: '#29406a', dark: g.ink, contrast: '#ffffff' },
+    success: { main: g.green, light: '#5ee9b5', dark: '#007956', contrast: '#ffffff' },
+    warning: { main: g.amber, light: '#ffd236', dark: '#b75000', contrast: g.ink },
+    error: { main: g.red, light: '#ffa3a3', dark: '#b4232a', contrast: '#ffffff' },
+    border: { default: g.line, hover: g.lineStrong, focus: g.brand },
   },
 };
 
-// Dark theme configuration: ink page, cream text and borders, orange actions
 export const darkTheme: ThemeConfig = {
   mode: 'dark',
   colors: {
-    background: {
-      default: g.ink,
-      paper: '#1d1033',
-      elevated: '#2a1a45',
-    },
-    surface: {
-      default: '#2a1a45',
-      hover: '#3a2a58',
-      selected: '#3d1d1a',
-      disabled: '#2a1a45',
-    },
-    text: {
-      primary: g.cream,
-      secondary: '#c4b9d4',
-      disabled: '#8a7ea0',
-    },
-    primary: {
-      main: g.orange,
-      light: g.orangeLight,
-      dark: g.orangeDark,
-      contrast: '#ffffff',
-    },
-    secondary: {
-      main: g.purpleLight,
-      light: '#d2b6ff',
-      dark: g.purple,
-      contrast: g.ink,
-    },
-    success: {
-      main: g.green,
-      light: g.greenLight,
-      dark: '#07894a',
-      contrast: g.ink,
-    },
-    warning: {
-      main: g.yellow,
-      light: '#ffd36b',
-      dark: '#c98f00',
-      contrast: g.ink,
-    },
-    error: {
-      main: '#f07a70',
-      light: '#f5b5ae',
-      dark: '#d92d20',
-      contrast: g.ink,
-    },
-    border: {
-      default: g.cream,
-      hover: g.cream,
-      focus: g.orange,
-    },
+    background: { default: g.night, paper: g.night2, elevated: g.night3 },
+    surface: { default: g.night3, hover: '#16284a', selected: '#13285a', disabled: g.night3 },
+    text: { primary: '#eef3fb', secondary: '#a9b6cf', disabled: '#5f6b85' },
+    primary: { main: '#5c95ff', light: '#93b8ff', dark: g.brand, contrast: g.night },
+    secondary: { main: '#93b8ff', light: '#c9dcff', dark: '#5c95ff', contrast: g.night },
+    success: { main: '#00d294', light: '#5ee9b5', dark: '#009767', contrast: g.night },
+    warning: { main: '#fcbb00', light: '#ffd236', dark: '#dd7400', contrast: g.night },
+    error: { main: '#ff6568', light: '#ffa3a3', dark: '#e40014', contrast: g.night },
+    border: { default: g.nightLine, hover: '#29406a', focus: '#5c95ff' },
   },
 };
 

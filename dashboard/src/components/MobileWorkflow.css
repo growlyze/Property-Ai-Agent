@@ -23,7 +23,7 @@
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid #e0e0e0;
-  background-color: #fbf8f2;
+  background-color: #ffffff;
 }
 
 .workflow-title {
@@ -78,7 +78,7 @@
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #f55809, #21cbf3);
+  background: linear-gradient(90deg, #1e6bff, #21cbf3);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -146,7 +146,7 @@
 
 .workflow-field:focus {
   outline: none;
-  border-color: #f55809;
+  border-color: #1e6bff;
   box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
@@ -220,8 +220,8 @@ select.workflow-field {
 }
 
 .checkbox-input:checked + .checkbox-mark {
-  background-color: #f55809;
-  border-color: #f55809;
+  background-color: #1e6bff;
+  border-color: #1e6bff;
 }
 
 .checkbox-input:checked + .checkbox-mark::after {
@@ -269,7 +269,7 @@ select.workflow-field {
 }
 
 .radio-input:checked + .radio-mark {
-  border-color: #f55809;
+  border-color: #1e6bff;
 }
 
 .radio-input:checked + .radio-mark::after {
@@ -280,7 +280,7 @@ select.workflow-field {
   transform: translate(-50%, -50%);
   width: 8px;
   height: 8px;
-  background-color: #f55809;
+  background-color: #1e6bff;
   border-radius: 50%;
 }
 
@@ -302,7 +302,7 @@ select.workflow-field {
   gap: 12px;
   padding: 16px 20px;
   border-top: 1px solid #e0e0e0;
-  background-color: #fbf8f2;
+  background-color: #ffffff;
 }
 
 .nav-button {
@@ -318,17 +318,17 @@ select.workflow-field {
 }
 
 .nav-button.primary {
-  background-color: #f55809;
+  background-color: #1e6bff;
   color: white;
 }
 
 .nav-button.primary:hover:not(:disabled) {
-  background-color: #f55809;
+  background-color: #1e6bff;
   transform: translateY(-1px);
 }
 
 .nav-button.secondary {
-  background-color: #f5f0e6;
+  background-color: #f6f8fc;
   color: #666;
   border: 1px solid #ddd;
 }
@@ -347,7 +347,7 @@ select.workflow-field {
 .keyboard-hint {
   text-align: center;
   padding: 8px 20px;
-  background-color: #fbf8f2;
+  background-color: #ffffff;
   border-top: 1px solid #e0e0e0;
 }
 
@@ -512,7 +512,7 @@ select.workflow-field {
 .close-button:focus,
 .checkbox-input:focus + .checkbox-mark,
 .radio-input:focus + .radio-mark {
-  outline: 2px solid #f55809;
+  outline: 2px solid #1e6bff;
   outline-offset: 2px;
 }
 

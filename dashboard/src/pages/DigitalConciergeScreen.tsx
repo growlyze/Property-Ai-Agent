@@ -15,7 +15,7 @@ interface Message {
   link?: { label: string; to: string };
 }
 
-const INK = '#140827';
+const INK = '#050d1f';
 
 /**
  * Built-in answers used when the AI chat service (POST /api/ai/chat) is not
@@ -137,7 +137,7 @@ const DigitalConciergeScreen: React.FC = () => {
                 const mine = m.sender === 'user';
                 return (
                   <Stack key={m.id} direction={mine ? 'row-reverse' : 'row'} spacing={1.25} alignItems="flex-start">
-                    <Avatar sx={{ width: 34, height: 34, bgcolor: mine ? '#2563eb' : 'primary.main', border: `1.5px solid ${INK}` }}>
+                    <Avatar sx={{ width: 34, height: 34, bgcolor: mine ? '#2563eb' : 'primary.main', border: `1px solid var(--color-border-default)` }}>
                       {mine ? <PersonIcon fontSize="small" /> : <SmartToyIcon fontSize="small" />}
                     </Avatar>
                     <Box sx={{ maxWidth: { xs: '82%', md: '70%' }, textAlign: 'left' }}>
@@ -146,8 +146,8 @@ const DigitalConciergeScreen: React.FC = () => {
                           px: 1.75,
                           py: 1.25,
                           borderRadius: '12px',
-                          border: `1.5px solid ${INK}`,
-                          bgcolor: mine ? '#fde7d6' : '#fffdf8',
+                          border: `1px solid var(--color-border-default)`,
+                          bgcolor: mine ? '#e2ecff' : '#fffdf8',
                           wordBreak: 'break-word',
                           whiteSpace: 'pre-wrap',
                         }}

@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   bullet: {
     fontSize: 14,
-    color: '#f55809',
+    color: '#1e6bff',
     marginRight: 8,
   },
   recommendationText: {

@@ -214,7 +214,7 @@
 
 /* No Camera State */
 .no-camera {
-  background-color: #f5f0e6;
+  background-color: #f6f8fc;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,7 +244,7 @@
 }
 
 .camera-error .close-button {
-  background-color: #f55809;
+  background-color: #1e6bff;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -256,7 +256,7 @@
 }
 
 .camera-error .close-button:hover {
-  background-color: #f55809;
+  background-color: #1e6bff;
 }
 
 /* Mobile-specific adjustments */
@@ -402,7 +402,7 @@
   width: 40px;
   height: 40px;
   border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #f55809;
+  border-top: 4px solid #1e6bff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -429,7 +429,7 @@
 
 .progress-fill {
   height: 100%;
-  background-color: #f55809;
+  background-color: #1e6bff;
   transition: width 0.3s ease;
 }
 
@@ -485,7 +485,7 @@
 
 .retry-button,
 .retry-init-button {
-  background-color: #f55809;
+  background-color: #1e6bff;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -497,7 +497,7 @@
 
 .retry-button:hover,
 .retry-init-button:hover {
-  background-color: #f55809;
+  background-color: #1e6bff;
 }
 
 .close-error-button {
@@ -554,7 +554,7 @@
 
 /* Status Messages */
 .status-message {
-  color: #f55809 !important;
+  color: #1e6bff !important;
   font-weight: 500;
 }
 
@@ -571,14 +571,14 @@
 
 /* Enhanced Accessibility */
 .camera-video:focus {
-  outline: 2px solid #f55809;
+  outline: 2px solid #1e6bff;
   outline-offset: 2px;
 }
 
 .capture-button:focus,
 .control-button:focus,
 .close-button:focus {
-  outline: 2px solid #f55809;
+  outline: 2px solid #1e6bff;
   outline-offset: 2px;
 }
 
@@ -708,7 +708,7 @@
 }
 
 .ai-analysis-content {
-  background: linear-gradient(135deg, #ffffff 0%, #fbf8f2 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
   border-radius: 20px;
   padding: 24px;
   max-width: 90vw;
@@ -766,7 +766,7 @@
 }
 
 .ai-analysis-close:hover {
-  background-color: #fbf8f2;
+  background-color: #ffffff;
   color: #495057;
 }
 
@@ -814,11 +814,11 @@
 }
 
 .ai-value.condition-fair {
-  color: #ff9800;
+  color: #f99c00;
 }
 
 .ai-value.condition-poor {
-  color: #ff5722;
+  color: #e5484d;
 }
 
 .ai-value.condition-critical {
@@ -831,7 +831,7 @@
 .ai-recommendations {
   margin-bottom: 20px;
   padding: 16px;
-  background: #fbf8f2;
+  background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e9ecef;
 }
@@ -893,12 +893,12 @@
 
 .feature-condition.condition-fair {
   background: #fff3e0;
-  color: #ff9800;
+  color: #f99c00;
 }
 
 .feature-condition.condition-poor {
   background: #ffebee;
-  color: #ff5722;
+  color: #e5484d;
 }
 
 .feature-condition.condition-critical {
@@ -927,11 +927,11 @@
 }
 
 .issue-item.severity-medium {
-  border-left-color: #ff9800;
+  border-left-color: #f99c00;
 }
 
 .issue-item.severity-high {
-  border-left-color: #ff5722;
+  border-left-color: #e5484d;
 }
 
 .issue-item.severity-critical {
@@ -963,12 +963,12 @@
 
 .issue-severity.severity-medium {
   background: #fff3e0;
-  color: #ff9800;
+  color: #f99c00;
 }
 
 .issue-severity.severity-high {
   background: #ffebee;
-  color: #ff5722;
+  color: #e5484d;
 }
 
 .issue-severity.severity-critical {
@@ -1039,12 +1039,12 @@
 
 .rec-priority.priority-medium {
   background: #fff3e0;
-  color: #ff9800;
+  color: #f99c00;
 }
 
 .rec-priority.priority-high {
   background: #ffebee;
-  color: #ff5722;
+  color: #e5484d;
 }
 
 .ai-analysis-footer {
@@ -1075,7 +1075,7 @@
 }
 
 .ai-analysis-button.secondary {
-  background: #fbf8f2;
+  background: #ffffff;
   color: #6c757d;
   border: 1px solid #dee2e6;
   min-width: 120px;

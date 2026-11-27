@@ -65,7 +65,7 @@ function LeaseCard({ summary }: { summary: TenantSummary | undefined }) {
                 color: '#fff',
                 display: 'grid',
                 placeItems: 'center',
-                border: `1.5px solid ${INK}`,
+                border: `1px solid var(--color-border-default)`,
                 flexShrink: 0,
               }}
             >
@@ -149,7 +149,7 @@ const TenantHome: React.FC = () => {
       />
 
       {summaryQ.isError && (
-        <Alert severity="info" sx={{ mb: 2.5, border: `2px solid ${INK}` }}>
+        <Alert severity="info" sx={{ mb: 2.5, border: `1px solid var(--color-border-default)` }}>
           Your lease summary isn&apos;t available right now. Your payments and requests are still shown below.
         </Alert>
       )}
@@ -162,7 +162,7 @@ const TenantHome: React.FC = () => {
           label="Next payment"
           value={summary?.nextPayment ? money(summary.nextPayment.amount) : '—'}
           sub={summary?.nextPayment ? `Due ${fmtDate(summary.nextPayment.dueDate)}` : 'Nothing scheduled'}
-          accent="#f55809"
+          accent="#1e6bff"
           to="/my/payments"
         />
         <StatCard

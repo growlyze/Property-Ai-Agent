@@ -54,7 +54,7 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({ provider, onClick }) => {
         textTransform: 'none',
         boxShadow: provider === 'google' ? '0px 1px 1px rgba(0, 0, 0, 0.24)' : 'none',
         '&:hover': {
-          backgroundColor: provider === 'google' ? '#f5f0e6' : '#166fe5',
+          backgroundColor: provider === 'google' ? '#f6f8fc' : '#166fe5',
         },
         border: provider === 'google' ? '1px solid #dadce0' : 'none',
         fontWeight: 500,

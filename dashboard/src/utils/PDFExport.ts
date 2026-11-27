@@ -126,7 +126,7 @@ export class PDFExport {
         cellPadding: 2,
       },
       headStyles: {
-        fillColor: this.hexToRgb(this.options.branding?.colors?.primary || '#f55809'),
+        fillColor: this.hexToRgb(this.options.branding?.colors?.primary || '#1e6bff'),
         textColor: 255,
         fontStyle: 'bold',
       },

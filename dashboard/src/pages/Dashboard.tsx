@@ -89,7 +89,7 @@ function Kpi({
               color: '#fff',
               display: 'grid',
               placeItems: 'center',
-              border: '1.5px solid #140827',
+              border: '1px solid var(--color-border-default)',
             }}
           >
             {icon}
@@ -149,7 +149,7 @@ function RentChart({ data }: { data: Overview['rent']['monthly'] }) {
               maxWidth: 48,
               height: `${Math.max(2, (d.collected / max) * 110)}px`,
               bgcolor: 'primary.main',
-              border: '1.5px solid #140827',
+              border: '1px solid var(--color-border-default)',
               borderRadius: '6px 6px 0 0',
             }}
           />
@@ -204,7 +204,7 @@ const Dashboard: React.FC = () => {
           label="Occupancy"
           value={`${portfolio.occupancyRate}%`}
           sub={`${portfolio.occupied} of ${portfolio.totalRentals} units let · ${portfolio.vacant} vacant`}
-          accent="#f55809"
+          accent="#1e6bff"
           to="/rentals"
         />
         <Kpi
@@ -212,7 +212,7 @@ const Dashboard: React.FC = () => {
           label="Active leases"
           value={String(portfolio.activeLeases)}
           sub={`${data.expiringLeases.length} ending in the next 60 days`}
-          accent="#9a57ff"
+          accent="#4d8bff"
           to="/leases"
         />
         <Kpi
@@ -242,7 +242,7 @@ const Dashboard: React.FC = () => {
       </Box>
 
       {rent.failedCount > 0 && (
-        <Alert severity="warning" sx={{ mb: 2.5, border: '2px solid #140827' }}>
+        <Alert severity="warning" sx={{ mb: 2.5, border: '1px solid var(--color-border-default)' }}>
           {rent.failedCount} rent payment{rent.failedCount === 1 ? '' : 's'} failed ({money(rent.failedAmount)}).{' '}
           <RouterLink to="/overdue-payments">Review overdue payments</RouterLink>
         </Alert>

@@ -70,7 +70,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
   const getMarkerColor = (competitor: CompetitorData): string => {
     const occupancy = toPercent(competitor.occupancyRate);
     if (occupancy >= 95) return '#4caf50'; // Green - High occupancy
-    if (occupancy >= 85) return '#ff9800'; // Orange - Medium occupancy
+    if (occupancy >= 85) return '#f99c00'; // Orange - Medium occupancy
     return '#f44336'; // Red - Low occupancy
   };
 
@@ -181,7 +181,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
           sx={{
             height: { xs: 300, sm: 400 },
             width: '100%',
-            bgcolor: '#f5f0e6',
+            bgcolor: '#f6f8fc',
             borderRadius: 1,
             position: 'relative',
             overflow: 'hidden',
@@ -305,7 +305,7 @@ const CompetitorAnalysisMap: React.FC<CompetitorAnalysisMapProps> = ({
                 sx={{
                   width: 16,
                   height: 16,
-                  bgcolor: '#ff9800',
+                  bgcolor: '#f99c00',
                   borderRadius: '50%',
                   border: '2px solid white',
                   boxShadow: 1,

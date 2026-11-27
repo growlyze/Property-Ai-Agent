@@ -60,7 +60,7 @@ const BuildingHealthSetupState: React.FC = () => {
                 color: '#fff',
                 display: 'grid',
                 placeItems: 'center',
-                border: `2px solid ${INK}`,
+                border: `1px solid var(--color-border-default)`,
                 flexShrink: 0,
               }}
             >

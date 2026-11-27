@@ -100,12 +100,35 @@ const Header: React.FC = () => {
           variant="h6" 
           noWrap 
           component="div" 
-          sx={{ 
+          sx={{
             flexGrow: 1,
             minWidth: 0,
-            fontSize: { xs: '1rem', sm: '1.25rem' },
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            fontWeight: 700,
+            fontSize: { xs: '1rem', sm: '1.15rem' },
           }}
         >
+          <Box
+            component="span"
+            aria-hidden
+            sx={{
+              flexShrink: 0,
+              width: 30,
+              height: 30,
+              borderRadius: '9px',
+              bgcolor: 'primary.main',
+              color: '#fff',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: '1rem',
+              fontWeight: 800,
+              boxShadow: '0 6px 14px -6px rgba(21,84,224,0.6)',
+            }}
+          >
+            P
+          </Box>
           {staff ? (
             <>
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Property AI Agent Dashboard</Box>

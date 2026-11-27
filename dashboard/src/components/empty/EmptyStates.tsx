@@ -7,7 +7,7 @@ import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
  * yet, so they look intentional and consistent (ink border, cream surface).
  */
 
-const INK = '#140827';
+const INK = '#050d1f';
 
 export function EmptyPanel({
   icon,
@@ -31,12 +31,12 @@ export function EmptyPanel({
           mx: 'auto',
           mb: 1.5,
           borderRadius: '12px',
-          border: `1.5px solid ${INK}`,
-          bgcolor: '#fde7d6',
-          color: '#c2410c',
+          border: `1px solid var(--color-border-default)`,
+          bgcolor: '#e2ecff',
+          color: '#1554e0',
           display: 'grid',
           placeItems: 'center',
-          boxShadow: `3px 3px 0 ${INK}`,
+          boxShadow: `0 1px 2px rgba(5,13,31,0.06), 0 8px 24px -12px rgba(5,13,31,0.18)`,
         }}
         aria-hidden
       >
@@ -71,7 +71,7 @@ export function TableEmptyRow({ colSpan, ...panel }: { colSpan: number } & React
 /** One-line notice for screens whose backend service is not available yet. */
 export function NotConnectedNotice({ children }: { children: React.ReactNode }) {
   return (
-    <Alert severity="info" sx={{ mb: 3, border: `2px solid ${INK}`, textAlign: 'left' }}>
+    <Alert severity="info" sx={{ mb: 3, border: `1px solid var(--color-border-default)`, textAlign: 'left' }}>
       {children}
     </Alert>
   );

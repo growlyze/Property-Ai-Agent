@@ -169,7 +169,7 @@ const MarketingSyndication: React.FC = () => {
       )}
 
       {sample && (
-        <Alert severity="info" sx={{ mb: 3, border: `2px solid ${INK}` }}>
+        <Alert severity="info" sx={{ mb: 3, border: `1px solid var(--color-border-default)` }}>
           No listing portals are connected yet. The cards below are a preview with sample data showing how syndication will look once a portal is set up.
         </Alert>
       )}
@@ -186,7 +186,7 @@ const MarketingSyndication: React.FC = () => {
               <StatCard icon={<ListAltIcon fontSize="small" />} accent="#2563eb" label="Live listings" value={shownPlatforms.reduce((s, p) => s + p.activeListings, 0)} sub="Across all portals" />
             </Grid>
             <Grid item xs={6} md={3}>
-              <StatCard icon={<PaidIcon fontSize="small" />} accent="#f97316" label="Monthly cost" value={money(shownPlatforms.filter((p) => p.enabled).reduce((s, p) => s + (p.monthlyFee ?? 0), 0))} sub="Enabled portals" />
+              <StatCard icon={<PaidIcon fontSize="small" />} accent="#f99c00" label="Monthly cost" value={money(shownPlatforms.filter((p) => p.enabled).reduce((s, p) => s + (p.monthlyFee ?? 0), 0))} sub="Enabled portals" />
             </Grid>
             <Grid item xs={6} md={3}>
               <StatCard icon={<UpdateIcon fontSize="small" />} accent="#7c3aed" label="Last sync" value={relative(lastSync)} sub="Most recent portal" />
@@ -208,8 +208,8 @@ const MarketingSyndication: React.FC = () => {
                               height: 40,
                               flexShrink: 0,
                               borderRadius: '8px',
-                              border: `1.5px solid ${INK}`,
-                              bgcolor: '#fde7d6',
+                              border: `1px solid var(--color-border-default)`,
+                              bgcolor: '#e2ecff',
                               display: 'grid',
                               placeItems: 'center',
                               fontWeight: 800,

@@ -317,9 +317,9 @@ const FinancialReports: React.FC = () => {
                     <YAxis tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} tick={{ fontSize: 12 }} />
                     <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
                     <Legend />
-                    <Bar dataKey="paid" name="Paid" stackId="a" fill="#0db664" stroke="#140827" />
-                    <Bar dataKey="pending" name="Pending" stackId="a" fill="#ffb900" stroke="#140827" />
-                    <Bar dataKey="overdue" name="Overdue" stackId="a" fill="#d92d20" stroke="#140827" />
+                    <Bar dataKey="paid" name="Paid" stackId="a" fill="#0db664" stroke="#050d1f" />
+                    <Bar dataKey="pending" name="Pending" stackId="a" fill="#ffb900" stroke="#050d1f" />
+                    <Bar dataKey="overdue" name="Overdue" stackId="a" fill="#d92d20" stroke="#050d1f" />
                   </BarChart>
                 </ResponsiveContainer>
               </Box>

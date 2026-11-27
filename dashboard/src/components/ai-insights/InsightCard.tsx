@@ -66,8 +66,8 @@ const InsightCard: React.FC<InsightCardProps> = ({
   // Priority colors
   const priorityColors = {
     critical: '#f44336',
-    high: '#ff9800',
-    medium: '#f55809',
+    high: '#f99c00',
+    medium: '#1e6bff',
     low: '#4caf50'
   };
 
@@ -210,7 +210,7 @@ const InsightCard: React.FC<InsightCardProps> = ({
         // Enhanced styling based on chart type and category
         ...(insight.chartData.type === 'line' && {
           borderWidth: 2,
-          pointBackgroundColor: dataset.borderColor || '#f55809',
+          pointBackgroundColor: dataset.borderColor || '#1e6bff',
           pointBorderColor: '#fff',
           pointBorderWidth: 2,
           fill: dataset.fill !== undefined ? dataset.fill : true,
@@ -222,8 +222,8 @@ const InsightCard: React.FC<InsightCardProps> = ({
           borderSkipped: false,
           backgroundColor: dataset.backgroundColor || 
             (insight.priority === 'critical' ? '#f44336' :
-             insight.priority === 'high' ? '#ff9800' :
-             insight.priority === 'medium' ? '#f55809' : '#4caf50')
+             insight.priority === 'high' ? '#f99c00' :
+             insight.priority === 'medium' ? '#1e6bff' : '#4caf50')
         }),
         ...(insight.chartData.type === 'doughnut' && {
           borderWidth: 2,
@@ -385,7 +385,7 @@ const InsightCard: React.FC<InsightCardProps> = ({
                 height: 6, 
                 borderRadius: '50%', 
                 backgroundColor: confidencePct >= 80 ? '#4caf50' : 
-                                confidencePct >= 60 ? '#ff9800' : '#f44336'
+                                confidencePct >= 60 ? '#f99c00' : '#f44336'
               }} />
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
                 AI Generated
@@ -413,7 +413,7 @@ const InsightCard: React.FC<InsightCardProps> = ({
               backgroundColor: 'grey.200',
               '& .MuiLinearProgress-bar': {
                 backgroundColor: confidencePct >= 80 ? '#4caf50' : 
-                                confidencePct >= 60 ? '#ff9800' : '#f44336'
+                                confidencePct >= 60 ? '#f99c00' : '#f44336'
               }
             }}
           />

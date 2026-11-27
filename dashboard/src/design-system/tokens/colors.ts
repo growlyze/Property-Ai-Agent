@@ -164,27 +164,27 @@ export const primitiveColors: PrimitiveColors = {
   },
   // Growlyze warm neutrals: cream -> ink
   gray: {
-    50: '#fbf8f2',
-    100: '#f5f0e6',
-    200: '#ece4d4',
+    50: '#ffffff',
+    100: '#f6f8fc',
+    200: '#eef3fb',
     300: '#d8cdb9',
     400: '#a89fae',
-    500: '#8e8597',
-    600: '#5b5066',
+    500: '#8090ad',
+    600: '#4a5570',
     700: '#463a55',
-    800: '#2a1a45',
-    900: '#140827',
+    800: '#12213f',
+    900: '#050d1f',
   },
 };
 
 export const semanticColors: SemanticColors = {
   // Growlyze orange is the primary brand colour.
-  primary: { light: '#ff7a33', main: '#f55809', dark: '#d94e07', contrast: '#ffffff' },
-  secondary: { light: '#b78aff', main: '#9a57ff', dark: '#7a3be0', contrast: '#ffffff' },
+  primary: { light: '#4d8bff', main: '#1e6bff', dark: '#1554e0', contrast: '#ffffff' },
+  secondary: { light: '#93b8ff', main: '#4d8bff', dark: '#7a3be0', contrast: '#ffffff' },
   success: { light: '#86dbb2', main: '#0db664', dark: '#07894a', contrast: '#ffffff' },
-  warning: { light: '#ffd36b', main: '#ffb900', dark: '#c98f00', contrast: '#140827' },
+  warning: { light: '#ffd36b', main: '#ffb900', dark: '#c98f00', contrast: '#050d1f' },
   error: { light: '#f07a70', main: '#d92d20', dark: '#9b1c1c', contrast: '#ffffff' },
-  text: { primary: '#140827', secondary: '#5b5066', disabled: '#8e8597' },
-  background: { default: '#f5f0e6', paper: '#fbf8f2', elevated: '#fbf8f2' },
-  surface: { default: '#ece4d4', hover: '#e4dac6', selected: '#fde2d2', disabled: '#ece4d4' },
+  text: { primary: '#050d1f', secondary: '#4a5570', disabled: '#8090ad' },
+  background: { default: '#f6f8fc', paper: '#ffffff', elevated: '#ffffff' },
+  surface: { default: '#eef3fb', hover: '#e2ecff', selected: '#e2ecff', disabled: '#eef3fb' },
 };

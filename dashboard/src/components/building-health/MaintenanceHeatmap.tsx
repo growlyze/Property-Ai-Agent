@@ -317,7 +317,7 @@ const HotspotDetailModal: React.FC<HotspotDetailModalProps> = ({
             backgroundColor: 'grey.200',
             '& .MuiLinearProgress-bar': {
              backgroundColor: data.trend === 'up' ? '#f44336' : 
-                     data.trend === 'down' ? '#4caf50' : '#ff9800'
+                     data.trend === 'down' ? '#4caf50' : '#f99c00'
             }
            }}
           />
@@ -351,7 +351,7 @@ const HotspotDetailModal: React.FC<HotspotDetailModalProps> = ({
              backgroundColor: 'grey.200',
              '& .MuiLinearProgress-bar': {
               backgroundColor: getSeverityColor(hotspot.severity) === 'error' ? '#f44336' :
-                      getSeverityColor(hotspot.severity) === 'warning' ? '#ff9800' : '#f55809'
+                      getSeverityColor(hotspot.severity) === 'warning' ? '#f99c00' : '#1e6bff'
              }
             }}
            />
@@ -499,9 +499,9 @@ const MaintenanceHeatmap: React.FC<MaintenanceHeatmapProps> = ({ hotspots }) => 
    case 'high':
     return '#f44336';
    case 'medium':
-    return '#ff9800';
+    return '#f99c00';
    default:
-    return '#f55809';
+    return '#1e6bff';
   }
  };
 
@@ -765,7 +765,7 @@ const MaintenanceHeatmap: React.FC<MaintenanceHeatmapProps> = ({ hotspots }) => 
              height: 20, 
              backgroundColor: '#ff9800cc',
              borderRadius: 1,
-             border: '2px solid #ff9800'
+             border: '2px solid #f99c00'
             }} 
            />
            <Typography variant="body2">Medium Severity (Schedule soon)</Typography>
@@ -777,7 +777,7 @@ const MaintenanceHeatmap: React.FC<MaintenanceHeatmapProps> = ({ hotspots }) => 
              height: 20, 
              backgroundColor: '#2196f3cc',
              borderRadius: 1,
-             border: '2px solid #f55809'
+             border: '2px solid #1e6bff'
             }} 
            />
            <Typography variant="body2">Low Severity (Monitor)</Typography>

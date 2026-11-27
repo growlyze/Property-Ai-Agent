@@ -108,7 +108,7 @@ const DashboardBuilder: React.FC<DashboardBuilderProps> = ({
       sx={{
         height: widget.position.h * 60,
         cursor: draggedWidget?.id === widget.id ? 'grabbing' : 'grab',
-        border: selectedWidget?.id === widget.id ? '2px solid #f55809' : '1px solid #e0e0e0',
+        border: selectedWidget?.id === widget.id ? '2px solid #1e6bff' : '1px solid #e0e0e0',
         '&:hover': {
           boxShadow: 3,
         },
@@ -190,7 +190,7 @@ const DashboardBuilder: React.FC<DashboardBuilderProps> = ({
               <Card
                 sx={{
                   height: 240,
-                  border: '2px dashed #f55809',
+                  border: '2px dashed #1e6bff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

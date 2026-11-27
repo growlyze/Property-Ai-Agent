@@ -33,8 +33,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({
  // Category colors
  const categoryColors = {
   financial: '#4caf50',
-  operational: '#f55809',
-  tenant_satisfaction: '#ff9800'
+  operational: '#1e6bff',
+  tenant_satisfaction: '#f99c00'
  };
 
  const IconComponent = categoryIcons[category.category];

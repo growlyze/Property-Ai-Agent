@@ -94,7 +94,7 @@ export const PropertyManagerDashboardScreen: React.FC = () => {
     {
       title: 'ML Insights',
       icon: 'analytics-outline',
-      color: '#f55809',
+      color: '#1e6bff',
       onPress: () => navigation.navigate('MLInsights'),
     },
     {

@@ -135,7 +135,7 @@
 }
 
 .ai-confidence-medium {
-  background-color: #e65100; /* Dark orange for better contrast */
+  background-color: #b75000; /* Dark orange for better contrast */
   color: #ffffff;
 }
 
@@ -226,8 +226,8 @@
 
 .status-indicator.warning {
   background-color: #fff3e0;
-  color: #e65100;
-  border: 1px solid #ff9800;
+  color: #b75000;
+  border: 1px solid #f99c00;
 }
 
 .status-indicator.error {
@@ -239,7 +239,7 @@
 .status-indicator.info {
   background-color: #e3f2fd;
   color: #0d47a1;
-  border: 1px solid #f55809;
+  border: 1px solid #1e6bff;
 }
 
 /* Live region for announcements */
@@ -287,7 +287,7 @@
   }
   
   .ai-confidence-medium {
-    background-color: #f57c00;
+    background-color: #dd7400;
   }
   
   .ai-confidence-low {
@@ -338,7 +338,7 @@
 }
 
 .ai-data-table th {
-  background-color: #f5f0e6;
+  background-color: #f6f8fc;
   font-weight: 600;
 }
 

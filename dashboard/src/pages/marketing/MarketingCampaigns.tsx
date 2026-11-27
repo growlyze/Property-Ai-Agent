@@ -196,7 +196,7 @@ const MarketingCampaigns: React.FC = () => {
           <StatCard icon={<CampaignIcon fontSize="small" />} accent="#16a34a" label="Active" value={campaigns.filter((c) => c.status === 'ACTIVE').length} sub={`${campaigns.length} campaigns in total`} />
         </Grid>
         <Grid item xs={6} md={3}>
-          <StatCard icon={<PaidIcon fontSize="small" />} accent="#f97316" label="Total budget" value={money(campaigns.reduce((s, c) => s + c.budget, 0))} sub={`${money(totalSpent)} spent`} />
+          <StatCard icon={<PaidIcon fontSize="small" />} accent="#f99c00" label="Total budget" value={money(campaigns.reduce((s, c) => s + c.budget, 0))} sub={`${money(totalSpent)} spent`} />
         </Grid>
         <Grid item xs={6} md={3}>
           <StatCard icon={<PersonAddIcon fontSize="small" />} accent="#2563eb" label="Total leads" value={totalLeads} sub="Across all campaigns" />

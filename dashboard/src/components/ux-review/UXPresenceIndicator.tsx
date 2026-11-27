@@ -73,7 +73,7 @@ export const UXPresenceIndicator: React.FC<UXPresenceIndicatorProps> = ({
   const getStatusColor = (status: UserPresence['status']) => {
     switch (status) {
       case 'online': return '#4caf50';
-      case 'away': return '#ff9800';
+      case 'away': return '#f99c00';
       case 'busy': return '#f44336';
       case 'offline': return '#9e9e9e';
       default: return '#9e9e9e';
@@ -141,7 +141,7 @@ export const UXPresenceIndicator: React.FC<UXPresenceIndicatorProps> = ({
                   height: 28,
                   fontSize: 12,
                   cursor: onUserClick ? 'pointer' : 'default',
-                  border: user.isTyping ? '2px solid #f55809' : 'none',
+                  border: user.isTyping ? '2px solid #1e6bff' : 'none',
                   animation: user.isTyping ? 'pulse 1.5s ease-in-out infinite' : 'none',
                 }}
                 onClick={() => onUserClick?.(user.id)}

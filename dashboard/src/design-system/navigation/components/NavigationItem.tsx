@@ -49,7 +49,7 @@ const StyledListItemButton = styled(ListItemButton, {
     switch (variant) {
       case 'sidebar':
         return {
-          minHeight: '48px',
+          minHeight: '42px',
           borderRadius: collapsed ? '50%' : tokens.borderRadius.md,
           padding: collapsed ? tokens.spacing.sm : `${tokens.spacing.sm} ${tokens.spacing.md}`,
           margin: collapsed ? `0 ${tokens.spacing.sm}` : `0 ${tokens.spacing.md}`,
@@ -57,11 +57,13 @@ const StyledListItemButton = styled(ListItemButton, {
           justifyContent: collapsed ? 'center' : 'flex-start',
           
           ...(isActive && {
-            backgroundColor: 'var(--color-primary-main)',
-            color: 'var(--color-primary-contrast)',
+            backgroundColor: 'var(--color-surface-selected)',
+            color: 'var(--color-primary-main)',
+            fontWeight: 600,
+            boxShadow: 'inset 0 0 0 1px rgba(30,107,255,0.12)',
             
             '&:hover': {
-              backgroundColor: 'var(--color-primary-dark)',
+              backgroundColor: 'var(--color-surface-selected)',
             },
           }),
           
@@ -69,8 +71,8 @@ const StyledListItemButton = styled(ListItemButton, {
             color: 'var(--color-text-primary)',
             
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
-              color: 'var(--color-primary-main)',
+              backgroundColor: 'var(--color-surface-default)',
+              color: 'var(--color-text-primary)',
             },
           }),
         };
@@ -83,11 +85,13 @@ const StyledListItemButton = styled(ListItemButton, {
           margin: `0 ${tokens.spacing.md}`,
           
           ...(isActive && {
-            backgroundColor: 'var(--color-primary-main)',
-            color: 'var(--color-primary-contrast)',
+            backgroundColor: 'var(--color-surface-selected)',
+            color: 'var(--color-primary-main)',
+            fontWeight: 600,
+            boxShadow: 'inset 0 0 0 1px rgba(30,107,255,0.12)',
             
             '&:hover': {
-              backgroundColor: 'var(--color-primary-dark)',
+              backgroundColor: 'var(--color-surface-selected)',
             },
           }),
           
@@ -95,8 +99,8 @@ const StyledListItemButton = styled(ListItemButton, {
             color: 'var(--color-text-primary)',
             
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
-              color: 'var(--color-primary-main)',
+              backgroundColor: 'var(--color-surface-default)',
+              color: 'var(--color-text-primary)',
             },
           }),
         };

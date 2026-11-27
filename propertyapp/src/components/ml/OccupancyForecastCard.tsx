@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   confidenceText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#f55809',
+    color: '#1e6bff',
   },
   forecastSection: {
     flexDirection: 'row',
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   forecastValue: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#f55809',
+    color: '#1e6bff',
     marginBottom: 4,
   },
   trend: {
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   trendForecast: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#f55809',
+    color: '#1e6bff',
   },
   factorsContainer: {
     flexDirection: 'row',
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   bullet: {
     fontSize: 14,
-    color: '#f55809',
+    color: '#1e6bff',
     marginRight: 8,
   },
   recommendationText: {

@@ -69,7 +69,7 @@ const AccessibilityShowcase: React.FC = () => {
   };
 
   const handleColorContrastTest = () => {
-    const result = checkColorContrast('#f55809', '#ffffff');
+    const result = checkColorContrast('#1e6bff', '#ffffff');
     announce(`Color contrast ratio is ${result.ratio}:1 - ${result.grade} compliance`);
   };
 

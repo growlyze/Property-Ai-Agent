@@ -209,7 +209,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
       case 'critical':
         return <ErrorIcon sx={{ color: '#d32f2f' }} />;
       case 'high':
-        return <WarningIcon sx={{ color: '#f57c00' }} />;
+        return <WarningIcon sx={{ color: '#dd7400' }} />;
       case 'medium':
         return <WarningIcon sx={{ color: '#fbc02d' }} />;
       case 'low':
@@ -230,7 +230,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
       case 'immediate':
         return '#d32f2f';
       case 'urgent':
-        return '#f57c00';
+        return '#dd7400';
       case 'high':
         return '#fbc02d';
       case 'medium':
@@ -315,7 +315,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
         <Grid item xs={6} sm={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: '#f57c00' }}>
+              <Typography variant="h4" sx={{ color: '#dd7400' }}>
                 {alertStats.high}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -327,7 +327,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
         <Grid item xs={6} sm={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: '#f55809' }}>
+              <Typography variant="h4" sx={{ color: '#1e6bff' }}>
                 {alertStats.active}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -374,7 +374,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
             label={`High (${alertStats.high})`}
             onClick={() => setFilter('high')}
             variant={filter === 'high' ? 'filled' : 'outlined'}
-            sx={{ backgroundColor: filter === 'high' ? '#f57c00' : 'transparent' }}
+            sx={{ backgroundColor: filter === 'high' ? '#dd7400' : 'transparent' }}
           />
         </Box>
       </Paper>
@@ -386,7 +386,7 @@ export const RiskAlerts: React.FC<RiskAlertsProps> = ({
             <React.Fragment key={alert.id}>
               <ListItem
                 sx={{
-                  backgroundColor: alert.status === 'resolved' ? '#f5f0e6' : 'transparent',
+                  backgroundColor: alert.status === 'resolved' ? '#f6f8fc' : 'transparent',
                   opacity: alert.status === 'resolved' ? 0.7 : 1
                 }}
               >

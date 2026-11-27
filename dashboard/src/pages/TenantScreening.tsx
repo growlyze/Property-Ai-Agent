@@ -71,7 +71,7 @@ function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label
               color: '#fff',
               display: 'grid',
               placeItems: 'center',
-              border: '1.5px solid #140827',
+              border: '1px solid var(--color-border-default)',
               flexShrink: 0,
             }}
           >

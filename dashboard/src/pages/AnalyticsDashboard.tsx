@@ -103,13 +103,13 @@ interface Competitor {
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-const INK = '#140827';
-const ORANGE = '#f55809';
+const INK = '#050d1f';
+const ORANGE = '#1e6bff';
 const GREEN = '#0db664';
 const AMBER = '#ffb900';
 const RED = '#e5484d';
 const BLUE = '#397ae7';
-const PURPLE = '#9a57ff';
+const PURPLE = '#4d8bff';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -135,7 +135,7 @@ const listOf = <T,>(payload: any): T[] => {
 };
 
 const tooltipStyle = {
-  contentStyle: { borderRadius: 8, border: `1.5px solid ${INK}`, fontSize: 13 },
+  contentStyle: { borderRadius: 8, border: `1px solid var(--color-border-default)`, fontSize: 13 },
   labelStyle: { fontWeight: 700, color: INK },
 };
 
@@ -169,7 +169,7 @@ function Kpi({
               color: '#fff',
               display: 'grid',
               placeItems: 'center',
-              border: `1.5px solid ${INK}`,
+              border: `1px solid var(--color-border-default)`,
               flexShrink: 0,
             }}
           >

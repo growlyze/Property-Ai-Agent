@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   costValue: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#f55809',
+    color: '#1e6bff',
     marginBottom: 4,
   },
   costRange: {
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   confidenceFill: {
     height: '100%',
-    backgroundColor: '#f55809',
+    backgroundColor: '#1e6bff',
     borderRadius: 2,
   },
   confidenceText: {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   bullet: {
     fontSize: 14,
-    color: '#f55809',
+    color: '#1e6bff',
     marginRight: 8,
   },
   recommendationText: {

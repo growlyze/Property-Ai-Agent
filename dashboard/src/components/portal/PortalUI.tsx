@@ -8,7 +8,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
  * pages/Dashboard.tsx (ink borders, hard shadows from the MUI theme).
  */
 
-export const INK = '#140827';
+export const INK = '#050d1f';
 
 export const money = (n: number | null | undefined, digits = 0) =>
   Number(n ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: digits, minimumFractionDigits: digits });
@@ -118,7 +118,7 @@ export function StatCard({
             color: '#fff',
             display: 'grid',
             placeItems: 'center',
-            border: `1.5px solid ${INK}`,
+            border: `1px solid var(--color-border-default)`,
             flexShrink: 0,
           }}
         >
@@ -191,7 +191,7 @@ export function ErrorNote({ text, onRetry }: { text: string; onRetry?: () => voi
   return (
     <Alert
       severity="error"
-      sx={{ border: `2px solid ${INK}` }}
+      sx={{ border: `1px solid var(--color-border-default)` }}
       action={
         onRetry ? (
           <Button color="inherit" size="small" onClick={onRetry}>

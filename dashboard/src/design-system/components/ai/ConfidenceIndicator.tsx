@@ -73,7 +73,7 @@ const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = memo(({
   // Cache expensive color calculations
   const progressBarColor = useCachedAICalculation(
     'progressBarColor',
-    () => confidence >= 80 ? '#4caf50' : confidence >= 60 ? '#ff9800' : '#f44336',
+    () => confidence >= 80 ? '#4caf50' : confidence >= 60 ? '#f99c00' : '#f44336',
     [confidence]
   );
 

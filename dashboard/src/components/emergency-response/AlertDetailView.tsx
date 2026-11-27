@@ -44,15 +44,15 @@ interface AlertDetailViewProps {
 
 const PRIORITY_COLORS = {
   critical: '#d32f2f',
-  high: '#f57c00',
+  high: '#dd7400',
   medium: '#fbc02d',
   low: '#388e3c'
 };
 
 const STATUS_COLORS = {
   active: '#d32f2f',
-  acknowledged: '#f57c00',
-  in_progress: '#f55809',
+  acknowledged: '#dd7400',
+  in_progress: '#1e6bff',
   resolved: '#388e3c'
 };
 

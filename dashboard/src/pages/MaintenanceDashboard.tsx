@@ -288,7 +288,7 @@ const MaintenanceDashboard: React.FC = () => {
       </Card>
 
       <Card>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ borderBottom: `2px solid ${INK}` }}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ borderBottom: `1px solid var(--color-border-default)` }}>
           <Tab icon={<TimelineIcon />} iconPosition="start" label="Timeline" id="maintenance-tab-0" />
           <Tab icon={<TrendingUp />} iconPosition="start" label="Costs" id="maintenance-tab-1" />
           <Tab icon={<History />} iconPosition="start" label="History & patterns" id="maintenance-tab-2" />
@@ -322,7 +322,7 @@ const MaintenanceDashboard: React.FC = () => {
               ) : (
                 <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' } }}>
                   {timelineCards.map((i) => (
-                    <Paper key={i.id} sx={{ p: 2, border: `1.5px solid ${INK}` }}>
+                    <Paper key={i.id} sx={{ p: 2, border: `1px solid var(--color-border-default)` }}>
                       <Stack direction="row" justifyContent="space-between" spacing={1} sx={{ mb: 0.5 }}>
                         <Typography sx={{ fontWeight: 700 }}>{i.title}</Typography>
                         <PriorityChip priority={i.priority} />
@@ -347,7 +347,7 @@ const MaintenanceDashboard: React.FC = () => {
 
             <TabPanel value={tab} index={1}>
               <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 2fr) minmax(0, 1fr)' } }}>
-                <Paper sx={{ p: 2, border: `1.5px solid ${INK}` }}>
+                <Paper sx={{ p: 2, border: `1px solid var(--color-border-default)` }}>
                   <Typography sx={{ fontWeight: 800, mb: 1 }}>Quoted spend by month</Typography>
                   <Box sx={{ height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -364,7 +364,7 @@ const MaintenanceDashboard: React.FC = () => {
                   </Box>
                 </Paper>
                 <Stack spacing={2}>
-                  <Paper sx={{ p: 2, border: `1.5px solid ${INK}` }}>
+                  <Paper sx={{ p: 2, border: `1px solid var(--color-border-default)` }}>
                     <Typography sx={{ fontWeight: 800, mb: 1 }}>Spend by system</Typography>
                     {bySystem.some((s) => s.cost > 0) ? (
                       <Box sx={{ height: 200 }}>
@@ -386,7 +386,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <EmptyState title="No quotes yet" />
                     )}
                   </Paper>
-                  <Paper sx={{ p: 2, border: `1.5px solid ${INK}` }}>
+                  <Paper sx={{ p: 2, border: `1px solid var(--color-border-default)` }}>
                     <Typography sx={{ fontWeight: 800, mb: 1 }}>Key figures</Typography>
                     <Stack spacing={0.75}>
                       {[
@@ -409,7 +409,7 @@ const MaintenanceDashboard: React.FC = () => {
 
             <TabPanel value={tab} index={2}>
               <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' } }}>
-                <Paper sx={{ p: 2, border: `1.5px solid ${INK}` }}>
+                <Paper sx={{ p: 2, border: `1px solid var(--color-border-default)` }}>
                   <Typography sx={{ fontWeight: 800, mb: 1.5 }}>Requests by system</Typography>
                   {bySystem.length === 0 ? (
                     <EmptyState title="No requests match these filters" />
@@ -433,7 +433,7 @@ const MaintenanceDashboard: React.FC = () => {
                     </Stack>
                   )}
                 </Paper>
-                <Paper sx={{ p: 2, border: `1.5px solid ${INK}` }}>
+                <Paper sx={{ p: 2, border: `1px solid var(--color-border-default)` }}>
                   <Typography sx={{ fontWeight: 800, mb: 1.5 }}>Recently completed</Typography>
                   {completed.length === 0 ? (
                     <EmptyState title="Nothing completed yet" />
@@ -474,7 +474,7 @@ const MaintenanceDashboard: React.FC = () => {
                   {apiErrorMessage(createWo.error, 'Could not create the work order.')}
                 </Alert>
               )}
-              <TableContainer component={Paper} sx={{ overflowX: 'auto', border: `1.5px solid ${INK}` }}>
+              <TableContainer component={Paper} sx={{ overflowX: 'auto', border: `1px solid var(--color-border-default)` }}>
                 <Table sx={{ minWidth: 820 }}>
                   <TableHead>
                     <TableRow>

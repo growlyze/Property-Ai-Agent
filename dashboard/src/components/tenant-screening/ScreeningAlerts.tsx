@@ -37,7 +37,7 @@ const ScreeningAlerts: React.FC = () => {
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {alerts.map(alert => (
           <li key={alert.id} style={{
-            background: severityColors[alert.severity] || '#f5f0e6',
+            background: severityColors[alert.severity] || '#f6f8fc',
             borderLeft: `6px solid ${severityColors[alert.severity] || '#bdbdbd'}`,
             margin: '12px 0',
             padding: '12px',

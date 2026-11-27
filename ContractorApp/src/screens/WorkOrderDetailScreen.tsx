@@ -189,7 +189,7 @@ const WorkOrderDetailScreen: React.FC = () => {
   const getStatusColor = (status: WorkOrderStatus): string => {
     switch (status) {
       case 'OPEN': return '#FF9800';
-      case 'ASSIGNED': return '#f55809';
+      case 'ASSIGNED': return '#1e6bff';
       case 'IN_PROGRESS': return '#4CAF50';
       case 'PENDING_APPROVAL': return '#9C27B0';
       case 'COMPLETED': return '#4CAF50';
@@ -278,7 +278,7 @@ const WorkOrderDetailScreen: React.FC = () => {
             {unit && <Text style={styles.unitText}>Unit: {unit.unitNumber}</Text>}
             <TouchableOpacity onPress={() => openMaps(fullAddress)} style={styles.addressContainer}>
               <Text style={styles.address}>{fullAddress}</Text>
-              <Ionicons name="location-outline" size={20} color="#f55809" />
+              <Ionicons name="location-outline" size={20} color="#1e6bff" />
             </TouchableOpacity>
           </View>
         </Card.Content>
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   },
   address: {
     fontSize: 14,
-    color: '#f55809',
+    color: '#1e6bff',
     flex: 1,
   },
   description: {

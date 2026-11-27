@@ -90,10 +90,10 @@ export const RiskTrendChart: React.FC<RiskTrendChartProps> = ({
   // Risk level colors
   const riskColors = {
     critical: '#d32f2f',
-    high: '#f57c00',
+    high: '#dd7400',
     medium: '#fbc02d',
     low: '#388e3c',
-    minimal: '#f55809'
+    minimal: '#1e6bff'
   };
 
   // Generate mock trend data (in real implementation, this would come from API)
@@ -362,7 +362,7 @@ export const RiskTrendChart: React.FC<RiskTrendChartProps> = ({
                 <Line
                   type="monotone"
                   dataKey="portfolio"
-                  stroke="#f55809"
+                  stroke="#1e6bff"
                   strokeWidth={3}
                   name="Portfolio Risk"
                   dot={{ r: 4 }}
@@ -378,7 +378,7 @@ export const RiskTrendChart: React.FC<RiskTrendChartProps> = ({
                 <Line
                   type="monotone"
                   dataKey="tenants"
-                  stroke="#f57c00"
+                  stroke="#dd7400"
                   strokeWidth={2}
                   name="Avg Tenant Risk"
                   dot={{ r: 3 }}
@@ -400,8 +400,8 @@ export const RiskTrendChart: React.FC<RiskTrendChartProps> = ({
                   type="monotone"
                   dataKey="portfolio"
                   stackId="1"
-                  stroke="#f55809"
-                  fill="#f55809"
+                  stroke="#1e6bff"
+                  fill="#1e6bff"
                   fillOpacity={0.6}
                   name="Portfolio Risk"
                 />
@@ -418,8 +418,8 @@ export const RiskTrendChart: React.FC<RiskTrendChartProps> = ({
                   type="monotone"
                   dataKey="tenants"
                   stackId="3"
-                  stroke="#f57c00"
-                  fill="#f57c00"
+                  stroke="#dd7400"
+                  fill="#dd7400"
                   fillOpacity={0.4}
                   name="Avg Tenant Risk"
                 />
@@ -436,9 +436,9 @@ export const RiskTrendChart: React.FC<RiskTrendChartProps> = ({
                 <YAxis domain={[0, 5]} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Bar dataKey="portfolio" fill="#f55809" name="Portfolio Risk" />
+                <Bar dataKey="portfolio" fill="#1e6bff" name="Portfolio Risk" />
                 <Bar dataKey="properties" fill="#388e3c" name="Avg Property Risk" />
-                <Bar dataKey="tenants" fill="#f57c00" name="Avg Tenant Risk" />
+                <Bar dataKey="tenants" fill="#dd7400" name="Avg Tenant Risk" />
               </BarChart>
             )}
           </ResponsiveContainer>

@@ -162,12 +162,12 @@
 
 .mobile-nav-item:hover,
 .mobile-nav-item:focus {
-  background-color: #ece4d4;
+  background-color: #eef3fb;
   color: #0f172a;
 }
 
 .mobile-nav-item.active {
-  background-color: #f55809;
+  background-color: #1e6bff;
   color: white;
 }
 
@@ -202,7 +202,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid #e2e8f0;
-  border-top: 3px solid #f55809;
+  border-top: 3px solid #1e6bff;
   border-radius: 50%;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -256,7 +256,7 @@
 
 .mobile-card-actions {
   padding: 0.75rem 1rem;
-  background-color: #fbf8f2;
+  background-color: #ffffff;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -349,7 +349,7 @@
 
 .mobile-search .MuiInputBase-root {
   border-radius: 24px;
-  background-color: #fbf8f2;
+  background-color: #ffffff;
 }
 
 /* Mobile Filters */
@@ -475,7 +475,7 @@
   .mobile-nav-item:hover,
   .mobile-nav-item:focus {
     background-color: #334155;
-    color: #ece4d4;
+    color: #eef3fb;
   }
 
   .mobile-card {

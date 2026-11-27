@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   myBubble: {
-    backgroundColor: '#f55809',
+    backgroundColor: '#1e6bff',
   },
   theirBubble: {
     backgroundColor: '#fff',

@@ -123,8 +123,8 @@ const LoginScreen: React.FC = () => {
           elevation={0}
           sx={{ 
             p: { xs: 3, sm: 4 }, 
-            border: '2px solid #140827',
-            boxShadow: '6px 6px 0 #140827',
+            border: '1px solid var(--color-border-default)',
+            boxShadow: '0 1px 2px rgba(5,13,31,0.06), 0 28px 70px -20px rgba(5,13,31,0.32)',
             borderRadius: '12px',
             width: '100%',
             display: 'flex',

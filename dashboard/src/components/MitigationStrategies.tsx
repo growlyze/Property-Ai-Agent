@@ -80,9 +80,9 @@ export const MitigationStrategies: React.FC<MitigationStrategiesProps> = ({
         };
       case 'urgent':
         return {
-          color: '#f57c00',
+          color: '#dd7400',
           bgColor: '#fff3e0',
-          icon: <WarningIcon sx={{ color: '#f57c00' }} />,
+          icon: <WarningIcon sx={{ color: '#dd7400' }} />,
           label: 'Urgent Attention Needed'
         };
       case 'high':
@@ -102,7 +102,7 @@ export const MitigationStrategies: React.FC<MitigationStrategiesProps> = ({
       default:
         return {
           color: '#757575',
-          bgColor: '#f5f0e6',
+          bgColor: '#f6f8fc',
           icon: <InfoIcon />,
           label: 'Low Priority'
         };
@@ -217,7 +217,7 @@ export const MitigationStrategies: React.FC<MitigationStrategiesProps> = ({
         <Grid item xs={12} md={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: '#f57c00' }}>
+              <Typography variant="h4" sx={{ color: '#dd7400' }}>
                 {mitigationStrategies.filter(s => s.priority === 'urgent').length}
               </Typography>
               <Typography variant="body2" color="text.secondary">

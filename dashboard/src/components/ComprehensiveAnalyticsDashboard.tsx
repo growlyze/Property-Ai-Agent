@@ -500,7 +500,7 @@ const ComprehensiveAnalyticsDashboard: React.FC = () => {
               </div>
               <div className="kpi-trend" style={{
                 color: analytics.performance.riskScore > 0.7 ? '#f44336' :
-                       analytics.performance.riskScore > 0.4 ? '#ff9800' : '#4caf50'
+                       analytics.performance.riskScore > 0.4 ? '#f99c00' : '#4caf50'
               }}>
                 {analytics.performance.riskScore > 0.7 ? 'High risk' :
                  analytics.performance.riskScore > 0.4 ? 'Medium risk' : 'Low risk'}

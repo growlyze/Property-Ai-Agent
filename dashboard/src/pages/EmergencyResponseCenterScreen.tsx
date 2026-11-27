@@ -136,7 +136,7 @@ const EmergencyResponseCenterScreen: React.FC = () => {
               <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5 }}>
                 Emergency contacts
               </Typography>
-              <Box sx={{ p: 1.5, mb: 2, border: `2px solid ${INK}`, borderRadius: '10px', bgcolor: 'rgba(217, 45, 32, 0.08)' }}>
+              <Box sx={{ p: 1.5, mb: 2, border: `1px solid var(--color-border-default)`, borderRadius: '10px', bgcolor: 'rgba(217, 45, 32, 0.08)' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                   <Box>
                     <Typography sx={{ fontWeight: 800 }}>Fire, police, ambulance</Typography>

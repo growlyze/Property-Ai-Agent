@@ -228,12 +228,34 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ className }) => 
               <Typography 
                 variant="h6" 
                 component="div" 
-                sx={{ 
+                sx={{
                   flexGrow: 1,
-                  fontWeight: tokens.typography.fontWeight.semibold,
-                  color: 'var(--color-primary-main)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.25,
+                  fontWeight: 700,
+                  fontSize: '1.05rem',
+                  color: 'var(--color-text-primary)',
                 }}
               >
+                <Box
+                  component="span"
+                  aria-hidden
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '8px',
+                    bgcolor: 'var(--color-primary-main)',
+                    color: '#fff',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    boxShadow: '0 6px 14px -6px rgba(21,84,224,0.6)',
+                  }}
+                >
+                  P
+                </Box>
                 Property AI Agent
               </Typography>
             ) : (
